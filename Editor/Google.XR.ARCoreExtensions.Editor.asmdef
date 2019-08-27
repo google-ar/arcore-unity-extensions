@@ -1,0 +1,10 @@
+﻿{
+    "name": "Google.XR.ARCoreExtensions.Editor",
+    "references": [
+        "Google.XR.ARCoreExtensions"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
