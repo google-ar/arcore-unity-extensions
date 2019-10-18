@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ARCloudReferencePoint.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
     using UnityEngine.XR.ARSubsystems;
@@ -31,13 +32,15 @@ namespace Google.XR.ARCoreExtensions
     /// game objects in your scene. It is backed by an ARCore Cloud Anchor to synchronize
     /// pose data across multiple devices.
     /// </summary>
+    [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
+     Justification = "Match Unity's naming style.")]
     public class ARCloudReferencePoint : MonoBehaviour, ITrackable
     {
         private IntPtr m_AnchorHandle;
         private Pose m_Pose;
 
         /// <summary>
-        /// The Cloud Reference Id associated with this cloud reference point. For newly
+        /// Gets the Cloud Reference Id associated with this cloud reference point. For newly
         /// created points the Id will be an empty string until the cloud reference point is
         /// in the <see cref="CloudReferenceState"/>.<c>Success</c> state. This Id is
         /// provided on the device hosting the cloud reference point, and is used to resolve
@@ -56,7 +59,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// The <see cref="CloudReferenceState"/> associated with cloud reference point.
+        /// Gets the <see cref="CloudReferenceState"/> associated with cloud reference point.
         /// </summary>
         public CloudReferenceState cloudReferenceState
         {
@@ -70,7 +73,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// The <c>TrackableId</c> associated with this cloud reference point.
+        /// Gets the <c>TrackableId</c> associated with this cloud reference point.
         /// </summary>
         public TrackableId trackableId
         {
@@ -81,7 +84,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// The <c>Pose</c> associated with this cloud reference point.
+        /// Gets the <c>Pose</c> associated with this cloud reference point.
         /// </summary>
         public Pose pose
         {
@@ -92,7 +95,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// The <c>TrackingState</c> associated with this cloud reference point.
+        /// Gets the <c>TrackingState</c> associated with this cloud reference point.
         /// </summary>
         public TrackingState trackingState
         {
@@ -108,7 +111,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Unity Update method.
         /// </summary>
-        private void Update()
+        public void Update()
         {
             // Get the current Pose.
             ApiPose apiPose = AnchorApi.GetAnchorPose(

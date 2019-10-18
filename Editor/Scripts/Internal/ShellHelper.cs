@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ShellHelper.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -22,8 +22,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System.IO;
     using System.Text;
-    using UnityEngine;
-    using UnityEditor;
 
     /// <summary>
     /// Misc helper methods for running shell commands.

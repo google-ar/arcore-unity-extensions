@@ -5,12 +5,16 @@
         "Unity.XR.ARSubsystems",
         "Unity.XR.ARCore"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Android",
-        "iOS",
-        "Editor"
+        "Editor",
+        "iOS"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
 }

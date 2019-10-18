@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="SessionApi.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -24,9 +24,22 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System.Runtime.InteropServices;
     using UnityEngine;
 
+#if UNITY_IOS && !UNITY_EDITOR
+    using AndroidImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
+    using IOSImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+
     internal class SessionApi
     {
         private static IntPtr s_ArConfig = IntPtr.Zero;
+
+        public static void ReleaseFrame(IntPtr frameHandle)
+        {
+            ExternApi.ArFrame_release(frameHandle);
+        }
 
         public static IntPtr HostCloudAnchor(
             IntPtr sessionHandle,
@@ -122,6 +135,9 @@ namespace Google.XR.ARCoreExtensions.Internal
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFrame_release(IntPtr frameHandle);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_hostAndAcquireNewCloudAnchor(
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
@@ -133,36 +149,38 @@ namespace Google.XR.ARCoreExtensions.Internal
                 string cloudAnchorId,
                 ref IntPtr cloudAnchorHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+#pragma warning disable 626
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_getConfig(
                 IntPtr sessionHandle,
                 IntPtr configHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_configure(
                 IntPtr sessionHandle,
                 IntPtr configHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_create(
                 IntPtr sessionHandle,
                 ref IntPtr configHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_destroy(
                 IntPtr configHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_setCloudAnchorMode(
                 IntPtr sessionHandle,
                 IntPtr configHandle,
                 ApiCloudAnchorMode mode);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_getCloudAnchorMode(
                 IntPtr sessionHandle,
                 IntPtr configHandle,
                 ref ApiCloudAnchorMode mode);
+#pragma warning restore 626
         }
     }
 }

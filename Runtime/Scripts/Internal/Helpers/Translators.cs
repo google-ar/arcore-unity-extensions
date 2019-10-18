@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="Translators.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -72,6 +72,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 case ApiTrackingState.Stopped:
                     return TrackingState.None;
             }
+
             return TrackingState.None;
         }
 

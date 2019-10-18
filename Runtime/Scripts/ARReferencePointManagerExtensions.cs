@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ARReferencePointManagerExtensions.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -30,11 +30,13 @@ namespace Google.XR.ARCoreExtensions
     /// </summary>
     public static class ARReferencePointManagerExtensions
     {
+        private static readonly string k_GameObjectName = "ARCloudReferencePoint";
+
         /// <summary>
         /// Creates a new cloud reference point using an existing local Reference Point.
-        ///
+        /// <example>
         /// The sample code below illustrates how to host a cloud reference point.
-        ///
+        /// <code>
         /// private ARCloudReferencePoint m_CloudReferencePoint;
         ///
         /// void HostCloudReference(Pose pose)
@@ -72,7 +74,11 @@ namespace Google.XR.ARCoreExtensions
         ///         }
         ///     }
         /// }
+        /// </code>
+        /// </example>
         /// </summary>
+        /// <param name="referencePointManager">The ReferencePointManager instance for extending.
+        /// </param>
         /// <param name="referencePoint">The local <c>ARReferencePoint</c> to be used as the
         /// basis to host a new cloud reference point.</param>
         /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
@@ -107,9 +113,9 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Creates a new local cloud reference point from the provided Id.
-        ///
+        /// <example>
         /// The sample code below illustrates how to resolve a cloud reference point.
-        ///
+        /// <code>
         /// private ARCloudReferencePoint m_CloudReferencePoint;
         ///
         /// void ResolveCloudReference(string cloudReferenceId)
@@ -142,10 +148,14 @@ namespace Google.XR.ARCoreExtensions
         ///         }
         ///     }
         /// }
+        /// </code>
+        /// </example>
         /// </summary>
+        /// <param name="referencePointManager">The ReferencePointManager instance for extending.
+        /// </param>
         /// <param name="cloudReferenceId">String representing the cloud reference.</param>
         /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
-        /// otherwise <c>null</c>.</return>
+        /// otherwise <c>null</c>.</returns>
         public static ARCloudReferencePoint ResolveCloudReferenceId(
             this ARReferencePointManager referencePointManager,
             string cloudReferenceId)
@@ -173,7 +183,5 @@ namespace Google.XR.ARCoreExtensions
 
             return cloudReferencePoint;
         }
-
-        private static readonly string k_GameObjectName = "ARCloudReferencePoint";
     }
 }

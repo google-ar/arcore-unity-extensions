@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensionsProjectSettingsGUI.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -27,21 +27,32 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     {
         // These labels are made public so they can be discovered automatically by
         // the provider using GetSearchKeywordsFromGUIContentProperties().
+        public static readonly GUIContent IsIOSSupportEnabled =
+            new GUIContent("iOS Support Enabled");
+
         public static readonly GUIContent CloudAnchorAPIKeys =
             new GUIContent("Cloud Anchor API Keys");
+
         public static readonly GUIContent Android = new GUIContent("Android");
+        public static readonly GUIContent IOS = new GUIContent("iOS");
 
         private static float s_GroupLabelIndent = 15;
         private static float s_GroupFieldIndent =
             EditorGUIUtility.labelWidth - s_GroupLabelIndent;
+
         private static bool s_FoldoutCloudAnchorAPIKeys = true;
 
         internal static void OnGUI(bool renderForStandaloneWindow)
         {
+            bool newIOSEnabled = EditorGUILayout.Toggle(IsIOSSupportEnabled,
+                ARCoreExtensionsProjectSettings.Instance.IsIOSSupportEnabled);
+            GUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
+
             s_FoldoutCloudAnchorAPIKeys =
                 EditorGUILayout.Foldout(s_FoldoutCloudAnchorAPIKeys, CloudAnchorAPIKeys);
             if (s_FoldoutCloudAnchorAPIKeys)
             {
+                // Draw text field for Android Cloud Anchor API Key.
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(s_GroupLabelIndent);
                 EditorGUILayout.LabelField(Android, GUILayout.Width(s_GroupFieldIndent));
@@ -50,10 +61,33 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                         ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey);
                 EditorGUILayout.EndHorizontal();
                 GUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
+
+                // Draw text field for iOS Cloud Anchor API Key.
+                if (newIOSEnabled)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(s_GroupLabelIndent);
+                    EditorGUILayout.LabelField(IOS, GUILayout.Width(s_GroupFieldIndent));
+                    ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey =
+                        EditorGUILayout.TextField(
+                            ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey);
+                    EditorGUILayout.EndHorizontal();
+                    GUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
+                }
+                else
+                {
+                    ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey = string.Empty;
+                }
             }
 
             if (GUI.changed)
             {
+                if (newIOSEnabled != ARCoreExtensionsProjectSettings.Instance.IsIOSSupportEnabled)
+                {
+                    ARCoreExtensionsProjectSettings.Instance.IsIOSSupportEnabled = newIOSEnabled;
+                    IOSSupportHelper.SetARCoreIOSSupportEnabled(newIOSEnabled);
+                }
+
                 ARCoreExtensionsProjectSettings.Instance.Save();
             }
         }

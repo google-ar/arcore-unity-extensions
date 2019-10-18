@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensions.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
@@ -42,49 +43,15 @@ namespace Google.XR.ARCoreExtensions
         public ARSessionOrigin SessionOrigin;
 
         /// <summary>
+        /// AR Foundation <c>ARCameraManager</c> used in the ARSessionOrigin.
+        /// </summary>
+        public ARCameraManager CameraManager;
+
+        /// <summary>
         /// Supplementary configuration to define features and options for the
         /// ARCore Extensions.
         /// </summary>
         public ARCoreExtensionsConfig ARCoreExtensionsConfig;
-
-        /// <summary>
-        /// Unity's Awake method.
-        /// </summary>
-        public void Awake()
-        {
-            if (Instance)
-            {
-                Debug.LogError("ARCore Extensions is already initialized. You many only " +
-                    "have one instance in your scene at a time.");
-            }
-            Instance = this;
-        }
-
-        /// <summary>
-        /// Unity's OnDestroy method.
-        /// </summary>
-        public void OnDestroy()
-        {
-            if (Instance)
-            {
-                Instance = null;
-            }
-        }
-
-        /// <summary>
-        /// Unity's Update method.
-        /// </summary>
-        public void Update()
-        {
-            // Ensure Cloud Anchors are enabled or disabled as requested.
-            IntPtr sessionHandle = Session.SessionHandle();
-            if (sessionHandle != IntPtr.Zero)
-            {
-                SessionApi.EnableCloudAnchors(
-                    sessionHandle,
-                    ARCoreExtensionsConfig.EnableCloudAnchors);
-            }
-        }
 
         internal static ARCoreExtensions Instance { get; private set; }
 
@@ -100,8 +67,83 @@ namespace Google.XR.ARCoreExtensions
                     return IntPtr.Zero;
                 }
 
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+                return IOSSupportManager.Instance.ARCoreSessionHandle;
+#else
                 return Instance.Session.SessionHandle();
+#endif
             }
+        }
+
+        /// <summary>
+        /// Unity's Awake method.
+        /// </summary>
+        public void Awake()
+        {
+            if (Instance)
+            {
+                Debug.LogError("ARCore Extensions is already initialized. You many only " +
+                    "have one instance in your scene at a time.");
+            }
+
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            IOSSupportManager.Instance.UpdateARSession(Session);
+            IOSSupportManager.Instance.UpdateCameraManager(CameraManager);
+#endif
+
+            Instance = this;
+        }
+
+        /// <summary>
+        /// Unity's OnEnable method.
+        /// </summary>
+        public void OnEnable()
+        {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            IOSSupportManager.Instance.SetEnabled(true);
+#endif
+        }
+
+        /// <summary>
+        /// Unity's OnDisable method.
+        /// </summary>
+        public void OnDisable()
+        {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            IOSSupportManager.Instance.SetEnabled(false);
+#endif
+        }
+
+        /// <summary>
+        /// Unity's OnDestroy method.
+        /// </summary>
+        public void OnDestroy()
+        {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            IOSSupportManager.Instance.ResetARCoreSession();
+#endif
+
+            if (Instance)
+            {
+                Instance = null;
+            }
+        }
+
+        /// <summary>
+        /// Unity's Update method.
+        /// </summary>
+        public void Update()
+        {
+#if UNITY_ANDROID
+            // Ensure Cloud Anchors are enabled or disabled as requested.
+            IntPtr sessionHandle = Session.SessionHandle();
+            if (sessionHandle != IntPtr.Zero)
+            {
+                SessionApi.EnableCloudAnchors(
+                    sessionHandle,
+                    ARCoreExtensionsConfig.EnableCloudAnchors);
+            }
+#endif
         }
     }
 }

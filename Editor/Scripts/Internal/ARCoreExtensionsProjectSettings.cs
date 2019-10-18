@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensionsProjectSettings.cs" company="Google">
 //
 // Copyright 2019 Google LLC All Rights Reserved.
@@ -25,14 +25,16 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using Google.XR.ARCoreExtensions;
     using UnityEngine;
 
-    [Serializable]
-    public class ARCoreExtensionsProjectSettings
+    internal class ARCoreExtensionsProjectSettings
     {
         public string Version;
+        public bool IsIOSSupportEnabled;
         public string AndroidCloudServicesApiKey;
+        public string IOSCloudServicesApiKey;
 
         private const string k_ProjectSettingsPath =
             "ProjectSettings/ARCoreExtensionsProjectSettings.json";
+
         private static ARCoreExtensionsProjectSettings s_Instance = null;
 
         public static ARCoreExtensionsProjectSettings Instance
@@ -58,16 +60,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     JsonUtility.FromJson<ARCoreExtensionsProjectSettings>(
                         File.ReadAllText(k_ProjectSettingsPath));
 
+                IsIOSSupportEnabled = settings.IsIOSSupportEnabled;
                 AndroidCloudServicesApiKey = settings.AndroidCloudServicesApiKey;
+                IOSCloudServicesApiKey = settings.IOSCloudServicesApiKey;
             }
             else
             {
                 // Default settings.
+                IsIOSSupportEnabled = false;
                 AndroidCloudServicesApiKey = string.Empty;
+                IOSCloudServicesApiKey = string.Empty;
             }
 
             // Update the settings version as needed.
-            Version = Google.XR.ARCoreExtensions.VersionInfo.Version;
+            Version = VersionInfo.Version;
         }
 
         public void Save()
