@@ -24,6 +24,7 @@ namespace Google.XR.ARCoreExtensions
     using System.Diagnostics.CodeAnalysis;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
+
     using UnityEngine.XR.ARFoundation;
 
     /// <summary>
@@ -86,12 +87,18 @@ namespace Google.XR.ARCoreExtensions
                     "have one instance in your scene at a time.");
             }
 
+            Instance = this;
+        }
+
+        /// <summary>
+        /// Unity's Start method.
+        /// </summary>
+        public void Start()
+        {
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             IOSSupportManager.Instance.UpdateARSession(Session);
             IOSSupportManager.Instance.UpdateCameraManager(CameraManager);
 #endif
-
-            Instance = this;
         }
 
         /// <summary>

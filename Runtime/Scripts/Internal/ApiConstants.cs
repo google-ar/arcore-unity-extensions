@@ -22,20 +22,10 @@ namespace Google.XR.ARCoreExtensions.Internal
 {
     internal static class ApiConstants
     {
-#if UNITY_EDITOR
-#if UNITY_INCLUDE_TESTS
-        public const string ARCoreNativeApi = "arcore_sdk_c_springboard";
-#else
-        public const string ARCoreNativeApi = "NOT_AVAILABLE";
-#endif // UNITY_INCLUDE_TESTS
-#elif UNITY_ANDROID
+#if UNITY_ANDROID
         public const string ARCoreNativeApi = "arcore_sdk_c";
-#elif UNITY_IOS
-#if ARCORE_EXTENSIONS_IOS_SUPPORT
+#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
         public const string ARCoreNativeApi = "__Internal";
-#else
-        public const string ARCoreNativeApi = "NOT_AVAILABLE";
-#endif
 #else
         public const string ARCoreNativeApi = "NOT_AVAILABLE";
 #endif

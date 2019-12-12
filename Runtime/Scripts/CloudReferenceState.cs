@@ -69,7 +69,8 @@ namespace Google.XR.ARCoreExtensions
         ErrorHostingDatasetProcessingFailed,
 
         /// <summary>
-        /// Resolving failed because the ARCore Cloud could not find the provided Cloud Anchor Id.
+        /// Resolving failed because the ARCore Cloud Anchor service could not find the provided
+        /// Cloud Anchor Id.
         /// </summary>
         ErrorResolvingCloudIdNotFound,
 
@@ -88,7 +89,7 @@ namespace Google.XR.ARCoreExtensions
         ErrorResolvingPackageTooNew,
 
         /// <summary>
-        /// The ARCore Cloud Anchor Service was unreachable. This can happen because of a
+        /// The ARCore Cloud Anchor service was unreachable. This can happen because of a
         /// number of reasons. The device may be in airplane mode or does not have a working
         /// internet connection. The request sent to the server could have timed out with
         /// no response, there could be a bad network connection, DNS unavailability, firewall

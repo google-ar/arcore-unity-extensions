@@ -36,7 +36,7 @@ namespace Google.XR.ARCoreExtensions
      Justification = "Match Unity's naming style.")]
     public class ARCloudReferencePoint : MonoBehaviour, ITrackable
     {
-        private IntPtr m_AnchorHandle;
+        internal IntPtr m_AnchorHandle;
         private Pose m_Pose;
 
         /// <summary>

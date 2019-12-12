@@ -23,6 +23,7 @@ namespace Google.XR.ARCoreExtensions
     using System;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
+
     using UnityEngine.XR.ARFoundation;
 
     /// <summary>

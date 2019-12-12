@@ -1,6 +1,6 @@
 # How to Contribute
 
-Please use the [issue tracker](https://github.com/google-ar/arcore-unity-extensions/issues)
+Please use the [issue tracker](//github.com/google-ar/arcore-unity-extensions/issues)
 to report any issue as we do not accept pull requests for this repository.
 
 If you'd like to send us a patch or pull request, there are just a few small
@@ -21,4 +21,4 @@ again.
 ## Community Guidelines
 
 This project follows [Google's Open Source Community
-Guidelines](https://opensource.google.com/conduct/).
+Guidelines](//opensource.google.com/conduct/).

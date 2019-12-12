@@ -53,7 +53,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 if (s_Instance == null)
                 {
                     s_Instance = new IOSSupportManager();
-#if UNITY_IOS && !UNITY_EDITOR
+#if UNITY_IOS && (!UNITY_EDITOR || UNITY_INCLUDE_TESTS)
 #if ARCORE_EXTENSIONS_IOS_SUPPORT
                     s_Instance._CreateARCoreSession();
 #else
@@ -95,12 +95,18 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         public void UpdateCameraManager(ARCameraManager cameraManager)
         {
-            if (cameraManager != null && cameraManager != m_CameraManager)
+            if (m_CameraManager == cameraManager)
             {
-                cameraManager.frameReceived += _OnFrameUpdate;
+                return;
+            }
+
+            if (m_CameraManager != null)
+            {
+                cameraManager.frameReceived -= _OnFrameUpdate;
             }
 
             m_CameraManager = cameraManager;
+            m_CameraManager.frameReceived += _OnFrameUpdate;
         }
 
         public void ResetARCoreSession()
