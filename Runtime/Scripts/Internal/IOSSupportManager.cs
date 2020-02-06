@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="IOSSupportManager.cs" company="Google">
 //
-// Copyright 2019 Google LLC All Rights Reserved.
+// Copyright 2019 Google LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace Google.XR.ARCoreExtensions.Internal
     internal class IOSSupportManager
     {
         private const string k_IOSCloudServicesApiKeyPath =
-                "RuntimeSettings/iOSCloudServiceApiKey";
+            "RuntimeSettings/iOSCloudServiceApiKey";
 
         private static IOSSupportManager s_Instance;
 
@@ -125,6 +125,15 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
+        public void ResetInstanceAndSession()
+        {
+            ResetARCoreSession();
+            if (s_Instance != null)
+            {
+                s_Instance = null;
+            }
+        }
+
         private void _CreateARCoreSession()
         {
             ResetARCoreSession();
@@ -138,7 +147,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             if (status != ApiArStatus.Success)
             {
                 Debug.LogErrorFormat("Failed to create a cross platform ARCore session with " +
-                        "error: {0}.", status);
+                    "error: {0}.", status);
                 return;
             }
         }
@@ -165,15 +174,15 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 var cameraParams = new XRCameraParams
                 {
-                    zNear = m_CameraManager.GetComponent<Camera>().nearClipPlane,
-                    zFar = m_CameraManager.GetComponent<Camera>().farClipPlane,
-                    screenWidth = Screen.width,
-                    screenHeight = Screen.height,
-                    screenOrientation = Screen.orientation
+                zNear = m_CameraManager.GetComponent<Camera>().nearClipPlane,
+                zFar = m_CameraManager.GetComponent<Camera>().farClipPlane,
+                screenWidth = Screen.width,
+                screenHeight = Screen.height,
+                screenOrientation = Screen.orientation
                 };
 
                 if (!m_CameraManager.subsystem.TryGetLatestFrame(
-                    cameraParams, out XRCameraFrame frame))
+                        cameraParams, out XRCameraFrame frame))
                 {
                     Debug.LogWarning("XRCamera's latest frame is not available now.");
                     return;

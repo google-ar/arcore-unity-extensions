@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensions.cs" company="Google">
 //
-// Copyright 2019 Google LLC All Rights Reserved.
+// Copyright 2019 Google LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ namespace Google.XR.ARCoreExtensions
         public void OnDestroy()
         {
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
-            IOSSupportManager.Instance.ResetARCoreSession();
+            IOSSupportManager.Instance.ResetInstanceAndSession();
 #endif
 
             if (Instance)
