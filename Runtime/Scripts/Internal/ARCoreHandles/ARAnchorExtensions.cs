@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ARReferencePointExtensions.cs" company="Google">
+// <copyright file="ARAnchorExtensions.cs" company="Google">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //
@@ -24,14 +24,14 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System.Runtime.InteropServices;
     using UnityEngine.XR.ARFoundation;
 
-    // Internal interface for ARReferencePoint native pointers.
-    internal static class ARReferencePointExtensions
+    // Internal interface for ARAnchor native pointers.
+    internal static class ARAnchorExtensions
     {
-        public static IntPtr AnchorHandle(this ARReferencePoint referencePoint)
+        public static IntPtr AnchorHandle(this ARAnchor anchor)
         {
             NativePointerStruct info = (NativePointerStruct)
                 Marshal.PtrToStructure(
-                    referencePoint.nativePtr,
+                    anchor.nativePtr,
                     typeof(NativePointerStruct));
 
             return info.AnchorHandle;

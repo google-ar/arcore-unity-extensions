@@ -96,6 +96,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -168,8 +169,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_UseCustomMaterial: 0
   m_CustomMaterial: {fileID: 0}
-  m_UseCustomRendererAsset: 0
-  m_CustomRendererAsset: {fileID: 0}
 --- !u!114 &67528616
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -660,7 +659,7 @@ MonoBehaviour:
   SessionOrigin: {fileID: 1321540051}
   SessionCore: {fileID: 1457490596}
   ARExtentions: {fileID: 1647151349}
-  ReferencePointManager: {fileID: 1321540048}
+  AnchorManager: {fileID: 1321540048}
   RaycastManager: {fileID: 1321540047}
   NetworkUIController: {fileID: 1077067569}
   LobbyScreen: {fileID: 476493625}
@@ -1484,8 +1483,9 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 678424364}
   m_Enabled: 1
-  serializedVersion: 9
+  serializedVersion: 10
   m_Type: 1
+  m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -2669,7 +2669,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ReferencePointPrefab: {fileID: 0}
+  m_AnchorPrefab: {fileID: 0}
 --- !u!114 &1321540049
 MonoBehaviour:
   m_ObjectHideFlags: 0

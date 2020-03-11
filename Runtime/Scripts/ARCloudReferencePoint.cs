@@ -22,111 +22,84 @@ namespace Google.XR.ARCoreExtensions
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// The <c>ARCloudReferencePoint</c> is an ARCore Extensions object that provides a
-    /// similar service to AR Foundations <c>ARReferencePoint</c> as an anchor for
-    /// game objects in your scene. It is backed by an ARCore Cloud Anchor to synchronize
-    /// pose data across multiple devices.
+    /// Deprecated version of <see cref="ARCloudAnchor"/>.
     /// </summary>
+    /// @deprecated Please use ARCloudAnchor instead.
     [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
      Justification = "Match Unity's naming style.")]
-    public class ARCloudReferencePoint : MonoBehaviour, ITrackable
+    [Obsolete("This class has been renamed to ARCloudAnchor. " +
+        "See details in release notes v1.16.0.")]
+    public class ARCloudReferencePoint : ARCloudAnchor
     {
-        internal IntPtr m_AnchorHandle;
-        private Pose m_Pose;
-
         /// <summary>
         /// Gets the Cloud Reference Id associated with this cloud reference point. For newly
         /// created points the Id will be an empty string until the cloud reference point is
-        /// in the <see cref="CloudReferenceState"/>.<c>Success</c> state. This Id is
-        /// provided on the device hosting the cloud reference point, and is used to resolve
-        /// a corresponding cloud reference point on other devices.
-        /// See <see cref="ARReferencePointManagerExtensions.ResolveCloudReferencePoint()"/>
-        /// for more information.
+        /// in the <see cref="CloudReferenceState"/>.<c>Success</c> state.
+        /// Deprecated version of <see cref="ARCloudAnchor.cloudAnchorId"/>.
         /// </summary>
         public string cloudReferenceId
         {
             get
             {
-                return AnchorApi.GetCloudAnchorId(
-                    ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                    m_AnchorHandle);
+                return cloudAnchorId;
             }
         }
 
         /// <summary>
         /// Gets the <see cref="CloudReferenceState"/> associated with cloud reference point.
+        /// Deprecated version of <see cref="ARCloudAnchor.cloudAnchorState"/>.
         /// </summary>
         public CloudReferenceState cloudReferenceState
         {
             get
             {
-                return Translators.ToCloudReferenceState(
-                    AnchorApi.GetCloudAnchorState(
-                        ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                        m_AnchorHandle));
+                return (CloudReferenceState)cloudAnchorState;
             }
         }
 
         /// <summary>
         /// Gets the <c>TrackableId</c> associated with this cloud reference point.
         /// </summary>
-        public TrackableId trackableId
+        public new TrackableId trackableId
         {
             get
             {
-                return new TrackableId(0, (ulong)m_AnchorHandle);
+                return base.trackableId;
             }
         }
 
         /// <summary>
         /// Gets the <c>Pose</c> associated with this cloud reference point.
         /// </summary>
-        public Pose pose
+        public new Pose pose
         {
             get
             {
-                return m_Pose;
+                return base.pose;
             }
         }
 
         /// <summary>
         /// Gets the <c>TrackingState</c> associated with this cloud reference point.
         /// </summary>
-        public TrackingState trackingState
+        public new TrackingState trackingState
         {
             get
             {
-                return Translators.ToTrackingState(
-                    AnchorApi.GetTrackingState(
-                        ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                        m_AnchorHandle));
+                return base.trackingState;
             }
         }
 
         /// <summary>
         /// Unity Update method.
         /// </summary>
-        public void Update()
+        public new void Update()
         {
-            // Get the current Pose.
-            ApiPose apiPose = AnchorApi.GetAnchorPose(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                m_AnchorHandle);
-            m_Pose = Translators.ToUnityPose(apiPose);
-
-            // Update the cloud reference point transform to match.
-            transform.localPosition = m_Pose.position;
-            transform.localRotation = m_Pose.rotation;
-        }
-
-        internal void SetAnchorHandle(IntPtr anchorHandle)
-        {
-            m_AnchorHandle = anchorHandle;
+            base.Update();
         }
     }
 }

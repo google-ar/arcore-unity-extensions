@@ -31,35 +31,35 @@ namespace Google.XR.ARCoreExtensions.Internal
         private static readonly Matrix4x4 k_UnityWorldToGLWorldInverse
             = k_UnityWorldToGLWorld.inverse;
 
-        public static CloudReferenceState ToCloudReferenceState(ApiCloudAnchorState state)
+        public static CloudAnchorState ToCloudAnchorState(ApiCloudAnchorState state)
         {
             switch (state)
             {
                 case ApiCloudAnchorState.None:
-                    return CloudReferenceState.None;
+                    return CloudAnchorState.None;
                 case ApiCloudAnchorState.TaskInProgress:
-                    return CloudReferenceState.TaskInProgress;
+                    return CloudAnchorState.TaskInProgress;
                 case ApiCloudAnchorState.Success:
-                    return CloudReferenceState.Success;
+                    return CloudAnchorState.Success;
                 case ApiCloudAnchorState.ErrorInternal:
-                    return CloudReferenceState.ErrorInternal;
+                    return CloudAnchorState.ErrorInternal;
                 case ApiCloudAnchorState.ErrorNotAuthorized:
-                    return CloudReferenceState.ErrorNotAuthorized;
+                    return CloudAnchorState.ErrorNotAuthorized;
                 case ApiCloudAnchorState.ErrorResourceExhausted:
-                    return CloudReferenceState.ErrorResourceExhausted;
+                    return CloudAnchorState.ErrorResourceExhausted;
                 case ApiCloudAnchorState.ErrorHostingDatasetProcessingFailed:
-                    return CloudReferenceState.ErrorHostingDatasetProcessingFailed;
+                    return CloudAnchorState.ErrorHostingDatasetProcessingFailed;
                 case ApiCloudAnchorState.ErrorResolvingCloudIdNotFound:
-                    return CloudReferenceState.ErrorResolvingCloudIdNotFound;
+                    return CloudAnchorState.ErrorResolvingCloudIdNotFound;
                 case ApiCloudAnchorState.ErrorResolvingSDKTooOld:
-                    return CloudReferenceState.ErrorResolvingPackageTooOld;
+                    return CloudAnchorState.ErrorResolvingPackageTooOld;
                 case ApiCloudAnchorState.ErrorResolvingSDKTooNew:
-                    return CloudReferenceState.ErrorResolvingPackageTooNew;
+                    return CloudAnchorState.ErrorResolvingPackageTooNew;
                 case ApiCloudAnchorState.ErrorHostingServiceUnavailable:
-                    return CloudReferenceState.ErrorHostingServiceUnavailable;
+                    return CloudAnchorState.ErrorHostingServiceUnavailable;
             }
 
-            return CloudReferenceState.None;
+            return CloudAnchorState.None;
         }
 
         public static TrackingState ToTrackingState(ApiTrackingState state)

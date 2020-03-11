@@ -56,14 +56,14 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// <summary>
         /// Will spawn the origin anchor and host the Cloud Anchor. Must be called by the host.
         /// </summary>
-        /// <param name="referencePoint">The AR Reference Point to be hosted.</param>
-        public void SpawnAnchor(ARReferencePoint referencePoint)
+        /// <param name="anchor">The AR Anchor to be hosted.</param>
+        public void SpawnAnchor(ARAnchor anchor)
         {
             // Instantiate Anchor model at the hit pose.
             var anchorObject = Instantiate(AnchorPrefab, Vector3.zero, Quaternion.identity);
 
             // Anchor must be hosted in the device.
-            anchorObject.GetComponent<AnchorController>().HostReferencePoint(referencePoint);
+            anchorObject.GetComponent<AnchorController>().HostAnchor(anchor);
 
             // Host can spawn directly without using a Command because the server is running in this
             // instance.

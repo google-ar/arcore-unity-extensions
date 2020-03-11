@@ -1,18 +1,18 @@
 {
     "name": "com.google.ar.core.arfoundation.extensions",
     "displayName":"ARCore Extensions",
-    "version": "1.15.0-preview",
-    "unity": "2019.2",
+    "version": "1.16.0-preview",
+    "unity": "2019.3",
     "description": "Google ARCore Extensions for AR Foundation. This package provides access to ARCore features not covered by AR Foundation's cross platform API.",
     "dependencies":
     {
-        "com.unity.xr.arfoundation": "2.1.4",
-        "com.unity.xr.arcore": "2.1.1"
+        "com.unity.xr.arfoundation": "3.1.0-preview.6",
+        "com.unity.xr.arcore": "3.1.0-preview.6"
     },
     "samples": [
         {
             "displayName": "Cloud Anchor Sample",
-            "description": "The Cloud Anchor Sample using AR Extension",
+            "description": "The Cloud Anchor Sample using ARCore Extensions",
             "path": "Samples~/CloudAnchors"
         }
     ]
