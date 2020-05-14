@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="AnchorController.cs" company="Google">
+// <copyright file="AnchorController.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

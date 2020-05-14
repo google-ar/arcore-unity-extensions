@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="CameraConfigDepthSensorUsages.cs" company="Google">
+// <copyright file="CameraConfigDepthSensorUsages.cs" company="Google LLC">
 //
 // Copyright 2020 Google LLC. All Rights Reserved.
 //

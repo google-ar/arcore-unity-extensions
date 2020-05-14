@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="XRCameraFrameExtensions.cs" company="Google">
+// <copyright file="XRCameraFrameExtensions.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

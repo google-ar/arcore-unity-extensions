@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="AnchorApi.cs" company="Google">
+// <copyright file="AnchorApi.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //
@@ -72,6 +72,19 @@ namespace Google.XR.ARCoreExtensions.Internal
             return apiTrackingState;
         }
 
+        public static void Detach(
+            IntPtr sessionHandle,
+            IntPtr anchorHandle)
+        {
+            ExternApi.ArAnchor_detach(sessionHandle, anchorHandle);
+        }
+
+        public static void Release(
+            IntPtr anchorHandle)
+        {
+            ExternApi.ArAnchor_release(anchorHandle);
+        }
+
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]
@@ -100,6 +113,14 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
                 ref ApiTrackingState trackingState);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArAnchor_detach(
+                IntPtr sessionHandle,
+                IntPtr anchorHandle);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArAnchor_release(IntPtr anchorHandle);
         }
     }
 }

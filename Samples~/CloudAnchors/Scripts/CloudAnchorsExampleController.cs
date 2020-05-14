@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="CloudAnchorsExampleController.cs" company="Google">
+// <copyright file="CloudAnchorsExampleController.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

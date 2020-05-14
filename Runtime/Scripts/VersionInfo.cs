@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google">
+// <copyright file="VersionInfo.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //
@@ -28,6 +28,6 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// The current ARCore Extensions package version.
         /// </summary>
-        public static readonly string Version = "1.16.0";
+        public static readonly string Version = "1.17.0";
     }
 }

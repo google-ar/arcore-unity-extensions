@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="CloudReferenceState.cs" company="Google">
+// <copyright file="CloudReferenceState.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ARCloudAnchor.cs" company="Google">
+// <copyright file="ARCloudAnchor.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //
@@ -133,6 +133,23 @@ namespace Google.XR.ARCoreExtensions
             // Update the Cloud Anchor transform to match.
             transform.localPosition = m_Pose.position;
             transform.localRotation = m_Pose.rotation;
+        }
+
+        /// <summary>
+        /// When the game object containing the ARCloudAnchor component is destroyed, the
+        /// underlying native Cloud Anchor object will be detached and the resource will
+        /// be released.
+        /// </summary>
+        public void OnDestroy()
+        {
+            if (m_AnchorHandle != IntPtr.Zero)
+            {
+                AnchorApi.Detach(
+                    ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                    m_AnchorHandle);
+                AnchorApi.Release(m_AnchorHandle);
+                m_AnchorHandle = IntPtr.Zero;
+            }
         }
 
         internal void SetAnchorHandle(IntPtr anchorHandle)

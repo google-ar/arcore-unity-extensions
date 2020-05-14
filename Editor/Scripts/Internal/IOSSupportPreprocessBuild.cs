@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="IOSSupportPreprocessBuild.cs" company="Google">
+// <copyright file="IOSSupportPreprocessBuild.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

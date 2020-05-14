@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ApiArStatus.cs" company="Google">
+// <copyright file="ApiArStatus.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

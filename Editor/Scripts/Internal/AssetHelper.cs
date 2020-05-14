@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="AssetHelper.cs" company="Google">
+// <copyright file="AssetHelper.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

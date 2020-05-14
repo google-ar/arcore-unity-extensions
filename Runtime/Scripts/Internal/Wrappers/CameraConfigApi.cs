@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="CameraConfigApi.cs" company="Google">
+// <copyright file="CameraConfigApi.cs" company="Google LLC">
 //
 // Copyright 2020 Google LLC. All Rights Reserved.
 //

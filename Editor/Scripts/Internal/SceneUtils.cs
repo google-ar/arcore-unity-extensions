@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="SceneUtils.cs" company="Google">
+// <copyright file="SceneUtils.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="XRCameraConfigurationExtensions.cs" company="Google">
+// <copyright file="XRCameraConfigurationExtensions.cs" company="Google LLC">
 //
 // Copyright 2020 Google LLC. All Rights Reserved.
 //
@@ -43,7 +43,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Gets minimum target camera capture frame rate range for this camera config.
+        /// Gets the target camera capture frame rate range for this camera config.
         /// </summary>
         /// <param name="cameraConfig">An XRCameraConfiguration instance.
         /// </param>

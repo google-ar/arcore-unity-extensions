@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="ARAnchorExtensions.cs" company="Google">
+// <copyright file="ARAnchorExtensions.cs" company="Google LLC">
 //
 // Copyright 2019 Google LLC. All Rights Reserved.
 //
