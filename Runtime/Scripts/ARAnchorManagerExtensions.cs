@@ -75,8 +75,7 @@ namespace Google.XR.ARCoreExtensions
         /// </pre>
         /// </example>
         /// </summary>
-        /// <param name="anchorManager">The ARAnchorManager instance for extending.
-        /// </param>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
         /// <param name="anchor">The local <c>ARAnchor</c> to be used as the
         /// basis to host a new Cloud Anchor.</param>
         /// <returns>If successful, a <see cref="ARCloudAnchor"/>,
@@ -111,8 +110,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Creates a new cloud reference point using an existing local Reference Point.
         /// </summary>
-        /// <param name="referencePointManager">The ARAnchorManager instance for extending.
-        /// </param>
+        /// <param name="referencePointManager">The ARAnchorManager instance.</param>
         /// <param name="referencePoint">The local <c>ARAnchor</c> to be used as the
         /// basis to host a new cloud reference point.</param>
         /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
@@ -185,8 +183,7 @@ namespace Google.XR.ARCoreExtensions
         /// </pre>
         /// </example>
         /// </summary>
-        /// <param name="anchorManager">The ARAnchorManager instance for extending.
-        /// </param>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
         /// <param name="cloudAnchorId">String representing the Cloud Anchor.</param>
         /// <returns>If successful, a <see cref="ARCloudAnchor"/>,
         /// otherwise <c>null</c>.</returns>
@@ -220,8 +217,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Creates a new local cloud reference point from the provided Id.
         /// </summary>
-        /// <param name="referencePointManager">The ARAnchorManager instance for extending.
-        /// </param>
+        /// <param name="referencePointManager">The ARAnchorManager instance.</param>
         /// <param name="cloudReferenceId">String representing the cloud reference.</param>
         /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
         /// otherwise <c>null</c>.</returns>

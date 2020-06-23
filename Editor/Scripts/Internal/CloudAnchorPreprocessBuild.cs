@@ -199,8 +199,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             else
             {
                 Debug.Log(
-                    "Cloud Anchor API key has not been set. Cloud Anchors will be disabled in " +
-                    "this build.");
+                    "Cloud Anchor API key has not been set. API key authentication will " +
+                    "be disabled in this build.");
                 if (File.Exists(cloudAnchorsManifestAARPath))
                 {
                     File.Delete(cloudAnchorsManifestAARPath);

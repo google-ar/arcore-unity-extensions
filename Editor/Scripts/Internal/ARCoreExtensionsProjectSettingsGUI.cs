@@ -39,7 +39,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private static float s_GroupLabelIndent = 15;
         private static float s_GroupFieldIndent =
             EditorGUIUtility.labelWidth - s_GroupLabelIndent;
-
         private static bool s_FoldoutCloudAnchorAPIKeys = true;
 
         internal static void OnGUI(bool renderForStandaloneWindow)

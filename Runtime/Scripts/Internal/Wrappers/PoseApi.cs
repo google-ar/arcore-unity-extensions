@@ -28,7 +28,12 @@ namespace Google.XR.ARCoreExtensions.Internal
     {
         public static IntPtr Create(IntPtr sessionHandle)
         {
-            ApiPose apiPose = new ApiPose();
+            return Create(sessionHandle, Pose.identity);
+        }
+
+        public static IntPtr Create(IntPtr sessionHandle, Pose pose)
+        {
+            ApiPose apiPose = Translators.ToApiPose(pose);
             IntPtr poseHandle = IntPtr.Zero;
             ExternApi.ArPose_create(
                 sessionHandle,
