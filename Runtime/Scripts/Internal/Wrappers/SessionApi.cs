@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using UnityEngine;
 
@@ -34,11 +35,22 @@ namespace Google.XR.ARCoreExtensions.Internal
 
     internal class SessionApi
     {
-        private static IntPtr s_ArConfig = IntPtr.Zero;
-
         public static void ReleaseFrame(IntPtr frameHandle)
         {
             ExternApi.ArFrame_release(frameHandle);
+        }
+
+        public static void UpdateSessionConfig(
+            IntPtr sessionHandle,
+            IntPtr configHandle,
+            ARCoreExtensionsConfig config)
+        {
+#if UNITY_ANDROID
+            ApiCloudAnchorMode cloudAnchorMode = config.EnableCloudAnchors ?
+                ApiCloudAnchorMode.Enabled : ApiCloudAnchorMode.Disabled;
+            ExternApi.ArConfig_setCloudAnchorMode(
+                    sessionHandle, configHandle, cloudAnchorMode);
+#endif
         }
 
         public static IntPtr HostCloudAnchor(
@@ -75,63 +87,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             return cloudAnchorHandle;
         }
 
-        public static void EnableCloudAnchors(
-            IntPtr sessionHandle,
-            bool enabled)
-        {
-            // Get the config we're using for updates.
-            IntPtr configHandle = _GetArConfig(sessionHandle);
-            if (configHandle == IntPtr.Zero)
-            {
-                return;
-            }
-
-            // Get the current configuration.
-            ExternApi.ArSession_getConfig(sessionHandle, configHandle);
-
-            // Check the current mode to see if an update is needed.
-            ApiCloudAnchorMode currentCloudAnchorMode = ApiCloudAnchorMode.Disabled;
-            ExternApi.ArConfig_getCloudAnchorMode(
-                sessionHandle,
-                configHandle,
-                ref currentCloudAnchorMode);
-
-            // Update the configuration if needed.
-            ApiCloudAnchorMode newCloudAnchorMode =
-                enabled ? ApiCloudAnchorMode.Enabled : ApiCloudAnchorMode.Disabled;
-            if (currentCloudAnchorMode != newCloudAnchorMode)
-            {
-                // Set the new Cloud Anchor mode.
-                ExternApi.ArConfig_setCloudAnchorMode(
-                    sessionHandle,
-                    configHandle,
-                    enabled ? ApiCloudAnchorMode.Enabled : ApiCloudAnchorMode.Disabled);
-
-                // Configure the session.
-                ApiArStatus status = ExternApi.ArSession_configure(
-                    sessionHandle, configHandle);
-                if (status != ApiArStatus.Success)
-                {
-                    Debug.LogErrorFormat("Unable to set ARCore configuration for Cloud Anchors, " +
-                        "status '{0}'", status);
-                }
-            }
-        }
-
-        private static IntPtr _GetArConfig(IntPtr sessionHandle)
-        {
-            if (s_ArConfig == IntPtr.Zero)
-            {
-                ExternApi.ArConfig_create(sessionHandle, ref s_ArConfig);
-                if (s_ArConfig == IntPtr.Zero)
-                {
-                    Debug.LogError("Unable to create ARCore configuration");
-                }
-            }
-
-            return s_ArConfig;
-        }
-
+        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
+         Justification = "External call.")]
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]

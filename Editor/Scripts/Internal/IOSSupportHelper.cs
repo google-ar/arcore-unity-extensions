@@ -27,10 +27,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     internal static class IOSSupportHelper
     {
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
-        private const string k_ARCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
+        private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
 
-        private const string k_ARCoreIOSDependencyFileName = "ARCoreiOSDependencies";
-        private const string k_ARCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
+        private const string _arCoreIOSDependencyFileName = "ARCoreiOSDependencies";
+        private const string _arCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
 
         public static void SetARCoreIOSSupportEnabled(bool arcoreIOSEnabled)
         {
@@ -46,42 +46,42 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 Debug.Log("Disabling ARCore Extensions iOS support.");
             }
 
-            _UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
-            _UpdateIOSPodDependencies(arcoreIOSEnabled);
+            UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
+            UpdateIOSPodDependencies(arcoreIOSEnabled);
         }
 
-        private static void _UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled)
+        private static void UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled)
         {
             string iOSScriptingDefineSymbols =
                 PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS);
             bool iOSSupportDefined = iOSScriptingDefineSymbols.Contains(
-                k_ARCoreExtensionIOSSupportSymbol);
+                _arCoreExtensionIOSSupportSymbol);
 
             if (arcoreIOSEnabled && !iOSSupportDefined)
             {
-                Debug.LogFormat("Adding {0} define symbol.", k_ARCoreExtensionIOSSupportSymbol);
-                iOSScriptingDefineSymbols += ";" + k_ARCoreExtensionIOSSupportSymbol;
+                Debug.LogFormat("Adding {0} define symbol.", _arCoreExtensionIOSSupportSymbol);
+                iOSScriptingDefineSymbols += ";" + _arCoreExtensionIOSSupportSymbol;
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(
                     BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
             }
             else if (!arcoreIOSEnabled && iOSSupportDefined)
             {
-                Debug.LogFormat("Removing {0} define symbol.", k_ARCoreExtensionIOSSupportSymbol);
+                Debug.LogFormat("Removing {0} define symbol.", _arCoreExtensionIOSSupportSymbol);
                 iOSScriptingDefineSymbols = iOSScriptingDefineSymbols.Replace(
-                        k_ARCoreExtensionIOSSupportSymbol, string.Empty);
+                        _arCoreExtensionIOSSupportSymbol, string.Empty);
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(
                     BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
             }
         }
 
-        private static void _UpdateIOSPodDependencies(bool arcoreIOSEnabled)
+        private static void UpdateIOSPodDependencies(bool arcoreIOSEnabled)
         {
             string dependencyFolderFullPath = Path.GetFullPath(
-                AssetDatabase.GUIDToAssetPath(k_ARCoreIOSDependencyFolderGUID));
+                AssetDatabase.GUIDToAssetPath(_arCoreIOSDependencyFolderGUID));
             string iOSPodDependencyTemplatePath =
-                Path.Combine(dependencyFolderFullPath, k_ARCoreIOSDependencyFileName + ".template");
+                Path.Combine(dependencyFolderFullPath, _arCoreIOSDependencyFileName + ".template");
             string iOSPodDependencyXMLPath =
-                Path.Combine(dependencyFolderFullPath, k_ARCoreIOSDependencyFileName + ".xml");
+                Path.Combine(dependencyFolderFullPath, _arCoreIOSDependencyFileName + ".xml");
 
             if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath))
             {

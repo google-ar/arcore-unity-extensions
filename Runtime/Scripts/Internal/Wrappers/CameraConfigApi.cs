@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using UnityEngine;
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -60,6 +61,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             return (CameraConfigDepthSensorUsages)depth;
         }
 
+        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
+         Justification = "External call.")]
         private struct ExternApi
         {
 #pragma warning disable 626

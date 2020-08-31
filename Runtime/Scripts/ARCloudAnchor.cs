@@ -31,12 +31,12 @@ namespace Google.XR.ARCoreExtensions
     /// to AR Foundation's <c>ARAnchor</c> as an anchor for game objects in your scene.
     /// It is backed by an ARCore Cloud Anchor to synchronize pose data across multiple devices.
     /// </summary>
-    [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
+    [SuppressMessage("UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
      Justification = "Match Unity's naming style.")]
     public class ARCloudAnchor : MonoBehaviour, ITrackable
     {
-        internal IntPtr m_AnchorHandle;
-        private Pose m_Pose;
+        internal IntPtr _anchorHandle;
+        private Pose _pose;
 
         /// <summary>
         /// Gets the Cloud Anchor Id associated with this Cloud Anchor. For newly
@@ -53,8 +53,8 @@ namespace Google.XR.ARCoreExtensions
             get
             {
                 return AnchorApi.GetCloudAnchorId(
-                    ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                    m_AnchorHandle);
+                    ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    _anchorHandle);
             }
         }
 
@@ -67,8 +67,8 @@ namespace Google.XR.ARCoreExtensions
             {
                 return Translators.ToCloudAnchorState(
                     AnchorApi.GetCloudAnchorState(
-                        ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                        m_AnchorHandle));
+                        ARCoreExtensions._instance.currentARCoreSessionHandle,
+                        _anchorHandle));
             }
         }
 
@@ -79,7 +79,7 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
-                return new TrackableId(0, (ulong)m_AnchorHandle);
+                return new TrackableId(0, (ulong)_anchorHandle);
             }
         }
 
@@ -90,7 +90,7 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
-                return m_Pose;
+                return _pose;
             }
         }
 
@@ -103,8 +103,8 @@ namespace Google.XR.ARCoreExtensions
             {
                 return Translators.ToTrackingState(
                     AnchorApi.GetTrackingState(
-                        ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                        m_AnchorHandle));
+                        ARCoreExtensions._instance.currentARCoreSessionHandle,
+                        _anchorHandle));
             }
         }
 
@@ -115,7 +115,7 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
-                return m_AnchorHandle;
+                return _anchorHandle;
             }
         }
 
@@ -126,13 +126,13 @@ namespace Google.XR.ARCoreExtensions
         {
             // Get the current Pose.
             ApiPose apiPose = AnchorApi.GetAnchorPose(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                m_AnchorHandle);
-            m_Pose = Translators.ToUnityPose(apiPose);
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                _anchorHandle);
+            _pose = Translators.ToUnityPose(apiPose);
 
             // Update the Cloud Anchor transform to match.
-            transform.localPosition = m_Pose.position;
-            transform.localRotation = m_Pose.rotation;
+            transform.localPosition = _pose.position;
+            transform.localRotation = _pose.rotation;
         }
 
         /// <summary>
@@ -142,19 +142,19 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void OnDestroy()
         {
-            if (m_AnchorHandle != IntPtr.Zero)
+            if (_anchorHandle != IntPtr.Zero)
             {
                 AnchorApi.Detach(
-                    ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
-                    m_AnchorHandle);
-                AnchorApi.Release(m_AnchorHandle);
-                m_AnchorHandle = IntPtr.Zero;
+                    ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    _anchorHandle);
+                AnchorApi.Release(_anchorHandle);
+                _anchorHandle = IntPtr.Zero;
             }
         }
 
         internal void SetAnchorHandle(IntPtr anchorHandle)
         {
-            m_AnchorHandle = anchorHandle;
+            _anchorHandle = anchorHandle;
         }
     }
 }

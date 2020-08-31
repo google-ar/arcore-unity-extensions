@@ -22,6 +22,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
@@ -29,33 +30,33 @@ namespace Google.XR.ARCoreExtensions.Internal
 
     internal class IOSSupportManager
     {
-        private const string k_IOSCloudServicesApiKeyPath =
+        private const string _iosCloudServicesApiKeyPath =
             "RuntimeSettings/iOSCloudServiceApiKey";
 
-        private static IOSSupportManager s_Instance;
+        private static IOSSupportManager _instance;
 
-        private bool m_IsEnabled = false;
+        private bool _isEnabled = false;
 
-        private string m_IOSCloudServicesApiKey = string.Empty;
+        private string _iosCloudServicesApiKey = string.Empty;
 
-        private IntPtr m_SessionHandle = IntPtr.Zero;
+        private IntPtr _sessionHandle = IntPtr.Zero;
 
-        private IntPtr m_FrameHandle = IntPtr.Zero;
+        private IntPtr _frameHandle = IntPtr.Zero;
 
-        private ARSession m_ARKitSession;
+        private ARSession _arKitSession;
 
-        private ARCameraManager m_CameraManager;
+        private ARCameraManager _cameraManager;
 
         public static IOSSupportManager Instance
         {
             get
             {
-                if (s_Instance == null)
+                if (_instance == null)
                 {
-                    s_Instance = new IOSSupportManager();
+                    _instance = new IOSSupportManager();
 #if UNITY_IOS && (!UNITY_EDITOR || UNITY_INCLUDE_TESTS)
 #if ARCORE_EXTENSIONS_IOS_SUPPORT
-                    s_Instance._CreateARCoreSession();
+                    _instance.CreateARCoreSession();
 #else
                     Debug.LogError("ARCore Extensions iOS Support is not enabled. " +
                         "To enable it, go to 'Project Settings > XR > ARCore Extensionts' " +
@@ -66,7 +67,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 #endif
                 }
 
-                return s_Instance;
+                return _instance;
             }
         }
 
@@ -74,13 +75,13 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             get
             {
-                return m_SessionHandle;
+                return _sessionHandle;
             }
         }
 
         public void SetEnabled(bool enabled)
         {
-            m_IsEnabled = enabled;
+            _isEnabled = enabled;
         }
 
         public void UpdateARSession(ARSession session)
@@ -90,60 +91,60 @@ namespace Google.XR.ARCoreExtensions.Internal
                 ResetARCoreSession();
             }
 
-            m_ARKitSession = session;
+            _arKitSession = session;
         }
 
         public void UpdateCameraManager(ARCameraManager cameraManager)
         {
-            if (m_CameraManager == cameraManager)
+            if (_cameraManager == cameraManager)
             {
                 return;
             }
 
-            if (m_CameraManager != null)
+            if (_cameraManager != null)
             {
-                cameraManager.frameReceived -= _OnFrameUpdate;
+                cameraManager.frameReceived -= OnFrameUpdate;
             }
 
-            m_CameraManager = cameraManager;
-            m_CameraManager.frameReceived += _OnFrameUpdate;
+            _cameraManager = cameraManager;
+            _cameraManager.frameReceived += OnFrameUpdate;
         }
 
         public void ResetARCoreSession()
         {
-            if (m_SessionHandle != IntPtr.Zero)
+            if (_sessionHandle != IntPtr.Zero)
             {
                 Debug.Log("Reset cross platform ARCoreSession.");
-                if (m_FrameHandle != IntPtr.Zero)
+                if (_frameHandle != IntPtr.Zero)
                 {
-                    SessionApi.ReleaseFrame(m_FrameHandle);
-                    m_FrameHandle = IntPtr.Zero;
+                    SessionApi.ReleaseFrame(_frameHandle);
+                    _frameHandle = IntPtr.Zero;
                 }
 
-                ExternApi.ArSession_destroy(m_SessionHandle);
-                m_SessionHandle = IntPtr.Zero;
+                ExternApi.ArSession_destroy(_sessionHandle);
+                _sessionHandle = IntPtr.Zero;
             }
         }
 
         public void ResetInstanceAndSession()
         {
             ResetARCoreSession();
-            if (s_Instance != null)
+            if (_instance != null)
             {
-                s_Instance = null;
+                _instance = null;
             }
         }
 
-        private void _CreateARCoreSession()
+        private void CreateARCoreSession()
         {
             ResetARCoreSession();
 
-            m_IOSCloudServicesApiKey = RuntimeConfig.Instance == null ?
+            _iosCloudServicesApiKey = RuntimeConfig.Instance == null ?
                 string.Empty : RuntimeConfig.Instance.IOSCloudServicesApiKey;
             Debug.Log("Creating a cross platform ARCore session with IOS Cloud Services API Key:" +
-                m_IOSCloudServicesApiKey);
+                _iosCloudServicesApiKey);
             var status = ExternApi.ArSession_create(
-                m_IOSCloudServicesApiKey, null, ref m_SessionHandle);
+                _iosCloudServicesApiKey, null, ref _sessionHandle);
             if (status != ApiArStatus.Success)
             {
                 Debug.LogErrorFormat("Failed to create a cross platform ARCore session with " +
@@ -152,36 +153,36 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
-        private void _OnFrameUpdate(ARCameraFrameEventArgs frameEventArgs)
+        private void OnFrameUpdate(ARCameraFrameEventArgs frameEventArgs)
         {
-            if (!_ShouldUpdateARCoreSession())
+            if (!ShouldUpdateARCoreSession())
             {
                 return;
             }
 
-            if (m_SessionHandle == IntPtr.Zero)
+            if (_sessionHandle == IntPtr.Zero)
             {
                 return;
             }
 
-            if (m_FrameHandle != IntPtr.Zero)
+            if (_frameHandle != IntPtr.Zero)
             {
-                SessionApi.ReleaseFrame(m_FrameHandle);
-                m_FrameHandle = IntPtr.Zero;
+                SessionApi.ReleaseFrame(_frameHandle);
+                _frameHandle = IntPtr.Zero;
             }
 
-            if (m_ARKitSession != null && m_CameraManager != null && m_ARKitSession.enabled)
+            if (_arKitSession != null && _cameraManager != null && _arKitSession.enabled)
             {
                 var cameraParams = new XRCameraParams
                 {
-                zNear = m_CameraManager.GetComponent<Camera>().nearClipPlane,
-                zFar = m_CameraManager.GetComponent<Camera>().farClipPlane,
+                zNear = _cameraManager.GetComponent<Camera>().nearClipPlane,
+                zFar = _cameraManager.GetComponent<Camera>().farClipPlane,
                 screenWidth = Screen.width,
                 screenHeight = Screen.height,
                 screenOrientation = Screen.orientation
                 };
 
-                if (!m_CameraManager.subsystem.TryGetLatestFrame(
+                if (!_cameraManager.subsystem.TryGetLatestFrame(
                         cameraParams, out XRCameraFrame frame))
                 {
                     Debug.LogWarning("XRCamera's latest frame is not available now.");
@@ -195,7 +196,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 }
 
                 var status = ExternApi.ArSession_updateAndAcquireArFrame(
-                    m_SessionHandle, frame.FrameHandle(), ref m_FrameHandle);
+                    _sessionHandle, frame.FrameHandle(), ref _frameHandle);
                 if (status != ApiArStatus.Success)
                 {
                     Debug.LogErrorFormat("Failed to update and acquire ARFrame with error: " +
@@ -204,12 +205,14 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
-        private bool _ShouldUpdateARCoreSession()
+        private bool ShouldUpdateARCoreSession()
         {
-            return m_IsEnabled &&
-                ARCoreExtensions.Instance.ARCoreExtensionsConfig.EnableCloudAnchors;
+            return _isEnabled &&
+                ARCoreExtensions._instance.ARCoreExtensionsConfig.EnableCloudAnchors;
         }
 
+        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
+         Justification = "External call.")]
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]

@@ -21,10 +21,12 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
 
+#if UNITY_ANDROID
+    using UnityEngine.XR.ARCore;
+#endif // UNITY_ANDROID
     using UnityEngine.XR.ARFoundation;
 
     /// <summary>
@@ -54,13 +56,13 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public ARCoreExtensionsConfig ARCoreExtensionsConfig;
 
-        internal static ARCoreExtensions Instance { get; private set; }
+        internal static ARCoreExtensions _instance { get; private set; }
 
-        internal IntPtr CurrentARCoreSessionHandle
+        internal IntPtr currentARCoreSessionHandle
         {
             get
             {
-                if (Instance == null || Instance.Session == null)
+                if (_instance == null || _instance.Session == null)
                 {
                     Debug.LogError("ARCore Extensions not found or not configured. Please " +
                         "include an ARCore Extensions game object in your scene. " +
@@ -71,23 +73,29 @@ namespace Google.XR.ARCoreExtensions
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
                 return IOSSupportManager.Instance.ARCoreSessionHandle;
 #else
-                return Instance.Session.SessionHandle();
+                return _instance.Session.SessionHandle();
 #endif
             }
         }
+
+#if UNITY_ANDROID
+        private ARCoreSessionSubsystem _arCoreSubsystem;
+
+        private ARCoreExtensionsConfig _cachedConfig = null;
+#endif
 
         /// <summary>
         /// Unity's Awake method.
         /// </summary>
         public void Awake()
         {
-            if (Instance)
+            if (_instance)
             {
                 Debug.LogError("ARCore Extensions is already initialized. You many only " +
                     "have one instance in your scene at a time.");
             }
 
-            Instance = this;
+            _instance = this;
         }
 
         /// <summary>
@@ -108,7 +116,26 @@ namespace Google.XR.ARCoreExtensions
         {
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             IOSSupportManager.Instance.SetEnabled(true);
-#endif
+#endif // UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+#if UNITY_ANDROID
+            if (_instance.Session == null)
+            {
+                Debug.LogError("ARSession is required by ARcoreExtensions!");
+                return;
+            }
+
+            _arCoreSubsystem = (ARCoreSessionSubsystem)Session.subsystem;
+            if (_arCoreSubsystem == null)
+            {
+                Debug.LogError(
+                    "No active ARCoreSessionSubsystem is available in this session, Please " +
+                    "ensure that a valid loader configuration exists in the XR project settings.");
+            }
+            else
+            {
+                _arCoreSubsystem.beforeSetConfiguration += _BeforeConfigurationChanged;
+            }
+#endif // UNITY_ANDROID
         }
 
         /// <summary>
@@ -118,7 +145,13 @@ namespace Google.XR.ARCoreExtensions
         {
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             IOSSupportManager.Instance.SetEnabled(false);
-#endif
+#endif // UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+#if UNITY_ANDROID
+            if (_arCoreSubsystem != null)
+            {
+                _arCoreSubsystem.beforeSetConfiguration -= _BeforeConfigurationChanged;
+            }
+#endif // UNITY_ANDROID
         }
 
         /// <summary>
@@ -130,9 +163,9 @@ namespace Google.XR.ARCoreExtensions
             IOSSupportManager.Instance.ResetInstanceAndSession();
 #endif
 
-            if (Instance)
+            if (_instance)
             {
-                Instance = null;
+                _instance = null;
             }
         }
 
@@ -142,15 +175,34 @@ namespace Google.XR.ARCoreExtensions
         public void Update()
         {
 #if UNITY_ANDROID
-            // Ensure Cloud Anchors are enabled or disabled as requested.
-            IntPtr sessionHandle = Session.SessionHandle();
-            if (sessionHandle != IntPtr.Zero)
+            // Update ARCore session configuration.
+            if (Session.SessionHandle() != IntPtr.Zero && ARCoreExtensionsConfig != null)
             {
-                SessionApi.EnableCloudAnchors(
-                    sessionHandle,
-                    ARCoreExtensionsConfig.EnableCloudAnchors);
+                if (_cachedConfig != null && _cachedConfig.Equals(ARCoreExtensionsConfig))
+                {
+                    return;
+                }
+
+                _cachedConfig = ScriptableObject.CreateInstance<ARCoreExtensionsConfig>();
+                _cachedConfig.CopyFrom(ARCoreExtensionsConfig);
+                _arCoreSubsystem.SetConfigurationDirty();
             }
 #endif
         }
+
+#if UNITY_ANDROID
+        private void _BeforeConfigurationChanged(ARCoreBeforeSetConfigurationEventArgs eventArgs)
+        {
+            if (_cachedConfig == null)
+            {
+                return;
+            }
+
+            if (eventArgs.session != IntPtr.Zero && eventArgs.config != IntPtr.Zero)
+            {
+                SessionApi.UpdateSessionConfig(eventArgs.session, eventArgs.config, _cachedConfig);
+            }
+        }
+#endif
     }
 }

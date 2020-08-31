@@ -29,7 +29,7 @@ namespace Google.XR.ARCoreExtensions
     /// Deprecated version of <see cref="ARCloudAnchor"/>.
     /// </summary>
     /// @deprecated Please use ARCloudAnchor instead.
-    [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
+    [SuppressMessage("UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
      Justification = "Match Unity's naming style.")]
     [Obsolete("This class has been renamed to ARCloudAnchor. " +
         "See details in release notes v1.16.0.")]

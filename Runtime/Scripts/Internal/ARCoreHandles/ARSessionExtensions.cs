@@ -29,6 +29,11 @@ namespace Google.XR.ARCoreExtensions.Internal
     {
         public static IntPtr SessionHandle(this ARSession session)
         {
+            if (session.subsystem == null || session.subsystem.nativePtr == null)
+            {
+                return IntPtr.Zero;
+            }
+
             NativePointerStruct info = (NativePointerStruct)
                 Marshal.PtrToStructure(
                     session.subsystem.nativePtr,

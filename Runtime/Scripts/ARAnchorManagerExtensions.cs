@@ -31,7 +31,7 @@ namespace Google.XR.ARCoreExtensions
     /// </summary>
     public static class ARAnchorManagerExtensions
     {
-        private static readonly string k_GameObjectName = "ARCloudAnchor";
+        private static readonly string _gameObjectName = "ARCloudAnchor";
 
         /// <summary>
         /// Creates a new Cloud Anchor using an existing local ARAnchor.
@@ -39,7 +39,7 @@ namespace Google.XR.ARCoreExtensions
         /// The sample code below illustrates how to host a Cloud Anchor.
         /// <pre>
         /// <code>
-        /// private ARCloudAnchor m_CloudAnchor;
+        /// private ARCloudAnchor _cloudAnchor;
         /// &nbsp;
         /// void HostCloudAnchor(Pose pose)
         /// {
@@ -47,19 +47,19 @@ namespace Google.XR.ARCoreExtensions
         ///     ARAnchor localAnchor = AnchorManager.AddAnchor(pose);
         /// &nbsp;
         ///     // Request the Cloud Anchor.
-        ///     m_CloudAnchor = AnchorManager.HostCloudAnchor(localAnchor);
+        ///     _cloudAnchor = AnchorManager.HostCloudAnchor(localAnchor);
         /// }
         /// &nbsp;
         /// void Update()
         /// {
-        ///     if (m_CloudAnchor)
+        ///     if (_cloudAnchor)
         ///     {
         ///         // Check the Cloud Anchor state.
-        ///         CloudAnchorState cloudAnchorState = m_CloudAnchor.cloudAnchorState;
+        ///         CloudAnchorState cloudAnchorState = _cloudAnchor.cloudAnchorState;
         ///         if (cloudAnchorState == CloudAnchorState.Success)
         ///         {
-        ///             myOtherGameObject.transform.SetParent(m_CloudAnchor.transform, false);
-        ///             m_CloudAnchor = null;
+        ///             myOtherGameObject.transform.SetParent(_cloudAnchor.transform, false);
+        ///             _cloudAnchor = null;
         ///         }
         ///         else if (cloudAnchorState == CloudAnchorState.TaskInProgress)
         ///         {
@@ -85,7 +85,7 @@ namespace Google.XR.ARCoreExtensions
         {
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.HostCloudAnchor(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 anchor.AnchorHandle());
             if (cloudAnchorHandle == IntPtr.Zero)
             {
@@ -94,7 +94,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the Cloud Anchor.
             ARCloudAnchor cloudAnchor =
-                (new GameObject(k_GameObjectName)).AddComponent<ARCloudAnchor>();
+                (new GameObject(_gameObjectName)).AddComponent<ARCloudAnchor>();
             if (cloudAnchor)
             {
                 cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
@@ -102,7 +102,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Parent the new Cloud Anchor to the session origin.
             cloudAnchor.transform.SetParent(
-                ARCoreExtensions.Instance.SessionOrigin.trackablesParent, false);
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudAnchor;
         }
@@ -122,7 +122,7 @@ namespace Google.XR.ARCoreExtensions
         {
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.HostCloudAnchor(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 referencePoint.AnchorHandle());
             if (cloudAnchorHandle == IntPtr.Zero)
             {
@@ -131,7 +131,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the cloud reference point.
             ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(k_GameObjectName)).AddComponent<ARCloudReferencePoint>();
+                (new GameObject(_gameObjectName)).AddComponent<ARCloudReferencePoint>();
             if (cloudReferencePoint)
             {
                 cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
@@ -139,7 +139,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Parent the new cloud reference point to the session origin.
             cloudReferencePoint.transform.SetParent(
-                ARCoreExtensions.Instance.SessionOrigin.trackablesParent, false);
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudReferencePoint;
         }
@@ -150,24 +150,24 @@ namespace Google.XR.ARCoreExtensions
         /// The sample code below illustrates how to resolve a Cloud Anchor.
         /// <pre>
         /// <code>
-        /// private ARCloudAnchor m_CloudAnchor;
+        /// private ARCloudAnchor _cloudAnchor;
         /// &nbsp;
         /// void ResolveCloudAnchor(string cloudAnchorId)
         /// {
         ///     // Request the Cloud Anchor.
-        ///     m_CloudAnchor = AnchorManager.ResolveCloudAnchorId(cloudAnchorId);
+        ///     _cloudAnchor = AnchorManager.ResolveCloudAnchorId(cloudAnchorId);
         /// }
         /// &nbsp;
         /// void Update()
         /// {
-        ///     if (m_CloudAnchor)
+        ///     if (_cloudAnchor)
         ///     {
         ///         // Check the Cloud Anchor state.
-        ///         CloudAnchorState cloudAnchorState = m_CloudAnchor.cloudAnchorState;
+        ///         CloudAnchorState cloudAnchorState = _cloudAnchor.cloudAnchorState;
         ///         if (cloudAnchorState == CloudAnchorState.Success)
         ///         {
-        ///             myOtherGameObject.transform.SetParent(m_CloudAnchor.transform, false);
-        ///             m_CloudAnchor = null;
+        ///             myOtherGameObject.transform.SetParent(_cloudAnchor.transform, false);
+        ///             _cloudAnchor = null;
         ///         }
         ///         else if (cloudAnchorState == CloudAnchorState.TaskInProgress)
         ///         {
@@ -192,7 +192,7 @@ namespace Google.XR.ARCoreExtensions
         {
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.ResolveCloudAnchor(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cloudAnchorId);
             if (cloudAnchorHandle == IntPtr.Zero)
             {
@@ -201,7 +201,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the Cloud Anchor.
             ARCloudAnchor cloudAnchor =
-                (new GameObject(k_GameObjectName)).AddComponent<ARCloudAnchor>();
+                (new GameObject(_gameObjectName)).AddComponent<ARCloudAnchor>();
             if (cloudAnchor)
             {
                 cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
@@ -209,7 +209,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Parent the new Cloud Anchor to the session origin.
             cloudAnchor.transform.SetParent(
-                ARCoreExtensions.Instance.SessionOrigin.trackablesParent, false);
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudAnchor;
         }
@@ -230,7 +230,7 @@ namespace Google.XR.ARCoreExtensions
         {
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.ResolveCloudAnchor(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cloudReferenceId);
             if (cloudAnchorHandle == IntPtr.Zero)
             {
@@ -239,7 +239,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the cloud reference point.
             ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(k_GameObjectName)).AddComponent<ARCloudReferencePoint>();
+                (new GameObject(_gameObjectName)).AddComponent<ARCloudReferencePoint>();
             if (cloudReferencePoint)
             {
                 cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
@@ -247,7 +247,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Parent the new cloud reference point to the session origin.
             cloudReferencePoint.transform.SetParent(
-                ARCoreExtensions.Instance.SessionOrigin.trackablesParent, false);
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudReferencePoint;
         }

@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
 
     internal class AnchorApi
@@ -85,6 +86,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             ExternApi.ArAnchor_release(anchorHandle);
         }
 
+        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
+         Justification = "External call.")]
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]

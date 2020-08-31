@@ -34,13 +34,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static readonly string SDKHelpText =
                     "This setting is stored in Unity's Editor Preferences.";
 
-        private static float s_GroupLabelWidth = 280;
+        private static float _groupLabelWidth = 280;
 
         // Render ARCore Analytics Settings for ARCoreAnalyticsProvider and
         // ARCoreAnalyticsPreferences.
         internal static void OnGUI()
         {
-            EditorGUIUtility.labelWidth = s_GroupLabelWidth;
+            EditorGUIUtility.labelWidth = _groupLabelWidth;
             ARCoreAnalytics.Instance.EnableAnalytics =
                 EditorGUILayout.Toggle(SDKAnalytics, ARCoreAnalytics.Instance.EnableAnalytics);
             EditorGUILayout.HelpBox(SDKHelpText, MessageType.Info);

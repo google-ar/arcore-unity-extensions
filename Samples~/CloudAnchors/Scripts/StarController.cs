@@ -33,23 +33,23 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// In order to avoid placing the star on identity pose, the mesh object should be disabled
         /// by default and enabled after the origin has been placed.
         /// </summary>
-        private GameObject m_StarMesh;
+        private GameObject _starMesh;
 
         /// <summary>
         /// The Cloud Anchors example controller.
         /// </summary>
-        private CloudAnchorsExampleController m_CloudAnchorsExampleController;
+        private CloudAnchorsExampleController _cloudAnchorsExampleController;
 
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
         public void Awake()
         {
-            m_CloudAnchorsExampleController =
+            _cloudAnchorsExampleController =
                 GameObject.Find("CloudAnchorsExampleController")
                 .GetComponent<CloudAnchorsExampleController>();
-            m_StarMesh = transform.Find("StarMesh").gameObject;
-            m_StarMesh.SetActive(false);
+            _starMesh = transform.Find("StarMesh").gameObject;
+            _starMesh.SetActive(false);
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// </summary>
         public void SetParentToWorldOrigin()
         {
-            transform.SetParent(m_CloudAnchorsExampleController.WorldOrigin);
-            m_StarMesh.SetActive(true);
+            transform.SetParent(_cloudAnchorsExampleController.WorldOrigin);
+            _starMesh.SetActive(true);
         }
 
         /// <summary>
@@ -66,21 +66,21 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// </summary>
         public void Update()
         {
-            if (m_StarMesh.activeSelf)
+            if (_starMesh.activeSelf)
             {
                 return;
             }
 
             // Only sets the Star object's mesh after the origin is placed to avoid being placed
             // at identity pose.
-            if (!m_CloudAnchorsExampleController.IsOriginPlaced)
+            if (!_cloudAnchorsExampleController.IsOriginPlaced)
             {
                 return;
             }
 
-            transform.SetParent(m_CloudAnchorsExampleController.WorldOrigin, false);
-            Transform origin = m_CloudAnchorsExampleController.WorldOrigin;
-            m_StarMesh.SetActive(true);
+            transform.SetParent(_cloudAnchorsExampleController.WorldOrigin, false);
+            Transform origin = _cloudAnchorsExampleController.WorldOrigin;
+            _starMesh.SetActive(true);
         }
     }
 }

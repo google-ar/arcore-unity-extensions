@@ -33,33 +33,33 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public string AndroidCloudServicesApiKey;
         public string IOSCloudServicesApiKey;
 
-        private const string k_ProjectSettingsPath =
+        private const string _projectSettingsPath =
             "ProjectSettings/ARCoreExtensionsProjectSettings.json";
 
-        private static ARCoreExtensionsProjectSettings s_Instance = null;
+        private static ARCoreExtensionsProjectSettings _instance = null;
 
         public static ARCoreExtensionsProjectSettings Instance
         {
             get
             {
-                if (s_Instance == null)
+                if (_instance == null)
                 {
-                    s_Instance = new ARCoreExtensionsProjectSettings();
-                    s_Instance.Load();
+                    _instance = new ARCoreExtensionsProjectSettings();
+                    _instance.Load();
                 }
 
-                return s_Instance;
+                return _instance;
             }
         }
 
         public void Load()
         {
             // If a settings file exists, load it now.
-            if (File.Exists(k_ProjectSettingsPath))
+            if (File.Exists(_projectSettingsPath))
             {
                 ARCoreExtensionsProjectSettings settings =
                     JsonUtility.FromJson<ARCoreExtensionsProjectSettings>(
-                        File.ReadAllText(k_ProjectSettingsPath));
+                        File.ReadAllText(_projectSettingsPath));
 
                 IsIOSSupportEnabled = settings.IsIOSSupportEnabled;
                 AndroidCloudServicesApiKey = settings.AndroidCloudServicesApiKey;
@@ -81,7 +81,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             try
             {
-                File.WriteAllText(k_ProjectSettingsPath, JsonUtility.ToJson(this));
+                File.WriteAllText(_projectSettingsPath, JsonUtility.ToJson(this));
             }
             catch (Exception e)
             {

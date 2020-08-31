@@ -32,16 +32,16 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
     internal class CloudAnchorPreprocessBuild : IPreprocessBuildWithReport
     {
-        private const string k_CloudAnchorManifestFileName = "cloud_anchor_manifest.aar";
+        private const string _cloudAnchorManifestFileName = "cloud_anchor_manifest.aar";
 
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
-        private const string k_ManifestTemplateFolderGUID = "117437286c43f4eeb845c3257f2a8546";
+        private const string _manifestTemplateFolderGUID = "117437286c43f4eeb845c3257f2a8546";
 
         // GUID of folder [ARCore Extensions Package]/Runtime/Plugins/
-        private const string k_PluginsFolderGUID = "7503bf199a08d47b681b4e1496fae841";
+        private const string _pluginsFolderGUID = "7503bf199a08d47b681b4e1496fae841";
 
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
-         Justification = "Overriden property.")]
+        [SuppressMessage("UnityRules.UnityStyleRules",
+         "US1109:PublicPropertiesMustBeUpperCamelCase", Justification = "Overriden property.")]
         public int callbackOrder
         {
             get
@@ -54,73 +54,36 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             if (report.summary.platform == BuildTarget.Android)
             {
-                _PreprocessAndroidBuild();
+                PreprocessAndroidBuild();
             }
             else if (report.summary.platform == BuildTarget.iOS)
             {
-                _PreprocessIOSBuild();
+                PreprocessIOSBuild();
             }
         }
 
-        private string _getJdkPath()
-        {
-            string jdkPath = null;
-            if (UnityEditor.EditorPrefs.GetBool("JdkUseEmbedded"))
-            {
-                // Use OpenJDK that is bundled with Unity. JAVA_HOME will be set when
-                // 'Preferences > External Tools > Android > JDK installed with Unity' is checked.
-                jdkPath = System.Environment.GetEnvironmentVariable("JAVA_HOME");
-                if (string.IsNullOrEmpty(jdkPath))
-                {
-                    throw new BuildFailedException(
-                        "'Preferences > External Tools > Android > JDK installed with Unity' is " +
-                        "checked, but JAVA_HOME is unset or empty. Try unchecking this setting " +
-                        "and configuring a valid JDK path under " +
-                        "'Preferences > External Tools > Android > JDK'.");
-                }
-            }
-            else
-            {
-                // Use JDK path specified by 'Preferences > External Tools > Android > JDK'.
-                jdkPath = EditorPrefs.GetString("JdkPath");
-                if (string.IsNullOrEmpty(jdkPath))
-                {
-                    // Use JAVA_HOME from the O/S environment.
-                    jdkPath = System.Environment.GetEnvironmentVariable("JAVA_HOME");
-                    if (string.IsNullOrEmpty(jdkPath))
-                    {
-                        throw new BuildFailedException(
-                            "'Preferences > External Tools > Android > JDK installed with Unity' " +
-                            "is unchecked, but 'Preferences > External Tools > Android > JDK' " +
-                            "path is empty and JAVA_HOME environment variable is unset or empty.");
-                    }
-                }
-            }
-
-            if (!File.GetAttributes(jdkPath).HasFlag(FileAttributes.Directory))
-            {
-                throw new BuildFailedException(string.Format("Invalid JDK path '{0}'", jdkPath));
-            }
-
-            return jdkPath;
-        }
-
-        private void _PreprocessAndroidBuild()
+        private void PreprocessAndroidBuild()
         {
             bool cloudAnchorsEnabled = !string.IsNullOrEmpty(
                 ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey);
 
             var cachedCurrentDirectory = Directory.GetCurrentDirectory();
             var cloudAnchorsManifestAARPath = Path.GetFullPath(
-                Path.Combine(AssetDatabase.GUIDToAssetPath(k_PluginsFolderGUID),
-                    k_CloudAnchorManifestFileName));
+                Path.Combine(AssetDatabase.GUIDToAssetPath(_pluginsFolderGUID),
+                    _cloudAnchorManifestFileName));
 
             if (cloudAnchorsEnabled)
             {
-                string jarPath = Path.Combine(_getJdkPath(), "bin/jar");
+                string jarPath = AndroidDependenciesHelper.GetJdkPath();
+                if (string.IsNullOrEmpty(jarPath))
+                {
+                    throw new BuildFailedException("Cannot find a valid JDK path in this build.");
+                }
+
+                jarPath = Path.Combine(jarPath, "bin/jar");
 
                 // If the API Key didn't change then do nothing.
-                if (!_IsApiKeyDirty(jarPath, cloudAnchorsManifestAARPath,
+                if (!IsApiKeyDirty(jarPath, cloudAnchorsManifestAARPath,
                     ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey))
                 {
                     return;
@@ -136,8 +99,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 {
                     // Locate cloud_anchor_manifest.aartemplate from the package cache.
                     var manifestTemplatePath = Path.GetFullPath(
-                        Path.Combine(AssetDatabase.GUIDToAssetPath(k_ManifestTemplateFolderGUID),
-                            k_CloudAnchorManifestFileName + "template"));
+                        Path.Combine(AssetDatabase.GUIDToAssetPath(_manifestTemplateFolderGUID),
+                            _cloudAnchorManifestFileName + "template"));
 
                     // Move to a temp directory.
                     Directory.CreateDirectory(tempDirectoryPath);
@@ -166,7 +129,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     }
 
                     string command = string.Format(
-                        "cf {0} {1}", k_CloudAnchorManifestFileName, fileListBuilder);
+                        "cf {0} {1}", _cloudAnchorManifestFileName, fileListBuilder);
 
                     ShellHelper.RunCommand(
                         jarPath,
@@ -181,7 +144,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                                 "Error creating jar for Cloud Anchor manifest: {0}", errors));
                     }
 
-                    File.Copy(Path.Combine(tempDirectoryPath, k_CloudAnchorManifestFileName),
+                    File.Copy(Path.Combine(tempDirectoryPath, _cloudAnchorManifestFileName),
                         cloudAnchorsManifestAARPath, true);
                 }
                 finally
@@ -193,7 +156,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     AssetDatabase.Refresh();
                 }
 
-                AssetHelper.GetPluginImporterByName(k_CloudAnchorManifestFileName)
+                AssetHelper.GetPluginImporterByName(_cloudAnchorManifestFileName)
                     .SetCompatibleWithPlatform(BuildTarget.Android, true);
             }
             else
@@ -210,7 +173,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
         }
 
-        private void _PreprocessIOSBuild()
+        private void PreprocessIOSBuild()
         {
             if (string.IsNullOrEmpty(
                     ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey))
@@ -232,7 +195,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey);
         }
 
-        private bool _IsApiKeyDirty(string jarPath, string aarPath, string apiKey)
+        private bool IsApiKeyDirty(string jarPath, string aarPath, string apiKey)
         {
             bool isApiKeyDirty = true;
             var cachedCurrentDirectory = Directory.GetCurrentDirectory();
@@ -249,7 +212,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 // Move to a temp directory.
                 Directory.CreateDirectory(tempDirectoryPath);
                 Directory.SetCurrentDirectory(tempDirectoryPath);
-                var tempAarPath = Path.Combine(tempDirectoryPath, k_CloudAnchorManifestFileName);
+                var tempAarPath = Path.Combine(tempDirectoryPath, _cloudAnchorManifestFileName);
                 File.Copy(aarPath, tempAarPath, true);
 
                 // Extract the aar.

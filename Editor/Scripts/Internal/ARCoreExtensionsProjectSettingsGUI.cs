@@ -36,10 +36,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static readonly GUIContent Android = new GUIContent("Android");
         public static readonly GUIContent IOS = new GUIContent("iOS");
 
-        private static float s_GroupLabelIndent = 15;
-        private static float s_GroupFieldIndent =
-            EditorGUIUtility.labelWidth - s_GroupLabelIndent;
-        private static bool s_FoldoutCloudAnchorAPIKeys = true;
+        private static float _groupLabelIndent = 15;
+        private static float _groupFieldIndent =
+            EditorGUIUtility.labelWidth - _groupLabelIndent;
+        private static bool _foldoutCloudAnchorAPIKeys = true;
 
         internal static void OnGUI(bool renderForStandaloneWindow)
         {
@@ -47,14 +47,14 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 ARCoreExtensionsProjectSettings.Instance.IsIOSSupportEnabled);
             GUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
 
-            s_FoldoutCloudAnchorAPIKeys =
-                EditorGUILayout.Foldout(s_FoldoutCloudAnchorAPIKeys, CloudAnchorAPIKeys);
-            if (s_FoldoutCloudAnchorAPIKeys)
+            _foldoutCloudAnchorAPIKeys =
+                EditorGUILayout.Foldout(_foldoutCloudAnchorAPIKeys, CloudAnchorAPIKeys);
+            if (_foldoutCloudAnchorAPIKeys)
             {
                 // Draw text field for Android Cloud Anchor API Key.
                 EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(s_GroupLabelIndent);
-                EditorGUILayout.LabelField(Android, GUILayout.Width(s_GroupFieldIndent));
+                GUILayout.Space(_groupLabelIndent);
+                EditorGUILayout.LabelField(Android, GUILayout.Width(_groupFieldIndent));
                 ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey =
                     EditorGUILayout.TextField(
                         ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey);
@@ -65,8 +65,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 if (newIOSEnabled)
                 {
                     EditorGUILayout.BeginHorizontal();
-                    GUILayout.Space(s_GroupLabelIndent);
-                    EditorGUILayout.LabelField(IOS, GUILayout.Width(s_GroupFieldIndent));
+                    GUILayout.Space(_groupLabelIndent);
+                    EditorGUILayout.LabelField(IOS, GUILayout.Width(_groupFieldIndent));
                     ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey =
                         EditorGUILayout.TextField(
                             ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey);

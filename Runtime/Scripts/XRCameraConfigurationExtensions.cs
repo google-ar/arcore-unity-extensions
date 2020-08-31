@@ -38,7 +38,7 @@ namespace Google.XR.ARCoreExtensions
         public static Vector2Int GetTextureDimensions(this XRCameraConfiguration cameraConfig)
         {
             return CameraConfigApi.GetTextureDimensions(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
         }
 
@@ -51,7 +51,7 @@ namespace Google.XR.ARCoreExtensions
         public static Vector2Int GetFPSRange(this XRCameraConfiguration cameraConfig)
         {
             return CameraConfigApi.GetFPSRange(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
         }
 
@@ -65,7 +65,7 @@ namespace Google.XR.ARCoreExtensions
             this XRCameraConfiguration cameraConfig)
         {
             return CameraConfigApi.GetDepthSensorUsages(
-                ARCoreExtensions.Instance.CurrentARCoreSessionHandle,
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
         }
     }

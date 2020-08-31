@@ -38,5 +38,40 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         [Tooltip("Toggles whether Cloud Anchors are enabled.")]
         public bool EnableCloudAnchors = false;
+
+        /// <summary>
+        /// ValueType check if two ARCoreExtensionsConfig objects are equal.
+        /// </summary>
+        /// <param name="other">The other ARCoreExtensionsConfig.</param>
+        /// <returns>True if the two ARCoreExtensionsConfig objects are value-type equal,
+        /// otherwise false.</returns>
+        public override bool Equals(object other)
+        {
+            ARCoreExtensionsConfig otherConfig = other as ARCoreExtensionsConfig;
+            if (otherConfig == null)
+            {
+                return false;
+            }
+
+            return EnableCloudAnchors == otherConfig.EnableCloudAnchors;
+        }
+
+        /// <summary>
+        /// Return a hash code for this object.
+        /// </summary>
+        /// <returns>A hash code value.</returns>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        /// <summary>
+        /// ValueType copy from another ARCoreExtensionsConfig object into this one.
+        /// </summary>
+        /// <param name="otherConfig">The ARCoreExtensionsConfig to copy from.</param>
+        public void CopyFrom(ARCoreExtensionsConfig otherConfig)
+        {
+            EnableCloudAnchors = otherConfig.EnableCloudAnchors;
+        }
     }
 }
