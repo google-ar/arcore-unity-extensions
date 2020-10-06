@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="CameraConfigDepthSensorUsages.cs" company="Google LLC">
+// <copyright file="CloudAnchorMode.cs" company="Google LLC">
 //
-// Copyright 2020 Google LLC. All Rights Reserved.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,27 +20,21 @@
 
 namespace Google.XR.ARCoreExtensions
 {
-    using System;
-
     /// <summary>
-    /// Type of depth sensor usage for a camera config.
+    /// Defines possible modes for ARCore Cloud Anchors.
     /// </summary>
-    [Flags]
-    public enum CameraConfigDepthSensorUsages
+    public enum CloudAnchorMode
     {
         /// <summary>
-        /// Indicates that a depth sensor must be present on the device,
-        /// and the depth sensor will be used by ARCore.
-        /// Not supported on all devices.
+        /// Cloud Anchors are disabled. This is the default value.
         /// </summary>
-        RequireAndUse = 0x0001,
+        Disabled = 0,
 
         /// <summary>
-        /// Indicates that ARCore will not attempt to use a depth sensor, even if it is present.
-        /// Most commonly used to filter camera configurations when the app requires
-        /// exclusive access to the depth sensor outside of ARCore, for example to
-        /// support 3D mesh reconstruction. Available on all ARCore supported devices.
+        /// Cloud Anchors are enabled, HostCloudAnchor() and ResolveCloudAnchorId()
+        /// functions are available. The app is expected to have the INTERNET
+        /// permission (Android only).
         /// </summary>
-        DoNotUse = 0x0002,
+        Enabled = 1,
     }
 }

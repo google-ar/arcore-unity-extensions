@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="XRCameraConfigurationExtensions.cs" company="Google LLC">
 //
-// Copyright 2020 Google LLC. All Rights Reserved.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,10 +61,10 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="cameraConfig">An XRCameraConfiguration instance.
         /// </param>
         /// <returns>Returns the depth sensor usage type.</returns>
-        public static CameraConfigDepthSensorUsages GetDepthSensorUsages(
+        public static CameraConfigDepthSensorUsage GetDepthSensorUsage(
             this XRCameraConfiguration cameraConfig)
         {
-            return CameraConfigApi.GetDepthSensorUsages(
+            return CameraConfigApi.GetDepthSensorUsage(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
         }

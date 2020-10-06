@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="IOSSupportManager.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -201,6 +201,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 {
                     Debug.LogErrorFormat("Failed to update and acquire ARFrame with error: " +
                         "{0}", status);
+                    return;
                 }
             }
         }
@@ -208,7 +209,8 @@ namespace Google.XR.ARCoreExtensions.Internal
         private bool ShouldUpdateARCoreSession()
         {
             return _isEnabled &&
-                ARCoreExtensions._instance.ARCoreExtensionsConfig.EnableCloudAnchors;
+                ARCoreExtensions._instance.ARCoreExtensionsConfig.CloudAnchorMode !=
+                    CloudAnchorMode.Disabled;
         }
 
         [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",

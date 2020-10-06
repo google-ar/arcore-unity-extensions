@@ -1,6 +1,6 @@
 Google ARCore Extensions for AR Foundation
 ==========================================
-Copyright 2019 Google LLC. All rights reserved.
+Copyright 2019 Google LLC
 
 This package provides extensions to Unity's AR Foundation cross platform
 Augmented Reality API. It also provides native APIs for features provided by

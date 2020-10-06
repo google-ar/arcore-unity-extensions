@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="CloudAnchorPreprocessBuild.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,9 +28,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;
+    using UnityEditor.Callbacks;
     using UnityEngine;
 
-    internal class CloudAnchorPreprocessBuild : IPreprocessBuildWithReport
+    /// <summary>
+    /// Build preprocess for Cloud Anchor.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
+        Justification = "Internal")]
+    public class CloudAnchorPreprocessBuild : IPreprocessBuildWithReport
     {
         private const string _cloudAnchorManifestFileName = "cloud_anchor_manifest.aar";
 
@@ -52,17 +58,27 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            if (report.summary.platform == BuildTarget.Android)
+            if (report.summary.platform == UnityEditor.BuildTarget.Android)
             {
                 PreprocessAndroidBuild();
             }
-            else if (report.summary.platform == BuildTarget.iOS)
+            else if (report.summary.platform == UnityEditor.BuildTarget.iOS)
             {
                 PreprocessIOSBuild();
             }
         }
 
-        private void PreprocessAndroidBuild()
+        public void PreprocessAndroidBuild()
+        {
+            SetApiKeyOnAndroid();
+        }
+
+        public void PreprocessIOSBuild()
+        {
+            SetApiKeyOnIOS();
+        }
+
+        private void SetApiKeyOnAndroid()
         {
             bool cloudAnchorsEnabled = !string.IsNullOrEmpty(
                 ARCoreExtensionsProjectSettings.Instance.AndroidCloudServicesApiKey);
@@ -173,7 +189,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
         }
 
-        private void PreprocessIOSBuild()
+        private void SetApiKeyOnIOS()
         {
             if (string.IsNullOrEmpty(
                     ARCoreExtensionsProjectSettings.Instance.IOSCloudServicesApiKey))

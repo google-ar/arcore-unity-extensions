@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensionsConfig.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions
 {
     using UnityEngine;
+    using UnityEngine.Serialization;
 
     /// <summary>
     /// Holds settings that are used to configure the ARCore Extensions.
@@ -34,10 +35,31 @@ namespace Google.XR.ARCoreExtensions
         [Header("Cloud Anchors")]
 
         /// <summary>
-        /// Toggles whether the Cloud Anchors are enabled.
+        /// Gets or sets the <see cref="CloudAnchorMode"/> to use.
         /// </summary>
-        [Tooltip("Toggles whether Cloud Anchors are enabled.")]
-        public bool EnableCloudAnchors = false;
+        [Tooltip("Chooses which Cloud Anchors mode will be used in ARCore Extensions session.")]
+        [FormerlySerializedAs("EnableCloudAnchors")]
+        public CloudAnchorMode CloudAnchorMode = CloudAnchorMode.Disabled;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Cloud Anchors are enabled.
+        /// </summary>
+        /// @deprecated Please use CloudAnchorMode instead.
+        [System.Obsolete(
+            "This field has been replaced by ARCoreExtensionsConfig.CloudAnchorMode. See " +
+            "https://github.com/google-ar/arcore-unity-extensions/releases/tag/v1.20.0")]
+        public bool EnableCloudAnchors
+        {
+            get
+            {
+                return CloudAnchorMode != CloudAnchorMode.Disabled;
+            }
+
+            set
+            {
+                CloudAnchorMode = value ? CloudAnchorMode.Enabled : CloudAnchorMode.Disabled;
+            }
+        }
 
         /// <summary>
         /// ValueType check if two ARCoreExtensionsConfig objects are equal.
@@ -53,7 +75,7 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            return EnableCloudAnchors == otherConfig.EnableCloudAnchors;
+            return CloudAnchorMode == otherConfig.CloudAnchorMode;
         }
 
         /// <summary>
@@ -71,7 +93,7 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="otherConfig">The ARCoreExtensionsConfig to copy from.</param>
         public void CopyFrom(ARCoreExtensionsConfig otherConfig)
         {
-            EnableCloudAnchors = otherConfig.EnableCloudAnchors;
+            CloudAnchorMode = otherConfig.CloudAnchorMode;
         }
     }
 }

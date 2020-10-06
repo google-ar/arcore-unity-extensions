@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ARAnchorManagerExtensions.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -105,6 +105,89 @@ namespace Google.XR.ARCoreExtensions
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudAnchor;
+        }
+
+        /// <summary>
+        /// Creates a new Cloud Anchor with a given lifetime using an existing local ARAnchor.
+        /// </summary>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="anchor">The local <c>ARAnchor</c> to be used as the
+        /// basis to host a new Cloud Anchor.</param>
+        /// <param name="ttlDays">The lifetime of the anchor in days. Must be positive. The
+        /// maximum allowed value is 1 if using an API Key to authenticate with the
+        /// ARCore Cloud Anchor service, otherwise the maximum allowed value is 365.</param>
+        /// <returns>If successful, an <see cref="ARCloudAnchor"/>,
+        /// otherwise <c>null</c>.</returns>
+        public static ARCloudAnchor HostCloudAnchor(
+            this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
+        {
+            if (ttlDays <= 0 || ttlDays > 365)
+            {
+                Debug.LogErrorFormat("Failed to host a Cloud Anchor with invalid TTL {0}. " +
+                    "The lifetime of the anchor in days must be positive, " +
+                    "the maximum allowed value is 1 when using an API Key to authenticate with " +
+                    "the ARCore Cloud Anchor service, otherwise the maximum allowed value is 365.",
+                    ttlDays);
+                return null;
+            }
+
+            // Create the underlying ARCore Cloud Anchor with given ttlDays.
+            IntPtr cloudAnchorHandle = SessionApi.HostCloudAnchor(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                anchor.AnchorHandle(), ttlDays);
+            if (cloudAnchorHandle == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            // Create the GameObject that is the Cloud Anchor.
+            ARCloudAnchor cloudAnchor =
+                new GameObject(_gameObjectName).AddComponent<ARCloudAnchor>();
+            if (cloudAnchor)
+            {
+                cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
+            }
+
+            // Parent the new Cloud Anchor to the session origin.
+            cloudAnchor.transform.SetParent(
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+
+            return cloudAnchor;
+        }
+
+        /// <summary>
+        /// Set the token to use when authenticating with the ARCore Cloud Anchor service
+        /// on the iOS platform.  This should be called each time the application's
+        /// token is refreshed.
+        /// </summary>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="authToken">The authentication token to set.</param>
+        public static void SetAuthToken(this ARAnchorManager anchorManager, string authToken)
+        {
+            // Only iOS needs AuthToken for Cloud Anchor persistence.
+#if ARCORE_EXTENSIONS_IOS_SUPPORT && UNITY_IOS
+            if (!string.IsNullOrEmpty(RuntimeConfig.Instance.IOSCloudServicesApiKey))
+            {
+                Debug.LogError(
+                    "Cannot set token in applications built using the 'API Key' " +
+                    "authentication strategy. To use it, check Edit > Project Settings " +
+                    "> XR > ARCore Extensions > iOS Support Enabled and " +
+                    "set iOS Authentication Strategy to Authentication Token.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(authToken))
+            {
+                Debug.LogError("Cannot set empty token in applications.");
+                return;
+            }
+
+            SessionApi.SetAuthToken(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, authToken);
+#else
+            Debug.LogError("AuthToken only works with iOS Supported enabled in " +
+                "ARCore Extensions Project Settings and the target platform has set to iOS.");
+#endif // ARCORE_IOS_SUPPORT && UNITY_IOS
         }
 
         /// <summary>
@@ -250,6 +333,25 @@ namespace Google.XR.ARCoreExtensions
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
 
             return cloudReferencePoint;
+        }
+
+        /// <summary>
+        /// Estimates the quality of the visual feature points seen by ARCore in the
+        /// preceding few seconds and visible from the provided camera <paramref name="pose"/>.
+        /// Cloud Anchors hosted using higher feature map quality will generally result
+        /// in easier and more accurately resolved <see cref="ARCloudAnchor"/> poses.
+        /// If feature map quality cannot be estimated for the given <paramref name="pose"/>,
+        /// a warning message "Failed to estimate feature map quality" with the error status
+        /// is logged and <see cref="FeatureMapQuality"/>.<c>Insufficient</c> is returned.
+        /// </summary>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="pose">The camera pose to use in estimating the quality.</param>
+        /// <returns>The estimated feature map quality.</returns>
+        public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
+            this ARAnchorManager anchorManager, Pose pose)
+        {
+            return SessionApi.EstimateFeatureMapQualityForHosting(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, pose);
         }
     }
 }

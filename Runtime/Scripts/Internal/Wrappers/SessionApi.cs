@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="SessionApi.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             ARCoreExtensionsConfig config)
         {
 #if UNITY_ANDROID
-            ApiCloudAnchorMode cloudAnchorMode = config.EnableCloudAnchors ?
-                ApiCloudAnchorMode.Enabled : ApiCloudAnchorMode.Disabled;
+            ApiCloudAnchorMode cloudAnchorMode = (ApiCloudAnchorMode)config.CloudAnchorMode;
             ExternApi.ArConfig_setCloudAnchorMode(
                     sessionHandle, configHandle, cloudAnchorMode);
 #endif
@@ -70,6 +69,28 @@ namespace Google.XR.ARCoreExtensions.Internal
             return cloudAnchorHandle;
         }
 
+        public static IntPtr HostCloudAnchor(
+            IntPtr sessionHandle,
+            IntPtr anchorHandle,
+            int ttlDays)
+        {
+            IntPtr cloudAnchorHandle = IntPtr.Zero;
+            ApiArStatus status = ExternApi.ArSession_hostAndAcquireNewCloudAnchorWithTtl(
+                sessionHandle, anchorHandle, ttlDays, ref cloudAnchorHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to host a Cloud Anchor with TTL {0}, status '{1}'",
+                    ttlDays, status);
+            }
+
+            return cloudAnchorHandle;
+        }
+
+        public static void SetAuthToken(IntPtr sessionHandle, string authToken)
+        {
+            ExternApi.ArSession_setAuthToken(sessionHandle, authToken);
+        }
+
         public static IntPtr ResolveCloudAnchor(
             IntPtr sessionHandle,
             string cloudAnchorId)
@@ -85,6 +106,23 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
 
             return cloudAnchorHandle;
+        }
+
+        public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
+            IntPtr sessionHandle, Pose pose)
+        {
+            IntPtr poseHandle = PoseApi.Create(sessionHandle, pose);
+            int featureMapQuality = (int)FeatureMapQuality.Insufficient;
+            var status = ExternApi.ArSession_estimateFeatureMapQualityForHosting(
+                sessionHandle, poseHandle, ref featureMapQuality);
+            PoseApi.Destroy(poseHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to estimate feature map quality with status '{0}'.",
+                    status);
+            }
+
+            return (FeatureMapQuality)featureMapQuality;
         }
 
         [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
@@ -105,6 +143,24 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr sessionHandle,
                 string cloudAnchorId,
                 ref IntPtr cloudAnchorHandle);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_hostAndAcquireNewCloudAnchorWithTtl(
+                IntPtr sessionHandle,
+                IntPtr anchorHandle,
+                int ttlDays,
+                ref IntPtr cloudAnchorHandle);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_setAuthToken(
+                IntPtr sessionHandle,
+                String authToken);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_estimateFeatureMapQualityForHosting(
+                IntPtr sessionHandle,
+                IntPtr poseHandle,
+                ref int featureMapQuality);
 
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]

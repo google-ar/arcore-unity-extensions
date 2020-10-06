@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ARCoreExtensions.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
 
@@ -56,6 +58,12 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public ARCoreExtensionsConfig ARCoreExtensionsConfig;
 
+#if UNITY_ANDROID
+        private string _currentPermissionRequest = null;
+
+        private HashSet<string> _requiredPermissionNames = new HashSet<string>();
+
+#endif
         internal static ARCoreExtensions _instance { get; private set; }
 
         internal IntPtr currentARCoreSessionHandle
@@ -91,7 +99,7 @@ namespace Google.XR.ARCoreExtensions
         {
             if (_instance)
             {
-                Debug.LogError("ARCore Extensions is already initialized. You many only " +
+                Debug.LogError("ARCore Extensions is already initialized. You may only " +
                     "have one instance in your scene at a time.");
             }
 
@@ -120,7 +128,7 @@ namespace Google.XR.ARCoreExtensions
 #if UNITY_ANDROID
             if (_instance.Session == null)
             {
-                Debug.LogError("ARSession is required by ARcoreExtensions!");
+                Debug.LogError("ARSession is required by ARCoreExtensions!");
                 return;
             }
 
@@ -133,7 +141,7 @@ namespace Google.XR.ARCoreExtensions
             }
             else
             {
-                _arCoreSubsystem.beforeSetConfiguration += _BeforeConfigurationChanged;
+                _arCoreSubsystem.beforeSetConfiguration += BeforeConfigurationChanged;
             }
 #endif // UNITY_ANDROID
         }
@@ -149,7 +157,7 @@ namespace Google.XR.ARCoreExtensions
 #if UNITY_ANDROID
             if (_arCoreSubsystem != null)
             {
-                _arCoreSubsystem.beforeSetConfiguration -= _BeforeConfigurationChanged;
+                _arCoreSubsystem.beforeSetConfiguration -= BeforeConfigurationChanged;
             }
 #endif // UNITY_ANDROID
         }
@@ -175,6 +183,11 @@ namespace Google.XR.ARCoreExtensions
         public void Update()
         {
 #if UNITY_ANDROID
+            if (_requiredPermissionNames.Count > 0)
+            {
+                RequestPermission();
+            }
+
             // Update ARCore session configuration.
             if (Session.SessionHandle() != IntPtr.Zero && ARCoreExtensionsConfig != null)
             {
@@ -185,13 +198,56 @@ namespace Google.XR.ARCoreExtensions
 
                 _cachedConfig = ScriptableObject.CreateInstance<ARCoreExtensionsConfig>();
                 _cachedConfig.CopyFrom(ARCoreExtensionsConfig);
+
+                if (_requiredPermissionNames.Count > 0)
+                {
+                    RequestPermission();
+                    return;
+                }
+
                 _arCoreSubsystem.SetConfigurationDirty();
             }
 #endif
         }
-
 #if UNITY_ANDROID
-        private void _BeforeConfigurationChanged(ARCoreBeforeSetConfigurationEventArgs eventArgs)
+
+        private void RequestPermission()
+        {
+            // All required permissions are granted.
+            if (_requiredPermissionNames.Count == 0)
+            {
+                return;
+            }
+
+            // Waiting for current request.
+            if (!AndroidPermissionsManager.IsPermissionGranted(
+                AndroidPermissionsManager._cameraPermission) ||
+                !string.IsNullOrEmpty(_currentPermissionRequest))
+            {
+                return;
+            }
+
+            _currentPermissionRequest = _requiredPermissionNames.First();
+            AndroidPermissionsManager.RequestPermission(
+                _currentPermissionRequest, OnPermissionRequestFinish);
+        }
+
+        private void OnPermissionRequestFinish(bool isGranted)
+        {
+            if (_currentPermissionRequest == null)
+            {
+                Debug.LogWarning("Received unexpected permission request result.");
+                return;
+            }
+
+            Debug.LogFormat("{0} {1}.",
+                isGranted ? "Granted" : "Denied", _currentPermissionRequest);
+            _requiredPermissionNames.Remove(_currentPermissionRequest);
+            _currentPermissionRequest = null;
+            _arCoreSubsystem.SetConfigurationDirty();
+        }
+
+        private void BeforeConfigurationChanged(ARCoreBeforeSetConfigurationEventArgs eventArgs)
         {
             if (_cachedConfig == null)
             {

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="IOSSupportHelper.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC. All Rights Reserved.
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,7 +47,42 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
 
             UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
-            UpdateIOSPodDependencies(arcoreIOSEnabled);
+            UpdateIOSPodDependencies(arcoreIOSEnabled, _arCoreIOSDependencyFileName);
+        }
+
+        public static void UpdateIOSPodDependencies(bool arcoreIOSEnabled,
+            string dependencyFileName)
+        {
+            string dependencyFolderFullPath = Path.GetFullPath(
+                AssetDatabase.GUIDToAssetPath(_arCoreIOSDependencyFolderGUID));
+            string iOSPodDependencyTemplatePath =
+                Path.Combine(dependencyFolderFullPath, dependencyFileName + ".template");
+            string iOSPodDependencyXMLPath =
+                Path.Combine(dependencyFolderFullPath, dependencyFileName + ".xml");
+
+            if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath))
+            {
+                Debug.LogFormat("Adding {0}.", dependencyFileName);
+
+                if (!File.Exists(iOSPodDependencyTemplatePath))
+                {
+                    Debug.LogError(
+                        "Failed to enable ARCore iOS dependency xml. Template file is missing.");
+                    return;
+                }
+
+                File.Copy(iOSPodDependencyTemplatePath, iOSPodDependencyXMLPath);
+                AssetDatabase.Refresh();
+            }
+            else if (!arcoreIOSEnabled && File.Exists(iOSPodDependencyXMLPath))
+            {
+                Debug.LogFormat("Removing {0}.", dependencyFileName);
+
+                File.Delete(iOSPodDependencyXMLPath);
+                File.Delete(iOSPodDependencyXMLPath + ".meta");
+
+                AssetDatabase.Refresh();
+            }
         }
 
         private static void UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled)
@@ -71,40 +106,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                         _arCoreExtensionIOSSupportSymbol, string.Empty);
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(
                     BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
-            }
-        }
-
-        private static void UpdateIOSPodDependencies(bool arcoreIOSEnabled)
-        {
-            string dependencyFolderFullPath = Path.GetFullPath(
-                AssetDatabase.GUIDToAssetPath(_arCoreIOSDependencyFolderGUID));
-            string iOSPodDependencyTemplatePath =
-                Path.Combine(dependencyFolderFullPath, _arCoreIOSDependencyFileName + ".template");
-            string iOSPodDependencyXMLPath =
-                Path.Combine(dependencyFolderFullPath, _arCoreIOSDependencyFileName + ".xml");
-
-            if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath))
-            {
-                Debug.Log("Adding ARCoreiOSDependencies.");
-
-                if (!File.Exists(iOSPodDependencyTemplatePath))
-                {
-                    Debug.LogError(
-                        "Failed to enable ARCore iOS dependency xml. Template file is missing.");
-                    return;
-                }
-
-                File.Copy(iOSPodDependencyTemplatePath, iOSPodDependencyXMLPath);
-                AssetDatabase.Refresh();
-            }
-            else if (!arcoreIOSEnabled && File.Exists(iOSPodDependencyXMLPath))
-            {
-                Debug.Log("Removing ARCoreiOSDependencies.");
-
-                File.Delete(iOSPodDependencyXMLPath);
-                File.Delete(iOSPodDependencyXMLPath + ".meta");
-
-                AssetDatabase.Refresh();
             }
         }
     }

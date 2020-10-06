@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="AndroidSupportPreprocessBuild.cs" company="Google LLC">
 //
-// Copyright 2020 Google LLC. All Rights Reserved.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,7 +59,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                         "switch to Android tab and check 'ARCore' as the Plug-in Provider.");
                 }
 
-#if UNITY_2019_4 || UNITY_2020_1
+                Check64BitArch();
+
+#if UNITY_2019_4
                 CheckGradleTemplate();
 #endif
             }
@@ -84,6 +86,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
 
             return false;
+        }
+
+        private void Check64BitArch()
+        {
+            bool includes64Bit =
+                    (PlayerSettings.Android.targetArchitectures & AndroidArchitecture.ARM64) != 0;
+            if (!includes64Bit)
+            {
+                Debug.LogWarning("ARCoreExtensions: Missing ARM64 architecture which is " +
+                "required for Android 64-bit devices. See https://developers.google.com/ar/64bit." +
+                "\nSelect IL2CPP  in 'Project Settings > Player > Other Settings > Scripting " +
+                "Backend' and select ARM64 in 'Project Settings > Player > Other Settings > " +
+                "Target Architectures.'");
+            }
         }
 
         private void CheckGradleTemplate()

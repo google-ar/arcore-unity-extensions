@@ -1,0 +1,9 @@
+<dependencies>
+  <androidPackages>
+    <!-- Required by Keyless authentication, allows dynamite-loaded part of
+         ARCore to access Google Play Services APIs via reflection in order to
+         access authentication APIs. -->
+    <androidPackage spec="com.google.android.gms:play-services-auth-base:16+" />
+  </androidPackages>
+</dependencies>
+

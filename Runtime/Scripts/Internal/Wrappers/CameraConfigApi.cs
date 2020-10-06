@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="CameraConfigApi.cs" company="Google LLC">
 //
-// Copyright 2020 Google LLC. All Rights Reserved.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,13 +52,13 @@ namespace Google.XR.ARCoreExtensions.Internal
             return new Vector2Int(minFps, maxFps);
         }
 
-        public static CameraConfigDepthSensorUsages GetDepthSensorUsages(
+        public static CameraConfigDepthSensorUsage GetDepthSensorUsage(
             IntPtr sessionHandle, IntPtr cameraConfigHandle)
         {
-            int depth = (int)CameraConfigDepthSensorUsages.DoNotUse;
+            int depth = (int)CameraConfigDepthSensorUsage.DoNotUse;
             ExternApi.ArCameraConfig_getDepthSensorUsage(
                 sessionHandle, cameraConfigHandle, ref depth);
-            return (CameraConfigDepthSensorUsages)depth;
+            return (CameraConfigDepthSensorUsage)depth;
         }
 
         [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
