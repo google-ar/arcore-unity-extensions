@@ -61,6 +61,15 @@ namespace Google.XR.ARCoreExtensions.Internal
             return (CameraConfigDepthSensorUsage)depth;
         }
 
+        public static CameraConfigStereoCameraUsage GetStereoCameraUsage(
+            IntPtr sessionHandle, IntPtr cameraConfigHandle)
+        {
+            int stereo = (int)CameraConfigStereoCameraUsage.DoNotUse;
+            ExternApi.ArCameraConfig_getStereoCameraUsage(sessionHandle, cameraConfigHandle,
+                ref stereo);
+            return (CameraConfigStereoCameraUsage)stereo;
+        }
+
         [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
          Justification = "External call.")]
         private struct ExternApi
@@ -77,6 +86,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfig_getDepthSensorUsage(
                 IntPtr sessionHandle, IntPtr cameraConfigHandle, ref int depthSensorUsage);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArCameraConfig_getStereoCameraUsage(
+                IntPtr sessionHandle, IntPtr cameraConfigHandle, ref int stereoCameraUsage);
 #pragma warning restore 626
         }
     }

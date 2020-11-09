@@ -68,5 +68,18 @@ namespace Google.XR.ARCoreExtensions
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
         }
+
+        /// <summary>
+        /// Gets the stereo camera usage for this camera config.
+        /// </summary>
+        /// <param name="cameraConfig">An XRCameraConfiguration instance.</param>
+        /// <returns>Returns the stereo camera usage type.</returns>
+        public static CameraConfigStereoCameraUsage GetStereoCameraUsage(
+            this XRCameraConfiguration cameraConfig)
+        {
+            return CameraConfigApi.GetStereoCameraUsage(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                cameraConfig.nativeConfigurationHandle);
+        }
     }
 }

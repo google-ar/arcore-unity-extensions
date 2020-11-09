@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="CameraConfigStereoCameraUsage.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,28 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Stereo Camera usage options.
     /// </summary>
-    public class VersionInfo
+    [Flags]
+    [SuppressMessage("UnityRules.UnityStyleRules", "US1200:FlagsEnumsMustBePlural",
+                     Justification = "Usage is plural.")]
+    public enum CameraConfigStereoCameraUsage
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// A stereo camera is present on the device and will be used by ARCore.
+        /// Not available on all ARCore supported devices.
         /// </summary>
-        public static readonly string Version = "1.21.0";
+        RequireAndUse = 0x0001,
+
+        /// <summary>
+        /// ARCore will not attempt to use a stereo camera, even if one is
+        /// present.
+        /// Valid on all ARCore supported devices.
+        /// </summary>
+        DoNotUse = 0x0002,
     }
 }

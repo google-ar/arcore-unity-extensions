@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
     using UnityEngine.Serialization;
 
@@ -70,12 +71,13 @@ namespace Google.XR.ARCoreExtensions
         public override bool Equals(object other)
         {
             ARCoreExtensionsConfig otherConfig = other as ARCoreExtensionsConfig;
-            if (otherConfig == null)
+            if (otherConfig == null ||
+                CloudAnchorMode != otherConfig.CloudAnchorMode)
             {
                 return false;
             }
 
-            return CloudAnchorMode == otherConfig.CloudAnchorMode;
+            return true;
         }
 
         /// <summary>

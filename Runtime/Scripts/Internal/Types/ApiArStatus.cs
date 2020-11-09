@@ -43,6 +43,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         ErrorImageInsufficientQuality = -17,
         ErrorDataInvalidFormat = -18,
         ErrorDatatUnsupportedVersion = -19,
+        ErrorIllegalState = -20,
         UnavailableArCoreNotInstalled = -100,
         UnavailableDeviceNotCompatible = -101,
         UnavailableApkTooOld = -103,

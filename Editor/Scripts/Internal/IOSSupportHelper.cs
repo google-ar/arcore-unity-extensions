@@ -103,7 +103,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 Debug.LogFormat("Removing {0} define symbol.", _arCoreExtensionIOSSupportSymbol);
                 iOSScriptingDefineSymbols = iOSScriptingDefineSymbols.Replace(
-                        _arCoreExtensionIOSSupportSymbol, string.Empty);
+                    _arCoreExtensionIOSSupportSymbol, string.Empty);
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(
                     BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
             }

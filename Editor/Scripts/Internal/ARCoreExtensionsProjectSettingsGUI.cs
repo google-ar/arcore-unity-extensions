@@ -24,10 +24,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEngine;
 
-    internal class ARCoreExtensionsProjectSettingsGUI
+
+    /// <summary>
+    /// The GUI of ARCoreExtensionsProjectSettings.
+    /// </summary>
+    public class ARCoreExtensionsProjectSettingsGUI
     {
         private static readonly float _toggleLabelWidth = 180;
         private static readonly float _groupLabelIndent = 15;
@@ -61,14 +66,23 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 .ToArray();
         }
 
-        // Render ARCore Project Settings for ARCoreProjectSettingsWindow and
-        // ARCoreProjectSettingsProvider.
-        internal static void OnGUI(bool renderForStandaloneWindow)
+        /// <summary>
+        /// Render ARCore Project Settings for ARCoreProjectSettingsWindow and
+        /// ARCoreProjectSettingsProvider.
+        /// </summary>
+        /// <param name="renderForStandaloneWindow">
+        /// Is the GUI rendered for standalone window.
+        /// </param>
+        public static void OnGUI(bool renderForStandaloneWindow)
         {
             DrawGUI(ARCoreExtensionsProjectSettings.Instance);
         }
 
-        private static void DrawGUI(object targetObject)
+        /// <summary>
+        /// Auto GUI generating function.
+        /// </summary>
+        /// <param name="targetObject">The object instance to draw.</param>
+        public static void DrawGUI(object targetObject)
         {
             Type targetType = targetObject.GetType();
             foreach (FieldInfo fieldInfo in targetType.GetFields())
@@ -183,7 +197,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     EditorGUILayout.EndHorizontal();
                 }
 
-                GUILayout.Space(UnityEditor.EditorGUIUtility.standardVerticalSpacing);
+                GUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
                 DisplayHelpInfo(fieldInfo, targetObject);
             }
         }

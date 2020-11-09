@@ -144,6 +144,8 @@ namespace Google.XR.ARCoreExtensions
                 _arCoreSubsystem.beforeSetConfiguration += BeforeConfigurationChanged;
             }
 #endif // UNITY_ANDROID
+
+            CachedData.Reset();
         }
 
         /// <summary>
@@ -160,6 +162,8 @@ namespace Google.XR.ARCoreExtensions
                 _arCoreSubsystem.beforeSetConfiguration -= BeforeConfigurationChanged;
             }
 #endif // UNITY_ANDROID
+
+            CachedData.Reset();
         }
 
         /// <summary>
@@ -210,6 +214,13 @@ namespace Google.XR.ARCoreExtensions
 #endif
         }
 #if UNITY_ANDROID
+
+        /// <summary>
+        /// Unity OnValidate.
+        /// </summary>
+        public void OnValidate()
+        {
+        }
 
         private void RequestPermission()
         {

@@ -25,6 +25,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.IO;
     using System.Reflection;
     using Google.XR.ARCoreExtensions;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
 
     /// <summary>
@@ -157,7 +158,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.None)
             {
                 AndroidAuthenticationStrategySetting =
-                    string.IsNullOrEmpty(Instance.AndroidCloudServicesApiKey) ?
+                    string.IsNullOrEmpty(AndroidCloudServicesApiKey) ?
                     AndroidAuthenticationStrategy.Keyless :
                     AndroidAuthenticationStrategy.ApiKey;
             }
@@ -165,7 +166,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.None)
             {
                 IOSAuthenticationStrategySetting =
-                    string.IsNullOrEmpty(Instance.IOSCloudServicesApiKey) ?
+                    string.IsNullOrEmpty(IOSCloudServicesApiKey) ?
                     IOSAuthenticationStrategy.AuthenticationToken :
                     IOSAuthenticationStrategy.ApiKey;
             }
@@ -307,66 +308,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     }
 
     /// <summary>
-    /// Help attribute that displays the help message as a HelpBox below the property.
-    /// When uses HelpAttribute and other inspector attributes, make sure that the HelpAttribute
-    /// has the lowest order, otherwise it may not be drawn in the inspector.
-    /// NOTE:
-    /// When using HelpAttribute and TextAreaAttribute together, the text area will not have
-    /// a scrollbar.
-    /// HelpAttribute is incompatible with a custom type.
-    /// </summary>
-    public class HelpAttribute : PropertyAttribute
-    {
-        /// <summary>
-        /// The help message to display in the help box.
-        /// </summary>
-        public readonly string HelpMessage = null;
-
-        /// <summary>
-        /// The type of the help message which controls the icon in help box.
-        /// </summary>
-        public readonly HelpMessageType MessageType = HelpMessageType.None;
-
-        /// <summary>
-        /// Constructor for a HelpAttribute.
-        /// </summary>
-        /// <param name="helpMessage">Message to display.</param>
-        /// <param name="messageType"><see cref="HelpMessageType"/> for the help box.</param>
-        public HelpAttribute(string helpMessage,
-            HelpMessageType messageType = HelpMessageType.None)
-        {
-            HelpMessage = helpMessage;
-            MessageType = messageType;
-        }
-
-        /// <summary>
-        /// Help message types.
-        /// </summary>
-        public enum HelpMessageType
-        {
-            /// <summary>
-            /// Neutral message. MessageType: None.
-            /// </summary>
-            None,
-
-            /// <summary>
-            /// Info message. MessageType: Info.
-            /// </summary>
-            Info,
-
-            /// <summary>
-            /// Warning message. MessageType: Waring.
-            /// </summary>
-            Warning,
-
-            /// <summary>
-            /// Error message. MessageType: Error.
-            /// </summary>
-            Error,
-        }
-    }
-
-    /// <summary>
     /// This attribute controls whether to display the field or not. The function name
     /// would be input as the parameter to this attribute. Note, the function must return
     /// the type bool, take no parameters, and be a member of ARCoreProjectSettings.
@@ -408,29 +349,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public DisplayNameAttribute(string displayString)
         {
             DisplayString = displayString;
-        }
-    }
-
-    /// <summary>
-    /// This attribute is used to generate a HelpBox based on the HelpAttribute
-    /// return by the given reflection function. Note, the function must return
-    /// the type HelpAttribute, take no parameters, and be a member of ARCoreProjectSettings.
-    /// </summary>
-    internal class DynamicHelpAttribute : Attribute
-    {
-        /// <summary>
-        /// Reflection function that return the type HelpAttribute, take no parameters,
-        /// and be a member of ARCoreProjectSettings.
-        /// </summary>
-        public readonly string CheckingFunction;
-
-        /// <summary>
-        /// Initializes a new instance of the `DynamicHelp` class.
-        /// </summary>
-        /// <param name="checkingFunction">Reflection function.</param>
-        public DynamicHelpAttribute(string checkingFunction)
-        {
-            CheckingFunction = checkingFunction;
         }
     }
 

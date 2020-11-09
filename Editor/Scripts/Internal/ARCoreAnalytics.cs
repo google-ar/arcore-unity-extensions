@@ -149,7 +149,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 {
                     if (_verbose == true)
                     {
+#if UNITY_2020_2_OR_NEWER
+                        if (_webRequest.result == UnityWebRequest.Result.ConnectionError)
+#else
                         if (_webRequest.isNetworkError == true)
+#endif
                         {
                             Debug.Log("Error sending Google ARCore SDK for Unity analytics: " +
                                       _webRequest.error);

@@ -20,13 +20,15 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEngine;
 
-    internal class AssetHelper
+    /// <summary>
+    /// Helper methods to handle Unity assets.
+    /// </summary>
+    public class AssetHelper
     {
         /// <summary>
         /// Get a PluginImporter object for a specific plugin file, anywhere in the project.
