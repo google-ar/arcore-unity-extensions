@@ -72,7 +72,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static void UploadInstance()
         {
             var preloadedAssets = PlayerSettings.GetPreloadedAssets().ToList();
-            preloadedAssets.RemoveAll(x => x.GetType() == typeof(RuntimeConfig));
+            _ = preloadedAssets.RemoveAll(x => x != null && x.GetType() == typeof(RuntimeConfig));
 
             if (Instance == null)
             {
