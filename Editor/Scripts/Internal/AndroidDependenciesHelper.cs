@@ -30,7 +30,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// This handles the addition and removal android dependencies, and run PlayServicesResolver
     /// plugin.
     /// </summary>
-    internal static class AndroidDependenciesHelper
+    public static class AndroidDependenciesHelper
     {
         private static readonly string _templateFileExtension = ".template";
         private static readonly string _playServiceDependencyFileExtension = ".xml";
@@ -90,7 +90,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (enabledDependencies && !File.Exists(dependenciesXMLPath))
             {
                 Debug.LogFormat(
-                    "Adding {0}.", Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
+                    "Adding {0}.",
+                    System.IO.Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
 
                 File.Copy(dependenciesTemplatePath, dependenciesXMLPath);
                 AssetDatabase.Refresh();
@@ -98,7 +99,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             else if (!enabledDependencies && File.Exists(dependenciesXMLPath))
             {
                 Debug.LogFormat(
-                    "Removing {0}.", Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
+                    "Removing {0}.",
+                    System.IO.Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
 
                 File.Delete(dependenciesXMLPath);
                 File.Delete(dependenciesXMLPath + ".meta");
@@ -208,9 +210,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
 
             if (!string.IsNullOrEmpty(jdkPath) &&
-                (File.GetAttributes(jdkPath) & FileAttributes.Directory) == 0)
+                (File.GetAttributes(jdkPath) & System.IO.FileAttributes.Directory) == 0)
             {
-                Debug.LogError(string.Format("Invalid JDK path '{0}'", jdkPath));
+                Debug.LogErrorFormat("Invalid JDK path '{0}'", jdkPath);
                 jdkPath = null;
             }
 

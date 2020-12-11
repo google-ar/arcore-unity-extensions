@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="RecordingResult.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,28 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Results from recording methods.
     /// </summary>
-    public class VersionInfo
+    public enum RecordingResult
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// The request completed successfully.
         /// </summary>
-        public static readonly string Version = "1.22.0";
+        OK,
+
+        /// <summary>
+        /// The <cref="ARCoreRecordingConfig"> was null or invalid.
+        /// </summary>
+        ErrorInvalidArgument,
+
+        /// <summary>
+        /// IO or other general failure.
+        /// </summary>
+        ErrorRecordingFailed,
+
+        /// <summary>
+        /// A recording is already in progress.
+        /// </summary>
+        ErrorIllegalState,
     }
 }

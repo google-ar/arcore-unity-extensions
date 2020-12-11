@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="EnumFlagsAttribute.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,28 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
+namespace Google.XR.ARCoreExtensions.Internal
 {
+    using UnityEngine;
+
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Enum flags attribute to calculate the "everything" option based on the current
+    /// enum values instead of using "-1" directly for the backward compatibility.
     /// </summary>
-    public class VersionInfo
+    public class EnumFlagsAttribute : PropertyAttribute
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// The enum type of the property with <see cref="System.FlagsAttribute"/>.
         /// </summary>
-        public static readonly string Version = "1.22.0";
+        public System.Type EnumType;
+
+        /// <summary>
+        /// Constructor of EnumFlagsAttribute class.
+        /// </summary>
+        /// <param name="type">The type of the enum.</param>
+        public EnumFlagsAttribute(System.Type type)
+        {
+            EnumType = type;
+        }
     }
 }

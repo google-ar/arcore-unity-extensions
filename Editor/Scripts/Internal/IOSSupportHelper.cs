@@ -24,7 +24,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEditor;
     using UnityEngine;
 
-    internal static class IOSSupportHelper
+    /// <summary>
+    /// IOS support helper class.
+    /// </summary>
+    public static class IOSSupportHelper
     {
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
         private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
@@ -32,6 +35,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private const string _arCoreIOSDependencyFileName = "ARCoreiOSDependencies";
         private const string _arCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
 
+        /// <summary>
+        /// Enables ARCore iOS Support in Extensions.
+        /// </summary>
+        /// <param name="arcoreIOSEnabled">Indicates whether to enable or disable iOS support.
+        /// </param>
         public static void SetARCoreIOSSupportEnabled(bool arcoreIOSEnabled)
         {
             if (arcoreIOSEnabled)
@@ -50,6 +58,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             UpdateIOSPodDependencies(arcoreIOSEnabled, _arCoreIOSDependencyFileName);
         }
 
+        /// <summary>
+        /// Updates the iOS pod dependency based on iOS support state.
+        /// </summary>
+        /// <param name="arcoreIOSEnabled">Enable or disable the dependency.
+        /// </param>
+        /// <param name="dependencyFileName">The file name of the dependency template.</param>
         public static void UpdateIOSPodDependencies(bool arcoreIOSEnabled,
             string dependencyFileName)
         {

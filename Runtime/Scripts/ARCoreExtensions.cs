@@ -24,12 +24,15 @@ namespace Google.XR.ARCoreExtensions
     using System.Collections.Generic;
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
+    using Unity.Collections;
     using UnityEngine;
 
 #if UNITY_ANDROID
     using UnityEngine.XR.ARCore;
 #endif // UNITY_ANDROID
     using UnityEngine.XR.ARFoundation;
+    using UnityEngine.XR.ARSubsystems;
+
 
     /// <summary>
     /// ARCore Extensions, this script allows an app to specify and provide access to
@@ -58,10 +61,53 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public ARCoreExtensionsConfig ARCoreExtensionsConfig;
 
+        /// <summary>
+        /// The <see cref="ARCoreExtensionsCameraConfigFilter"/> to define the set of properties
+        /// desired or required by the app to run.
+        /// </summary>
+        [Tooltip("Configuration options to select the camera mode and features.")]
+        public ARCoreExtensionsCameraConfigFilter CameraConfigFilter;
+
+        /// <summary>
+        /// The callback event that allows a camera configuration to be selected from
+        /// a list of valid configurations.
+        /// The callback should be registered before the ARCore session is enabled
+        /// (e.g. Unity's Awake() method) to ensure it is triggered on the first
+        /// frame update.
+        /// </summary>
+        [HideInInspector]
+        public OnChooseXRCameraConfigurationEvent OnChooseXRCameraConfiguration;
+
+        /// <summary>
+        /// Selects a camera configuration for the ARCore session to use.
+        /// </summary>
+        /// <param name="supportedConfigurations">A list of supported camera configurations.
+        /// The size is dependent on <see cref="CameraConfigFilter"/> settings.
+        /// The GPU texture resolutions are the same in all configs.
+        /// Currently, most devices provide GPU texture resolution of 1920 x 1080, but devices
+        /// might provide higher or lower resolution textures, depending on device capabilities.
+        /// The CPU image resolutions returned are VGA, 720p, and a resolution matching
+        /// the GPU texture, typically the native resolution of the device.</param>
+        /// <returns>The index of the camera configuration in <c>supportedConfigurations</c> to be
+        /// used for the ARCore session. If the return value is not a valid index
+        /// (e.g. the value -1), then no camera configuration will be set and the ARCore session
+        /// will use the previously selected camera configuration or a default configuration
+        /// if no previous selection exists.</returns>
+        public delegate int OnChooseXRCameraConfigurationEvent(
+            List<XRCameraConfiguration> supportedConfigurations);
+
 #if UNITY_ANDROID
         private string _currentPermissionRequest = null;
 
         private HashSet<string> _requiredPermissionNames = new HashSet<string>();
+
+        private ARCoreSessionSubsystem _arCoreSubsystem;
+
+        private ARCoreExtensionsConfig _cachedConfig = null;
+
+        private ARCoreCameraSubsystem _arCoreCameraSubsystem;
+
+        private ARCoreExtensionsCameraConfigFilter _cachedFilter = null;
 
 #endif
         internal static ARCoreExtensions _instance { get; private set; }
@@ -85,12 +131,6 @@ namespace Google.XR.ARCoreExtensions
 #endif
             }
         }
-
-#if UNITY_ANDROID
-        private ARCoreSessionSubsystem _arCoreSubsystem;
-
-        private ARCoreExtensionsConfig _cachedConfig = null;
-#endif
 
         /// <summary>
         /// Unity's Awake method.
@@ -143,6 +183,18 @@ namespace Google.XR.ARCoreExtensions
             {
                 _arCoreSubsystem.beforeSetConfiguration += BeforeConfigurationChanged;
             }
+
+            _arCoreCameraSubsystem = (ARCoreCameraSubsystem)CameraManager.subsystem;
+            if (_arCoreCameraSubsystem == null)
+            {
+                Debug.LogError(
+                    "No active ARCoreCameraSubsystem is available in this session, Please " +
+                    "ensure that a valid loader configuration exists in the XR project settings.");
+            }
+            else
+            {
+                _arCoreCameraSubsystem.beforeGetCameraConfiguration += BeforeGetCameraConfiguration;
+            }
 #endif // UNITY_ANDROID
 
             CachedData.Reset();
@@ -160,6 +212,11 @@ namespace Google.XR.ARCoreExtensions
             if (_arCoreSubsystem != null)
             {
                 _arCoreSubsystem.beforeSetConfiguration -= BeforeConfigurationChanged;
+            }
+
+            if (_arCoreCameraSubsystem != null)
+            {
+                _arCoreCameraSubsystem.beforeGetCameraConfiguration -= BeforeGetCameraConfiguration;
             }
 #endif // UNITY_ANDROID
 
@@ -192,14 +249,26 @@ namespace Google.XR.ARCoreExtensions
                 RequestPermission();
             }
 
-            // Update ARCore session configuration.
-            if (Session.SessionHandle() != IntPtr.Zero && ARCoreExtensionsConfig != null)
+            if (Session.SessionHandle() == IntPtr.Zero)
             {
-                if (_cachedConfig != null && _cachedConfig.Equals(ARCoreExtensionsConfig))
-                {
-                    return;
-                }
+                return;
+            }
 
+            // Update camera config filter
+            if (CameraConfigFilter != null && !CameraConfigFilter.Equals(_cachedFilter))
+            {
+                _cachedFilter =
+                    ScriptableObject.CreateInstance<ARCoreExtensionsCameraConfigFilter>();
+                _cachedFilter.CopyFrom(CameraConfigFilter);
+
+                // Extensions will attempt to select the camera config based on the filter
+                // if it's in use, otherwise, relies on AR Foundation's default behavior.
+                SelectCameraConfig();
+            }
+
+            // Update session configuration.
+            if (ARCoreExtensionsConfig != null && !ARCoreExtensionsConfig.Equals(_cachedConfig))
+            {
                 _cachedConfig = ScriptableObject.CreateInstance<ARCoreExtensionsConfig>();
                 _cachedConfig.CopyFrom(ARCoreExtensionsConfig);
 
@@ -224,12 +293,6 @@ namespace Google.XR.ARCoreExtensions
 
         private void RequestPermission()
         {
-            // All required permissions are granted.
-            if (_requiredPermissionNames.Count == 0)
-            {
-                return;
-            }
-
             // Waiting for current request.
             if (!AndroidPermissionsManager.IsPermissionGranted(
                 AndroidPermissionsManager._cameraPermission) ||
@@ -245,12 +308,6 @@ namespace Google.XR.ARCoreExtensions
 
         private void OnPermissionRequestFinish(bool isGranted)
         {
-            if (_currentPermissionRequest == null)
-            {
-                Debug.LogWarning("Received unexpected permission request result.");
-                return;
-            }
-
             Debug.LogFormat("{0} {1}.",
                 isGranted ? "Granted" : "Denied", _currentPermissionRequest);
             _requiredPermissionNames.Remove(_currentPermissionRequest);
@@ -265,11 +322,73 @@ namespace Google.XR.ARCoreExtensions
                 return;
             }
 
-            if (eventArgs.session != IntPtr.Zero && eventArgs.config != IntPtr.Zero)
+            if (eventArgs.arSession.AsIntPtr() != IntPtr.Zero &&
+                eventArgs.arConfig.AsIntPtr() != IntPtr.Zero)
             {
-                SessionApi.UpdateSessionConfig(eventArgs.session, eventArgs.config, _cachedConfig);
+                SessionApi.UpdateSessionConfig(
+                    eventArgs.arSession.AsIntPtr(), eventArgs.arConfig.AsIntPtr(), _cachedConfig);
             }
         }
-#endif
+
+        private void BeforeGetCameraConfiguration(
+            ARCoreBeforeGetCameraConfigurationEventArgs eventArgs)
+        {
+            if (CameraConfigFilter == null)
+            {
+                return;
+            }
+
+            if (eventArgs.session.AsIntPtr() != IntPtr.Zero &&
+                eventArgs.filter.AsIntPtr() != IntPtr.Zero)
+            {
+                CameraConfigFilterApi.UpdateFilter(
+                    eventArgs.session.AsIntPtr(), eventArgs.filter.AsIntPtr(), CameraConfigFilter);
+
+                // Update the filter cache to avoid overwriting user's selection in case the
+                // GetConfiguration() is called by the user instead of the SelectCameraConfig().
+                if (!CameraConfigFilter.Equals(_cachedFilter))
+                {
+                    _cachedFilter =
+                        ScriptableObject.CreateInstance<ARCoreExtensionsCameraConfigFilter>();
+                    _cachedFilter.CopyFrom(CameraConfigFilter);
+                }
+            }
+        }
+
+        private void SelectCameraConfig()
+        {
+            if (CameraManager == null)
+            {
+                return;
+            }
+
+            using (var configurations = CameraManager.GetConfigurations(Allocator.Temp))
+            {
+                if (configurations.Length == 0)
+                {
+                    Debug.LogWarning(
+                        "Unable to choose a custom camera configuration " +
+                        "because none are available.");
+                    return;
+                }
+
+                int configIndex = 0;
+                if (OnChooseXRCameraConfiguration != null)
+                {
+                    configIndex = OnChooseXRCameraConfiguration(configurations.ToList());
+                }
+
+                if (configIndex < 0 || configIndex >= configurations.Length)
+                {
+                    Debug.LogWarning(
+                        "Failed to find a valid config index with " +
+                        "the custom selection function.");
+                    return;
+                }
+
+                CameraManager.currentConfiguration = configurations[configIndex];
+            }
+        }
+#endif // UNITY_ANDROID
     }
 }

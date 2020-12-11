@@ -191,7 +191,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'DisplayCondition' for property
+        /// Reflection function used by 'DisplayCondition' for property
         /// 'AndroidCloudServicesApiKey'.
         /// </summary>
         /// <returns>Display condition for 'AndroidCloudServicesApiKey'.</returns>
@@ -209,7 +209,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'DynamicHelp' for property
+        /// Reflection function used by 'DynamicHelp' for property
         /// 'AndroidAuthenticationStrategySetting'.
         /// </summary>
         /// <returns>Help info for 'AndroidAuthenticationStrategySetting'.</returns>
@@ -229,7 +229,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'EnumRange' for property
+        /// Reflection function used by 'EnumRange' for property
         /// 'AndroidAuthenticationStrategySetting'.
         /// </summary>
         /// <returns>Enum range for 'AndroidAuthenticationStrategySetting'.</returns>
@@ -243,7 +243,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'DisplayCondition' for property
+        /// Reflection function used by 'DisplayCondition' for property
         /// 'IOSAuthenticationStrategySetting'.
         /// </summary>
         /// <returns>Display condition for 'IOSAuthenticationStrategySetting'.</returns>
@@ -253,7 +253,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'DisplayCondition' for property 'IOSCloudServicesApiKey'.
+        /// Reflection function used by 'DisplayCondition' for property 'IOSCloudServicesApiKey'.
         /// </summary>
         /// <returns>Display condition for 'IOSCloudServicesApiKey'.</returns>
         public bool IsIosApiKeyFieldDisplayed()
@@ -275,7 +275,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'EnumRange' for property 'IOSAuthenticationStrategy'.
+        /// Reflection function used by 'EnumRange' for property 'IOSAuthenticationStrategy'.
         /// </summary>
         /// <returns>Enum range for 'IOSAuthenticationStrategy'.</returns>
         public Array GetIosStrategyRange()
@@ -288,7 +288,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Refelection function used by 'DynamicHelp' for property 'IOSAuthenticationStrategy'.
+        /// Reflection function used by 'DynamicHelp' for property 'IOSAuthenticationStrategy'.
         /// </summary>
         /// <returns>Help info for 'IOSAuthenticationStrategy'.</returns>
         public HelpAttribute GetIosStrategyHelpInfo()

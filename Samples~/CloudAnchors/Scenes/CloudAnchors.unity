@@ -3049,6 +3049,7 @@ MonoBehaviour:
   CameraManager: {fileID: 67528616}
   ARCoreExtensionsConfig: {fileID: 11400000, guid: b2397e3a99a724c389c100c6bbc2449d,
     type: 2}
+  CameraConfigFilter: {fileID: 0}
 --- !u!1 &1650823692
 GameObject:
   m_ObjectHideFlags: 0

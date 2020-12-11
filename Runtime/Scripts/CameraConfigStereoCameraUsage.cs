@@ -22,6 +22,7 @@ namespace Google.XR.ARCoreExtensions
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using UnityEngine;
 
     /// <summary>
     /// Stereo Camera usage options.
@@ -35,13 +36,18 @@ namespace Google.XR.ARCoreExtensions
         /// A stereo camera is present on the device and will be used by ARCore.
         /// Not available on all ARCore supported devices.
         /// </summary>
+        [Tooltip("ARCore requires a stereo camera to be present on the device. " +
+                 "Not available on all ARCore supported devices.")]
         RequireAndUse = 0x0001,
 
         /// <summary>
         /// ARCore will not attempt to use a stereo camera, even if one is
         /// present.
-        /// Valid on all ARCore supported devices.
+        /// Valid on all <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// ARCore supported devices</a>.
         /// </summary>
+        [Tooltip("ARCore will not use the stereo camera, even if it is present. " +
+                 "Available on all supported devices.")]
         DoNotUse = 0x0002,
     }
 }

@@ -22,7 +22,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Text;
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;
@@ -31,13 +30,19 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEngine.XR.ARCore;
     using UnityEngine.XR.Management;
 
-    internal class AndroidSupportPreprocessBuild : IPreprocessBuildWithReport
+    /// <summary>
+    /// Preprocess build to check android support.
+    /// </summary>
+    public class AndroidSupportPreprocessBuild : IPreprocessBuildWithReport
     {
-        private const string _mainTempatePath = "Plugins/Android/mainTemplate.gradle";
+        private const string _mainTemplatePath = "Plugins/Android/mainTemplate.gradle";
         private const string _launcherTemplatePath = "Plugins/Android/launcherTemplate.gradle";
 
-        [SuppressMessage("UnityRules.UnityStyleRules",
-         "US1109:PublicPropertiesMustBeUpperCamelCase",
+        /// <summary>
+        /// Gets the relative callback order for callbacks. Callbacks with lower values are called
+        /// before ones with higher values.
+        /// </summary>
+        [SuppressMessage("UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
          Justification = "Overriden property.")]
         public int callbackOrder
         {
@@ -47,9 +52,16 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
         }
 
+        /// <summary>
+        /// A callback received before the build is started.
+        /// </summary>
+        /// <param name="report">A report containing information about the build,
+        /// such as its target platform and output path.</param>
         public void OnPreprocessBuild(BuildReport report)
         {
+#if !ARCORE_FEATURE_UNIT_TEST // BuildReport is unavailable on Test Welder.
             if (report.summary.platform == BuildTarget.Android)
+#endif
             {
                 if (!CheckARCoreLoader())
                 {
@@ -117,7 +129,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
             // Need to use gradle plugin version >= 3.6.0 in main gradle by editing
             // 'Assets/Plugins/Android/mainTemplate.gradle'.
-            if (!File.Exists(Path.Combine(Application.dataPath, _mainTempatePath)))
+            if (!File.Exists(Path.Combine(Application.dataPath, _mainTemplatePath)))
             {
                 throw new BuildFailedException(
                     "Main Gradle template is not used in this build. " +

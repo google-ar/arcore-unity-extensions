@@ -126,6 +126,96 @@ namespace Google.XR.ARCoreExtensions.Internal
             return (FeatureMapQuality)featureMapQuality;
         }
 
+        public static RecordingStatus GetRecordingStatus(IntPtr sessionHandle)
+        {
+            ApiRecordingStatus apiStatus = ApiRecordingStatus.None;
+            ExternApi.ArSession_getRecordingStatus(sessionHandle, ref apiStatus);
+            return Translators.ToRecordingStatus(apiStatus);
+        }
+
+        public static RecordingResult StartRecording(IntPtr sessionHandle,
+                                                     ARCoreRecordingConfig config)
+        {
+            IntPtr recordingConfigHandle = RecordingConfigApi.Create(sessionHandle, config);
+
+            ApiArStatus status = ExternApi.ArSession_startRecording(
+                sessionHandle, recordingConfigHandle);
+
+            RecordingConfigApi.Destroy(recordingConfigHandle);
+
+            // Only specific ArStatus responses are expected.
+            switch (status)
+            {
+                case ApiArStatus.Success:
+                    return RecordingResult.OK;
+                case ApiArStatus.ErrorIllegalState:
+                    return RecordingResult.ErrorIllegalState;
+                case ApiArStatus.ErrorInvalidArgument:
+                    return RecordingResult.ErrorInvalidArgument;
+                case ApiArStatus.ErrorRecordingFailed:
+                    return RecordingResult.ErrorRecordingFailed;
+                default:
+                    Debug.LogErrorFormat("Attempt to start a recording failed with unexpected " +
+                        "status: {0}", status);
+                    break;
+            }
+
+            return RecordingResult.ErrorRecordingFailed;
+        }
+
+        public static RecordingResult StopRecording(IntPtr sessionHandle)
+        {
+            ApiArStatus status = ExternApi.ArSession_stopRecording(sessionHandle);
+
+            // Only specific ArStatus responses are expected.
+            switch (status)
+            {
+                case ApiArStatus.Success:
+                    return RecordingResult.OK;
+                case ApiArStatus.ErrorRecordingFailed:
+                    return RecordingResult.ErrorRecordingFailed;
+                default:
+                    Debug.LogErrorFormat("Attempt to stop recording failed with unexpected " +
+                        "status: {0}", status);
+                    break;
+            }
+
+            return RecordingResult.ErrorRecordingFailed;
+        }
+
+        public static PlaybackStatus GetPlaybackStatus(IntPtr sessionHandle)
+        {
+            ApiPlaybackStatus apiStatus = ApiPlaybackStatus.None;
+            ExternApi.ArSession_getPlaybackStatus(sessionHandle, ref apiStatus);
+            return apiStatus.ToPlaybackStatus();
+        }
+
+        public static PlaybackResult SetPlaybackDataset(IntPtr sessionHandle,
+                                                        string datasetFilepath)
+        {
+            ApiArStatus status =
+                ExternApi.ArSession_setPlaybackDataset(sessionHandle, datasetFilepath);
+
+            // Only specific ArStatus responses are expected.
+            switch (status)
+            {
+                case ApiArStatus.Success:
+                    return PlaybackResult.OK;
+                case ApiArStatus.ErrorSessionNotPaused:
+                    return PlaybackResult.ErrorSessionNotPaused;
+                case ApiArStatus.ErrorSessionUnsupported:
+                    return PlaybackResult.ErrorSessionUnsupported;
+                case ApiArStatus.ErrorPlaybackFailed:
+                    return PlaybackResult.ErrorPlaybackFailed;
+                default:
+                    Debug.LogErrorFormat("Attempt to playback recording failed with unexpected " +
+                        "status: {0}", status);
+                    break;
+            }
+
+            return PlaybackResult.ErrorPlaybackFailed;
+        }
+
         [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
             Justification = "External call.")]
         private struct ExternApi
@@ -194,6 +284,26 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr sessionHandle,
                 IntPtr configHandle,
                 ref ApiCloudAnchorMode mode);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getRecordingStatus(
+                IntPtr sessionHandle, ref ApiRecordingStatus recordingStatus);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_startRecording(
+                IntPtr sessionHandle, IntPtr recordingConfigHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_stopRecording(
+                IntPtr sessionHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getPlaybackStatus(
+                IntPtr sessionHandle, ref ApiPlaybackStatus playbackStatus);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_setPlaybackDataset(
+                IntPtr sessionHandle, string datasetFilepath);
 #pragma warning restore 626
         }
     }

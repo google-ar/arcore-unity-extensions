@@ -30,7 +30,6 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private static readonly Matrix4x4 _unityWorldToGLWorldInverse
             = _unityWorldToGLWorld.inverse;
-
         public static CloudAnchorState ToCloudAnchorState(ApiCloudAnchorState state)
         {
             switch (state)
@@ -113,6 +112,40 @@ namespace Google.XR.ARCoreExtensions.Internal
                 unityWorld_T_unityLocal.GetColumn(1));
 
             return new Pose(position, rotation);
+        }
+
+        public static RecordingStatus ToRecordingStatus(this ApiRecordingStatus apiStatus)
+        {
+            switch (apiStatus)
+            {
+                case ApiRecordingStatus.OK:
+                    return RecordingStatus.OK;
+                case ApiRecordingStatus.IOError:
+                    return RecordingStatus.IOError;
+                case ApiRecordingStatus.None:
+                    return RecordingStatus.None;
+                default:
+                    Debug.LogErrorFormat("Unrecognized ApiRecordingStatus value {0}", apiStatus);
+                    return RecordingStatus.None;
+            }
+        }
+
+        public static PlaybackStatus ToPlaybackStatus(this ApiPlaybackStatus apiStatus)
+        {
+            switch (apiStatus)
+            {
+                case ApiPlaybackStatus.None:
+                  return PlaybackStatus.None;
+                case ApiPlaybackStatus.OK:
+                    return PlaybackStatus.OK;
+                case ApiPlaybackStatus.IOError:
+                    return PlaybackStatus.IOError;
+                case ApiPlaybackStatus.FinishedSuccess:
+                    return PlaybackStatus.FinishedSuccess;
+                default:
+                    Debug.LogErrorFormat("Unrecognized ApiPlaybackStatus value {0}", apiStatus);
+                    return PlaybackStatus.None;
+            }
         }
     }
 }

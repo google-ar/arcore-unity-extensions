@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="PlaybackStatus.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,32 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Describes the current playback status.
     /// </summary>
-    public class VersionInfo
+    public enum PlaybackStatus
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// The session is not playing back a dataset.
         /// </summary>
-        public static readonly string Version = "1.22.0";
+        None,
+
+        /// <summary>
+        /// Playback is in process without issues.
+        /// </summary>
+        OK,
+
+        /// <summary>
+        /// Playback has stopped due to an error.
+        /// </summary>
+        IOError,
+
+        /// <summary>
+        /// Playback has finished successfully. The session is waiting on the final
+        /// frame of the dataset. To resume a live camera feed or play another
+        /// dataset, pause the session, call
+        /// <cref="ARPlaybackManager"/>.<c>SetPlaybackDataset()</c>, and resume the
+        /// session.
+        /// </summary>
+        FinishedSuccess,
     }
 }

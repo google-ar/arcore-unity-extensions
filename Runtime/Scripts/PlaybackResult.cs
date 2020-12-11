@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="PlaybackResult.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,28 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Results from attempting to set playback dataset filepath.
     /// </summary>
-    public class VersionInfo
+    public enum PlaybackResult
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// The request completed successfully.
         /// </summary>
-        public static readonly string Version = "1.22.0";
+        OK,
+
+        /// <summary>
+        /// The session was not paused when setting the playback dataset.
+        /// </summary>
+        ErrorSessionNotPaused,
+
+        /// <summary>
+        /// Operation is unsupported with the current session.
+        /// </summary>
+        ErrorSessionUnsupported,
+
+        /// <summary>
+        /// Playback failed.
+        /// </summary>
+        ErrorPlaybackFailed,
     }
 }

@@ -44,8 +44,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public readonly HelpMessageType MessageType = HelpMessageType.None;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:GoogleARCoreInternal.HelpAttribute"/>
-        /// class.
+        /// Initializes a new instance of the <see cref="HelpAttribute"/> class.
         /// </summary>
         /// <param name="helpMessage">Help message.</param>
         /// <param name="messageType">Message type.</param>

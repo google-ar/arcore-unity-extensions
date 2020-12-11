@@ -73,6 +73,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             if (IsPermissionGranted(permissionName))
             {
                 onRequestFinished(true);
+                return;
             }
 
             if (_permissionRequest != null)
