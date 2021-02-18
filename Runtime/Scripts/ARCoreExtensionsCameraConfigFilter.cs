@@ -26,8 +26,8 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// The <see cref="ARCoreExtensionsCameraConfigFilter"/> class is used by the camera manager
-    /// to derive a list of camera configurations available on the device at runtime.
+    /// The <c><see cref="ARCoreExtensionsCameraConfigFilter"/></c> class is used by the camera
+    /// manager to derive a list of camera configurations available on the device at runtime.
     /// </summary>
     /// <remarks>
     /// It is possible to select options in such a way that some devices will have no available
@@ -39,12 +39,12 @@ namespace Google.XR.ARCoreExtensions
     /// devices</a> page for an up to date list of devices with this capability.
     ///
     /// An app may adjust its capabilities at runtime by selecting a wider range of config filters
-    /// and using <see cref="ARCoreExtensions.OnChooseXRCameraConfiguration"/> to specify a
+    /// and using <c><see cref="ARCoreExtensions.OnChooseXRCameraConfiguration"/></c> to specify a
     /// selection function. In that function the app may then adjust its runtime settings and
     /// select an appropriate camera configuration.
     ///
     /// If no callback is registered, ARCore Extensions will use the first
-    /// <see cref="XRCameraConfiguration"/> in the list of available configurations.
+    /// <c><see cref="XRCameraConfiguration"/></c> in the list of available configurations.
     /// </remarks>
     [CreateAssetMenu(
         fileName = "ARCoreExtensionsCameraConfigFilter",
@@ -61,7 +61,8 @@ namespace Google.XR.ARCoreExtensions
             CameraConfigTargetFps.Target30FPS | CameraConfigTargetFps.Target60FPS;
 
         /// <summary>
-        /// Allows an app to use or disable a hardware depth sensor if present on the device.
+        /// Allows an app to use or disable a hardware depth sensor, such as a
+        /// time-of-flight sensor (or ToF sensor), if present on the device.
         /// </summary>
         [DynamicHelp("GetDepthSensorUsageInfo")]
         [EnumFlags(typeof(CameraConfigDepthSensorUsage))]
@@ -77,7 +78,8 @@ namespace Google.XR.ARCoreExtensions
             CameraConfigStereoCameraUsage.RequireAndUse | CameraConfigStereoCameraUsage.DoNotUse;
 
         /// <summary>
-        /// Reflection function used by 'DynamicHelp' for <see cref="TargetCameraFramerate"/>.
+        /// Reflection function used by 'DynamicHelp' for
+        /// <c><see cref="TargetCameraFramerate"/></c>.
         /// </summary>
         /// <returns>The help attribute of target camera framerate filter.</returns>
         public HelpAttribute GetTargetCameraFramerateInfo()
@@ -102,9 +104,10 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Reflection function used by 'DynamicHelp' for <see cref="DepthSensorUsage"/>.
+        /// Reflection function used by 'DynamicHelp' for <c><see cref="DepthSensorUsage"/></c>.
         /// </summary>
-        /// <returns>The help attribute of depth sensor usage filter.</returns>
+        /// <returns>The help attribute of the hardware depth sensor usage filter, such as a
+        /// time-of-flight (ToF) sensor.</returns>
         public HelpAttribute GetDepthSensorUsageInfo()
         {
             if ((DepthSensorUsage & CameraConfigDepthSensorUsage.DoNotUse) == 0)
@@ -127,7 +130,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Reflection function used by 'DynamicHelp' for <see cref="StereoCameraUsage"/>.
+        /// Reflection function used by 'DynamicHelp' for <c><see cref="StereoCameraUsage"/></c>.
         /// </summary>
         /// <returns>The help attribute of stereo sensor usage filter.</returns>
         public HelpAttribute GetStereoCameraUsageInfo()

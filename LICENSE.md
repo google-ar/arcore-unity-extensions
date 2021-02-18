@@ -1,6 +1,10 @@
 ===============================================================================
 
-GoogleARCoreExtensions/Runtime/Plugins/arcore_client.aar is licensed as follows:
+All files in the following folders:
+- GoogleARCoreExtensions/Runtime/Plugins
+- GoogleARCoreExtensions/Editor/ExternalDependencyManager
+
+are licensed as follows:
 
 Covered by the **Google APIs Terms of Service** at
 [https://developers.google.com/terms/](https://developers.google.com/terms/)

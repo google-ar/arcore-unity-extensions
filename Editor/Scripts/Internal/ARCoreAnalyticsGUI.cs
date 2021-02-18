@@ -20,10 +20,13 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+    using System.Diagnostics.CodeAnalysis;
     using UnityEditor;
     using UnityEngine;
 
-    internal class ARCoreAnalyticsGUI
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
+        Justification = "Internal")]
+    public class ARCoreAnalyticsGUI
     {
         // Use public static properties here, so that labels are automatically extracted by
         // GetSearchKeywordsFromGUIContentProperties() in ARCoreAnalyticsProvider.
@@ -38,7 +41,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         // Render ARCore Analytics Settings for ARCoreAnalyticsProvider and
         // ARCoreAnalyticsPreferences.
-        internal static void OnGUI()
+        public static void OnGUI()
         {
             EditorGUIUtility.labelWidth = _groupLabelWidth;
             ARCoreAnalytics.Instance.EnableAnalytics =

@@ -30,7 +30,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private static readonly Matrix4x4 _unityWorldToGLWorldInverse
             = _unityWorldToGLWorld.inverse;
-        public static CloudAnchorState ToCloudAnchorState(ApiCloudAnchorState state)
+        public static CloudAnchorState ToCloudAnchorState(this ApiCloudAnchorState state)
         {
             switch (state)
             {
@@ -61,7 +61,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             return CloudAnchorState.None;
         }
 
-        public static TrackingState ToTrackingState(ApiTrackingState state)
+        public static TrackingState ToTrackingState(this ApiTrackingState state)
         {
             switch (state)
             {
@@ -75,7 +75,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             return TrackingState.None;
         }
 
-        public static ApiPose ToApiPose(Pose unityPose)
+        public static ApiPose ToApiPose(this Pose unityPose)
         {
             Matrix4x4 glWorld_T_glLocal =
                 Matrix4x4.TRS(unityPose.position, unityPose.rotation, Vector3.one);
@@ -98,7 +98,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             return apiPose;
         }
 
-        public static Pose ToUnityPose(ApiPose apiPose)
+        public static Pose ToUnityPose(this ApiPose apiPose)
         {
             Matrix4x4 glWorld_T_glLocal =
                 Matrix4x4.TRS(
@@ -130,12 +130,31 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
+        public static RecordingResult ToRecordingResult(this ApiArStatus apiArStatus)
+        {
+            switch (apiArStatus)
+            {
+                case ApiArStatus.Success:
+                    return RecordingResult.OK;
+                case ApiArStatus.ErrorIllegalState:
+                    return RecordingResult.ErrorIllegalState;
+                case ApiArStatus.ErrorInvalidArgument:
+                    return RecordingResult.ErrorInvalidArgument;
+                case ApiArStatus.ErrorRecordingFailed:
+                    return RecordingResult.ErrorRecordingFailed;
+                default:
+                    Debug.LogErrorFormat(
+                        "Recording failed with unexpected status: {0}", apiArStatus);
+                    return RecordingResult.ErrorRecordingFailed;
+            }
+        }
+
         public static PlaybackStatus ToPlaybackStatus(this ApiPlaybackStatus apiStatus)
         {
             switch (apiStatus)
             {
                 case ApiPlaybackStatus.None:
-                  return PlaybackStatus.None;
+                    return PlaybackStatus.None;
                 case ApiPlaybackStatus.OK:
                     return PlaybackStatus.OK;
                 case ApiPlaybackStatus.IOError:
@@ -145,6 +164,25 @@ namespace Google.XR.ARCoreExtensions.Internal
                 default:
                     Debug.LogErrorFormat("Unrecognized ApiPlaybackStatus value {0}", apiStatus);
                     return PlaybackStatus.None;
+            }
+        }
+
+        public static PlaybackResult ToPlaybackResult(this ApiArStatus apiArStatus)
+        {
+            switch (apiArStatus)
+            {
+                case ApiArStatus.Success:
+                    return PlaybackResult.OK;
+                case ApiArStatus.ErrorSessionNotPaused:
+                    return PlaybackResult.ErrorSessionNotPaused;
+                case ApiArStatus.ErrorSessionUnsupported:
+                    return PlaybackResult.ErrorSessionUnsupported;
+                case ApiArStatus.ErrorPlaybackFailed:
+                    return PlaybackResult.ErrorPlaybackFailed;
+                default:
+                    Debug.LogErrorFormat(
+                        "Playback dataset failed with unexpected status: {0}", apiArStatus);
+                    return PlaybackResult.ErrorPlaybackFailed;
             }
         }
     }

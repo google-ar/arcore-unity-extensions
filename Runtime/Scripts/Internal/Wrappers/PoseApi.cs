@@ -34,7 +34,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         public static IntPtr Create(IntPtr sessionHandle, Pose pose)
         {
-            ApiPose apiPose = Translators.ToApiPose(pose);
+            ApiPose apiPose = pose.ToApiPose();
             IntPtr poseHandle = IntPtr.Zero;
             ExternApi.ArPose_create(
                 sessionHandle,
@@ -52,7 +52,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle,
             IntPtr poseHandle)
         {
-            ApiPose apiPose = Translators.ToApiPose(Pose.identity);
+            ApiPose apiPose = Pose.identity.ToApiPose();
             ExternApi.ArPose_getPoseRaw(
                 sessionHandle,
                 poseHandle,

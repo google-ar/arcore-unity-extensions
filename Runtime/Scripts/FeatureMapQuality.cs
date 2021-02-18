@@ -22,9 +22,9 @@ namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
     /// Indicates the quality of feature points seen by ARCore in the preceding few seconds from
-    /// a given camera <see cref="Pose"/>. A higher quality indicates that a Cloud Anchor hosted at
-    /// the current time, with the current set of recently seen feature points, is generally easier
-    /// to resolve more accurately. For more details, see
+    /// a given camera <c><see cref="Pose"/></c>. A higher quality indicates that a Cloud Anchor
+    /// hosted at the current time, with the current set of recently seen feature points, is
+    /// generally easier to resolve more accurately. For more details, see
     /// <a href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/overview">Share AR
     /// experiences with Cloud Anchors</a>.
     /// </summary>

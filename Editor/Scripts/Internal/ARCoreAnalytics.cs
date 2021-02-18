@@ -32,7 +32,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     [InitializeOnLoad]
     [Serializable]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-     Justification = "Internal")]
+        Justification = "Internal")]
     public class ARCoreAnalytics
     {
         public bool EnableAnalytics;
@@ -40,7 +40,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private const string _googleAnalyticsHost = "https://play.googleapis.com/log";
         private const long _analyticsResendDelayTicks = TimeSpan.TicksPerDay * 7;
         private long _lastUpdateTicks;
-        private bool _verbose;
         private UnityWebRequest _webRequest;
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             Instance.Load();
 
             // Send analytics immediately.
-            Instance.SendAnalytics(_googleAnalyticsHost, LogRequestUtils.BuildLogRequest(), false);
+            Instance.SendAnalytics(_googleAnalyticsHost, LogRequestUtils.BuildLogRequest());
 
             // Use the Editor Update callback to monitor the communication to the server.
             EditorApplication.update +=
@@ -83,8 +82,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// </summary>
         /// <param name="analyticsHost">Address of host to send the analytics to.</param>
         /// <param name="logRequest">Data to send to the analytics server.</param>
-        /// <param name="verbose">If true, display debug messages in the console.</param>
-        public void SendAnalytics(string analyticsHost, LogRequest logRequest, bool verbose)
+        public void SendAnalytics(string analyticsHost, LogRequest logRequest)
         {
             // Save the time sending was last attempted.
             _lastUpdateTicks = DateTime.Now.Ticks;
@@ -92,22 +90,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             // Only send if analytics is enabled.
             if (EnableAnalytics == false)
             {
-                if (verbose == true)
-                {
-                    Debug.Log("Google ARCore SDK for Unity analytics is disabled, not sending.");
-                }
-
                 return;
             }
 
             // Only allow one instance of the request at a time.
             if (_webRequest != null)
             {
-                if (verbose == true)
-                {
-                    Debug.Log("Google ARCore SDK for Unity analytics is already sending data.");
-                }
-
                 return;
             }
 
@@ -119,13 +107,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             webRequest.SetRequestHeader("Content-Type", "application/x-protobuf");
             webRequest.SendWebRequest();
 
-            // Set the verbosity preference for this request.
-            _verbose = verbose;
-            if (verbose == true)
-            {
-                Debug.Log("Sending Google ARCore SDK for Unity analytics.");
-            }
-
             // The editor callback will follow through with this request.
             _webRequest = webRequest;
         }
@@ -134,7 +115,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// Periodically checks back to update the current logging request, or if
         /// enough time has passed, initiate a new logging request.
         /// </summary>
-        private void OnAnalyticsUpdate()
+        public void OnAnalyticsUpdate()
         {
             // Nothing to do if Analytics isn't enabled.
             if (EnableAnalytics == false)
@@ -147,24 +128,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 if (_webRequest.isDone == true)
                 {
-                    if (_verbose == true)
-                    {
-#if UNITY_2020_2_OR_NEWER
-                        if (_webRequest.result == UnityWebRequest.Result.ConnectionError)
-#else
-                        if (_webRequest.isNetworkError == true)
-#endif
-                        {
-                            Debug.Log("Error sending Google ARCore SDK for Unity analytics: " +
-                                      _webRequest.error);
-                        }
-                        else
-                        {
-                            Debug.Log("Google ARCore SDK for Unity analytics sent: " +
-                                      _webRequest.downloadHandler.text);
-                        }
-                    }
-
                     _webRequest = null;
                 }
             }
@@ -173,7 +136,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (DateTime.Now.Ticks - _lastUpdateTicks >= _analyticsResendDelayTicks)
             {
                 Instance.SendAnalytics(
-                    _googleAnalyticsHost, LogRequestUtils.BuildLogRequest(), false);
+                    _googleAnalyticsHost, LogRequestUtils.BuildLogRequest());
             }
         }
     }

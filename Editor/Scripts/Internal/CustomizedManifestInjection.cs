@@ -22,6 +22,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
     using System.Xml.Linq;
     using UnityEditor.Android;
 
@@ -82,10 +83,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public void OnPostGenerateGradleAndroidProject(string path)
         {
             string manifestPath = path + _androidManifestPath;
-            XDocument manifestDoc = XDocument.Load(manifestPath);
+            XDocument manifestDoc = XDocument.Parse(File.ReadAllText(manifestPath));
             manifestDoc = GenerateCustomizedAndroidManifest(
                 manifestDoc, ARCoreExtensionsProjectSettings.Instance);
-            manifestDoc.Save(manifestPath);
+            File.WriteAllText(manifestPath, manifestDoc.ToString());
         }
     }
 }

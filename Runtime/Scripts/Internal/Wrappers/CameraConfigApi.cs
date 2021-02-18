@@ -32,6 +32,15 @@ namespace Google.XR.ARCoreExtensions.Internal
 
     internal class CameraConfigApi
     {
+        public static CameraConfigFacingDirection GetFacingDirection(
+            IntPtr sessionHandle, IntPtr cameraConfigHandle)
+        {
+            CameraConfigFacingDirection facingDirection = CameraConfigFacingDirection.Back;
+            ExternApi.ArCameraConfig_getFacingDirection(sessionHandle, cameraConfigHandle,
+                ref facingDirection);
+            return facingDirection;
+        }
+
         public static Vector2Int GetTextureDimensions(
             IntPtr sessionHandle, IntPtr cameraConfigHandle)
         {
@@ -75,6 +84,12 @@ namespace Google.XR.ARCoreExtensions.Internal
         private struct ExternApi
         {
 #pragma warning disable 626
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArCameraConfig_getFacingDirection(
+                IntPtr sessionHandle,
+                IntPtr cameraConfigHandle,
+                ref CameraConfigFacingDirection facingDirection);
+
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfig_getTextureDimensions(IntPtr sessionHandle,
                 IntPtr cameraConfigHandle, ref int width, ref int height);

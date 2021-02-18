@@ -26,7 +26,9 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
     using UnityEngine.EventSystems;
     using UnityEngine.Networking;
     using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
     using UnityEngine.XR.ARFoundation;
+    using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
     /// Controller for the Cloud Anchors Example. Handles the ARCore lifecycle.
@@ -89,6 +91,42 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// The Status Screen to display the connection status and cloud anchor instructions.
         /// </summary>
         public GameObject StatusScreen;
+
+        /// <summary>
+        /// Display the tracking helper text when the session in not tracking.
+        /// </summary>
+        public Text TrackingHelperText;
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Initializing">.</see>
+        /// </summary>
+        private const string _initializingMessage = "Tracking is being initialized.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Relocalizing">.</see>
+        /// </summary>
+        private const string _relocalizingMessage = "Tracking is resuming after an interruption.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientLight">.</see>
+        /// </summary>
+        private const string _insufficientLightMessage = "Too dark. Try moving to a well-lit area.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientFeatures">.</see>
+        /// </summary>
+        private const string _insufficientFeatureMessage =
+            "Can't find anything. Aim device at a surface with more texture or color.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.ExcessiveMotion">.</see>
+        /// </summary>
+        private const string _excessiveMotionMessage = "Moving too fast. Slow down.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Unsupported">.</see>
+        /// </summary>
+        private const string _unsupportedMessage = "Tracking lost reason is not supported.";
 
         /// <summary>
         /// The key name used in PlayerPrefs which indicates whether
@@ -290,6 +328,12 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
                     NetworkUIController.ShowDebugMessage(
                         "Waiting for Cloud Anchor to be hosted...");
                 }
+            }
+
+            // Display tracking failure reason.
+            if (_currentMode == ApplicationMode.Hosting || _passedResolvingPreparedTime)
+            {
+                DisplayTrackingHelperMessage();
             }
 
             // If the origin anchor has not been placed yet, then update in resolving mode is
@@ -613,6 +657,46 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
             if (ARSession.state == ARSessionState.Unsupported)
             {
                 QuitWithReason("AR Experience is unsupported on this devices.");
+            }
+        }
+
+        /// <summary>
+        /// Check session's NotTrackingReason and display corresponding helper messages.
+        /// </summary>
+        private void DisplayTrackingHelperMessage()
+        {
+            if (_isQuitting || ARSession.notTrackingReason == NotTrackingReason.None)
+            {
+                TrackingHelperText.gameObject.SetActive(false);
+            }
+            else
+            {
+                TrackingHelperText.gameObject.SetActive(true);
+                switch (ARSession.notTrackingReason)
+                {
+                    case NotTrackingReason.Initializing:
+                        TrackingHelperText.text = _initializingMessage;
+                        return;
+                    case NotTrackingReason.Relocalizing:
+                        TrackingHelperText.text = _relocalizingMessage;
+                        return;
+                    case NotTrackingReason.InsufficientLight:
+                        TrackingHelperText.text = _insufficientLightMessage;
+                        return;
+                    case NotTrackingReason.InsufficientFeatures:
+                        TrackingHelperText.text = _insufficientFeatureMessage;
+                        return;
+                    case NotTrackingReason.ExcessiveMotion:
+                        TrackingHelperText.text = _excessiveMotionMessage;
+                        return;
+                    case NotTrackingReason.Unsupported:
+                        TrackingHelperText.text = _unsupportedMessage;
+                        return;
+                    default:
+                        TrackingHelperText.text =
+                            string.Format("Not tracking reason: {0}", ARSession.notTrackingReason);
+                        return;
+                }
             }
         }
 

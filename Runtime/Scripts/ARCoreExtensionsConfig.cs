@@ -36,7 +36,7 @@ namespace Google.XR.ARCoreExtensions
         [Header("Cloud Anchors")]
 
         /// <summary>
-        /// Gets or sets the <see cref="CloudAnchorMode"/> to use.
+        /// Gets or sets the <c><see cref="CloudAnchorMode"/></c> to use.
         /// </summary>
         [Tooltip("Chooses which Cloud Anchors mode will be used in ARCore Extensions session.")]
         [FormerlySerializedAs("EnableCloudAnchors")]

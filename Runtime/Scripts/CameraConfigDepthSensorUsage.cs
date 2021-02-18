@@ -25,7 +25,8 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine;
 
     /// <summary>
-    /// Type of depth sensor usage for a camera config.
+    /// Type of hardware depth sensor usage for a camera config, such as a time-of-flight (ToF)
+    /// sensor.
     /// </summary>
     [Flags]
     [SuppressMessage("UnityRules.UnityStyleRules", "US1200:FlagsEnumsMustBePlural",
@@ -33,24 +34,27 @@ namespace Google.XR.ARCoreExtensions
     public enum CameraConfigDepthSensorUsage
     {
         /// <summary>
-        /// Indicates that a depth sensor must be present on the device,
-        /// and the depth sensor will be used by ARCore.
+        /// Indicates that a hardware depth sensor, such as a time-of-flight sensor (or ToF sensor),
+        /// must be present on the device, and the hardware depth sensor will be used by ARCore.
         /// Not supported on all devices.
         /// </summary>
-        [Tooltip("ARCore requires a depth sensor to be present and will use it. " +
-                 "Not supported on all devices.")]
+        [Tooltip("ARCore requires a hardware depth sensor, such as a time-of-flight sensor" +
+                 " (or ToF sensor), to be present and will use it." +
+                 " Not supported on all devices.")]
         RequireAndUse = 0x0001,
 
         /// <summary>
-        /// Indicates that ARCore will not attempt to use a depth sensor, even if it is present.
+        /// Indicates that ARCore will not attempt to use a hardware depth sensor, such as a
+        /// time-of-flight sensor (or ToF sensor), even if it is present.
         /// Most commonly used to filter camera configurations when the app requires
-        /// exclusive access to the depth sensor outside of ARCore, for example to
+        /// exclusive access to the hardware depth sensor outside of ARCore, for example to
         /// support 3D mesh reconstruction. Available on all
         /// <a href="https://developers.google.com/ar/discover/supported-devices">
         /// ARCore supported devices</a>.
         /// </summary>
-        [Tooltip("ARCore will not use the depth sensor, even if it is present. " +
-                 "Available on all supported devices.")]
+        [Tooltip("ARCore will not use the hardware depth sensor, such as a time-of-flight sensor" +
+                 " (or ToF sensor), even if it is present." +
+                 " Available on all supported devices.")]
         DoNotUse = 0x0002,
     }
 }

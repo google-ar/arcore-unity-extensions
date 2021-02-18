@@ -33,7 +33,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     public class AndroidKeylessPreprocessBuild : IPreprocessBuildWithReport
     {
-        private const string _androidKeylessPluginGuid = "aafa8cb6617464d6290c8fdfb9607794";
         private const string _androidKeylessDependenciesGuid = "1fc346056f53a42949a3dcadaae39d67";
 
         /// <summary>
@@ -69,8 +68,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// <param name="enabledKeyless">Whether to enable or disable keyless.</param>
         public static void PreprocessAndroidBuild(bool enabledKeyless)
         {
-            AndroidDependenciesHelper.SetAndroidPluginEnabled(
-                enabledKeyless, _androidKeylessPluginGuid);
             AndroidDependenciesHelper.UpdateAndroidDependencies(
                 enabledKeyless, _androidKeylessDependenciesGuid);
 
@@ -105,7 +102,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             Debug.Log("ARCoreExtensions: Cleaning up Keyless dependencies.");
 
             // Run the pre-process step with <c>Keyless</c> disabled so project files get reset.
-            // Then run the PlayServicesResolver dependency resolution which will remove
+            // Then run the ExternalDependencyManager dependency resolution which will remove
             // the Keyless dependencies.
             PreprocessAndroidBuild(false);
             AndroidDependenciesHelper.DoPlayServicesResolve();
@@ -114,7 +111,21 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private static bool IsKeylessAuthenticationEnabled()
         {
             return ARCoreExtensionsProjectSettings.Instance.AndroidAuthenticationStrategySetting ==
-                AndroidAuthenticationStrategy.Keyless;
+                AndroidAuthenticationStrategy.Keyless && IsCloudAnchorModeEnabled();
+        }
+
+        private static bool IsCloudAnchorModeEnabled()
+        {
+            foreach (ARCoreExtensionsConfig config in
+                AndroidDependenciesHelper.GetAllSessionConfigs().Keys)
+            {
+                if (config.CloudAnchorMode != CloudAnchorMode.Disabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

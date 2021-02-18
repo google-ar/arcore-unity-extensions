@@ -21,7 +21,7 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Describes the current state of a <see cref="ARCloudAnchor"/>.
+    /// Describes the current state of a <c><see cref="ARCloudAnchor"/></c>.
     /// </summary>
     public enum CloudAnchorState
     {

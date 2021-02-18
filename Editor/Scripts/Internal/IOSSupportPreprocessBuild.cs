@@ -26,10 +26,16 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEditor.Build.Reporting;
     using UnityEngine;
 
-    internal class IOSSupportPreprocessBuild : IPreprocessBuildWithReport
+    /// <summary>
+    /// Enable IOS support before building IOS target.
+    /// </summary>
+    public class IOSSupportPreprocessBuild : IPreprocessBuildWithReport
     {
-        [SuppressMessage("UnityRules.UnityStyleRules",
-         "US1109:PublicPropertiesMustBeUpperCamelCase", Justification = "Overriden property.")]
+        [SuppressMessage(
+            "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
+            Justification = "Overriden property.")]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
+            Justification = "Overriden property.")]
         public int callbackOrder
         {
             get
@@ -38,6 +44,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
         }
 
+        /// <summary>
+        /// A callback before the build is started to enable IOS support.
+        /// </summary>
+        /// <param name="report">A report containing information about the build.</param>
         public void OnPreprocessBuild(BuildReport report)
         {
             if (report.summary.platform == BuildTarget.iOS)

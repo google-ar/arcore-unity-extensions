@@ -59,5 +59,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// with the ARCoreExtensionsConfig.</returns>
         bool IsCompatibleWithSessionConfig(
             ARCoreExtensionsProjectSettings settings, ARCoreExtensionsConfig sessionConfig);
+
+        /// <summary>
+        /// Return the Proguard snippet to include if this module is enabled. The string output
+        /// will be added into "proguard-user.txt" directly.
+        /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
+        /// <returns>The proguard rule string snippet.</returns>
+        string GetProguardSnippet(ARCoreExtensionsProjectSettings settings);
     }
 }

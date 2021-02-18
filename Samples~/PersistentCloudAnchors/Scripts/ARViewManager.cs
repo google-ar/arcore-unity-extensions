@@ -76,6 +76,11 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         public Text InstructionText;
 
         /// <summary>
+        /// Display the tracking helper text when the session in not tracking.
+        /// </summary>
+        public Text TrackingHelperText;
+
+        /// <summary>
         /// The debug text in bottom snack bar.
         /// </summary>
         public Text DebugText;
@@ -89,6 +94,37 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// The button to save current cloud anchor id into clipboard.
         /// </summary>
         public Button ShareButton;
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Initializing">.</see>
+        /// </summary>
+        private const string _initializingMessage = "Tracking is being initialized.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Relocalizing">.</see>
+        /// </summary>
+        private const string _relocalizingMessage = "Tracking is resuming after an interruption.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientLight">.</see>
+        /// </summary>
+        private const string _insufficientLightMessage = "Too dark. Try moving to a well-lit area.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientFeatures">.</see>
+        /// </summary>
+        private const string _insufficientFeatureMessage =
+            "Can't find anything. Aim device at a surface with more texture or color.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.ExcessiveMotion">.</see>
+        /// </summary>
+        private const string _excessiveMotionMessage = "Moving too fast. Slow down.";
+
+        /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.Unsupported">.</see>
+        /// </summary>
+        private const string _unsupportedMessage = "Tracking lost reason is not supported.";
 
         /// <summary>
         /// The time between enters AR View and ARCore session starts to host or resolve.
@@ -278,6 +314,11 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (_isReturning)
             {
                 return;
+            }
+
+            if (_timeSinceStart >= _startPrepareTime)
+            {
+                DisplayTrackingHelperMessage();
             }
 
             if (Controller.Mode == PersistentCloudAnchorsController.ApplicationMode.Resolving)
@@ -614,8 +655,46 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 ARSession.state != ARSessionState.SessionInitializing &&
                 ARSession.state != ARSessionState.SessionTracking)
             {
-                ReturnToHomePage("ARCore encountered an error state " + ARSession.state +
-                    ". Please start the app again.");
+                ReturnToHomePage(string.Format(
+                    "ARCore encountered an error state {0}. Please start the app again.",
+                    ARSession.state));
+            }
+        }
+
+        private void DisplayTrackingHelperMessage()
+        {
+            if (_isReturning || ARSession.notTrackingReason == NotTrackingReason.None)
+            {
+                TrackingHelperText.gameObject.SetActive(false);
+            }
+            else
+            {
+                TrackingHelperText.gameObject.SetActive(true);
+                switch (ARSession.notTrackingReason)
+                {
+                    case NotTrackingReason.Initializing:
+                        TrackingHelperText.text = _initializingMessage;
+                        return;
+                    case NotTrackingReason.Relocalizing:
+                        TrackingHelperText.text = _relocalizingMessage;
+                        return;
+                    case NotTrackingReason.InsufficientLight:
+                        TrackingHelperText.text = _insufficientLightMessage;
+                        return;
+                    case NotTrackingReason.InsufficientFeatures:
+                        TrackingHelperText.text = _insufficientFeatureMessage;
+                        return;
+                    case NotTrackingReason.ExcessiveMotion:
+                        TrackingHelperText.text = _excessiveMotionMessage;
+                        return;
+                    case NotTrackingReason.Unsupported:
+                        TrackingHelperText.text = _unsupportedMessage;
+                        return;
+                    default:
+                        TrackingHelperText.text =
+                            string.Format("Not tracking reason: {0}", ARSession.notTrackingReason);
+                        return;
+                }
             }
         }
 

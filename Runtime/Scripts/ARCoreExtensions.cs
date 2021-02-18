@@ -62,8 +62,8 @@ namespace Google.XR.ARCoreExtensions
         public ARCoreExtensionsConfig ARCoreExtensionsConfig;
 
         /// <summary>
-        /// The <see cref="ARCoreExtensionsCameraConfigFilter"/> to define the set of properties
-        /// desired or required by the app to run.
+        /// The <c><see cref="ARCoreExtensionsCameraConfigFilter"/></c> to define the set of
+        /// properties desired or required by the app to run.
         /// </summary>
         [Tooltip("Configuration options to select the camera mode and features.")]
         public ARCoreExtensionsCameraConfigFilter CameraConfigFilter;
@@ -82,7 +82,7 @@ namespace Google.XR.ARCoreExtensions
         /// Selects a camera configuration for the ARCore session to use.
         /// </summary>
         /// <param name="supportedConfigurations">A list of supported camera configurations.
-        /// The size is dependent on <see cref="CameraConfigFilter"/> settings.
+        /// The size is dependent on <c><see cref="CameraConfigFilter"/></c> settings.
         /// The GPU texture resolutions are the same in all configs.
         /// Currently, most devices provide GPU texture resolution of 1920 x 1080, but devices
         /// might provide higher or lower resolution textures, depending on device capabilities.

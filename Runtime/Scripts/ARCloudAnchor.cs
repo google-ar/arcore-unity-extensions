@@ -41,11 +41,11 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the Cloud Anchor Id associated with this Cloud Anchor. For newly
         /// created points the Id will be an empty string until the Cloud Anchor is
-        /// in the <see cref="CloudAnchorState"/>.<c>Success</c> state. This Id is
+        /// in the <c><see cref="CloudAnchorState"/></c>.<c>Success</c> state. This Id is
         /// provided on the device hosting the Cloud Anchor, and is used to resolve
         /// a corresponding Cloud Anchor on other devices.
-        /// See <see cref="ARAnchorManagerExtensions.ResolveCloudAnchorId(
-        /// UnityEngine.XR.ARFoundation.ARAnchorManager, string)"/>
+        /// See <c><see cref="ARAnchorManagerExtensions.ResolveCloudAnchorId(
+        /// UnityEngine.XR.ARFoundation.ARAnchorManager, string)"/></c>
         /// for more information.
         /// </summary>
         public string cloudAnchorId
@@ -59,16 +59,15 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Gets the <see cref="CloudAnchorState"/> associated with this Cloud Anchor.
+        /// Gets the <c><see cref="CloudAnchorState"/></c> associated with this Cloud Anchor.
         /// </summary>
         public CloudAnchorState cloudAnchorState
         {
             get
             {
-                return Translators.ToCloudAnchorState(
-                    AnchorApi.GetCloudAnchorState(
-                        ARCoreExtensions._instance.currentARCoreSessionHandle,
-                        _anchorHandle));
+                return AnchorApi.GetCloudAnchorState(
+                    ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    _anchorHandle).ToCloudAnchorState();
             }
         }
 
@@ -101,10 +100,9 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
-                return Translators.ToTrackingState(
-                    AnchorApi.GetTrackingState(
-                        ARCoreExtensions._instance.currentARCoreSessionHandle,
-                        _anchorHandle));
+                return AnchorApi.GetTrackingState(
+                    ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    _anchorHandle).ToTrackingState();
             }
         }
 
@@ -128,7 +126,7 @@ namespace Google.XR.ARCoreExtensions
             ApiPose apiPose = AnchorApi.GetAnchorPose(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 _anchorHandle);
-            _pose = Translators.ToUnityPose(apiPose);
+            _pose = apiPose.ToUnityPose();
 
             // Update the Cloud Anchor transform to match.
             transform.localPosition = _pose.position;
@@ -136,8 +134,8 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// When the game object containing the ARCloudAnchor component is destroyed, the
-        /// underlying native Cloud Anchor object will be detached and the resource will
+        /// When the game object containing the <see cref="ARCloudAnchor"/> component is destroyed,
+        /// the underlying native Cloud Anchor object will be detached and the resource will
         /// be released.
         /// </summary>
         public void OnDestroy()

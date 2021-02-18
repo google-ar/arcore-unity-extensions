@@ -20,9 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions
 {
-    using System;
     using Google.XR.ARCoreExtensions.Internal;
-    using UnityEngine;
 
     /// <summary>
     /// Provides access to session playback functionality.
@@ -30,9 +28,9 @@ namespace Google.XR.ARCoreExtensions
     public static class ARPlaybackManager
     {
         /// <summary>
-        /// The current state of the playback.
+        /// Gets the current state of the playback.
         /// </summary>
-        /// <returns>The current <cref="PlaybackStatus"/>.</returns>
+        /// <returns>The current <see cref="PlaybackStatus"/>.</returns>
         public static PlaybackStatus PlaybackStatus
         {
             get
@@ -43,13 +41,24 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Sets the filepath for a dataset to be played back. The ARCore session
-        /// must be paused when using this method. Resume the session for the
-        /// change to take effect.
-        /// <param name="datasetFilepath"> The filepath of the dataset. Null if
+        /// Sets an MP4 dataset file to playback instead of using the live camera feed and IMU
+        /// sensor data.
+        ///
+        /// Restrictions:
+        /// - Due to the way session data is processed, ARCore APIs may sometimes produce different
+        ///   results during playback than during recording and produce different results during
+        ///   subsequent playback sessions. For exmaple, the number of detected planes and other
+        ///   trackables, the precise timing of their detection and their pose over time may be
+        ///   different in subsequent playback sessions.
+        /// - Can only be called while the session is paused. Playback of the MP4 dataset file will
+        ///   start once the session is resumed.
+        /// - The MP4 dataset file must use the same camera facing direction as is configured in the
+        ///   session.
+        ///
+        /// <param name="datasetFilepath"> The filepath of the MP4 dataset. Null if
         /// stopping the playback and resuming a live feed.</param>
-        /// <returns><cref="PlaybackResult"/>.<c>Success</c> if playback filepath was
-        /// set without issue. Otherwise, the <cref="PlaybackResult"/> will indicate the
+        /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback filepath was
+        /// set without issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the
         /// error.</returns>
         public static PlaybackResult SetPlaybackDataset(string datasetFilepath)
         {

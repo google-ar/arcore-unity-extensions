@@ -31,7 +31,7 @@ namespace Google.XR.ARCoreExtensions
         OK,
 
         /// <summary>
-        /// The <cref="ARCoreRecordingConfig"> was null or invalid.
+        /// The <see cref="ARCoreRecordingConfig"/> was null or invalid.
         /// </summary>
         ErrorInvalidArgument,
 

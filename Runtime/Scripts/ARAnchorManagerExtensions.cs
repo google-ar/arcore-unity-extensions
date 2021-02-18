@@ -78,7 +78,7 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="anchorManager">The ARAnchorManager instance.</param>
         /// <param name="anchor">The local <c>ARAnchor</c> to be used as the
         /// basis to host a new Cloud Anchor.</param>
-        /// <returns>If successful, a <see cref="ARCloudAnchor"/>,
+        /// <returns>If successful, a <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor)
@@ -116,7 +116,7 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="ttlDays">The lifetime of the anchor in days. Must be positive. The
         /// maximum allowed value is 1 if using an API Key to authenticate with the
         /// ARCore Cloud Anchor service, otherwise the maximum allowed value is 365.</param>
-        /// <returns>If successful, an <see cref="ARCloudAnchor"/>,
+        /// <returns>If successful, an <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
@@ -196,7 +196,7 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="referencePointManager">The ARAnchorManager instance.</param>
         /// <param name="referencePoint">The local <c>ARAnchor</c> to be used as the
         /// basis to host a new cloud reference point.</param>
-        /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
+        /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
         /// otherwise <c>null</c>.</returns>
         /// @deprecated Please use HostCloudAnchor(ARAnchor) instead.
         [Obsolete("This method has been deprecated. Please use HostCloudAnchor(ARAnchor) instead.")]
@@ -268,7 +268,7 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         /// <param name="anchorManager">The ARAnchorManager instance.</param>
         /// <param name="cloudAnchorId">String representing the Cloud Anchor.</param>
-        /// <returns>If successful, a <see cref="ARCloudAnchor"/>,
+        /// <returns>If successful, a <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
         public static ARCloudAnchor ResolveCloudAnchorId(
             this ARAnchorManager anchorManager, string cloudAnchorId)
@@ -302,7 +302,7 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         /// <param name="referencePointManager">The ARAnchorManager instance.</param>
         /// <param name="cloudReferenceId">String representing the cloud reference.</param>
-        /// <returns>If successful, a <see cref="ARCloudReferencePoint"/>,
+        /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
         /// otherwise <c>null</c>.</returns>
         /// @deprecated Please use ResolveCloudAnchorId(string) instead.
         [Obsolete("This method has been deprecated. " +
@@ -339,10 +339,10 @@ namespace Google.XR.ARCoreExtensions
         /// Estimates the quality of the visual feature points seen by ARCore in the
         /// preceding few seconds and visible from the provided camera <paramref name="pose"/>.
         /// Cloud Anchors hosted using higher feature map quality will generally result
-        /// in easier and more accurately resolved <see cref="ARCloudAnchor"/> poses.
+        /// in easier and more accurately resolved <c><see cref="ARCloudAnchor"/></c> poses.
         /// If feature map quality cannot be estimated for the given <paramref name="pose"/>,
         /// a warning message "Failed to estimate feature map quality" with the error status
-        /// is logged and <see cref="FeatureMapQuality"/>.<c>Insufficient</c> is returned.
+        /// is logged and <c><see cref="FeatureMapQuality"/></c>.<c>Insufficient</c> is returned.
         /// </summary>
         /// <param name="anchorManager">The ARAnchorManager instance.</param>
         /// <param name="pose">The camera pose to use in estimating the quality.</param>

@@ -25,9 +25,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;
-    using UnityEditor.SceneManagement;
-    using UnityEngine;
-    using UnityEngine.SceneManagement;
 
     /// <summary>
     /// Manager for available modules.
@@ -59,6 +56,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 _modules = new List<IDependentModule>()
                 {
+                    new KeylessModule(),
                 };
             }
 
@@ -80,7 +78,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 }
 
                 CheckCompatibilityWithAllSesssionConfigs(
-                    ARCoreExtensionsProjectSettings.Instance, GetAllSessionConfigs());
+                    ARCoreExtensionsProjectSettings.Instance,
+                    AndroidDependenciesHelper.GetAllSessionConfigs());
             }
         }
 
@@ -103,44 +102,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     }
                 }
             }
-        }
-
-        private static Dictionary<ARCoreExtensionsConfig, string> GetAllSessionConfigs()
-        {
-            Dictionary<ARCoreExtensionsConfig, string> sessionToPathMap =
-                new Dictionary<ARCoreExtensionsConfig, string>();
-            foreach (EditorBuildSettingsScene editorScene in EditorBuildSettings.scenes)
-            {
-                if (editorScene.enabled)
-                {
-                    Scene scene = SceneManager.GetSceneByPath(editorScene.path);
-                    if (!scene.isLoaded)
-                    {
-                        scene = EditorSceneManager.OpenScene(
-                            editorScene.path, OpenSceneMode.Additive);
-                    }
-
-                    foreach (GameObject gameObject in scene.GetRootGameObjects())
-                    {
-                        ARCoreExtensions extensionsComponent =
-                            (ARCoreExtensions)gameObject.GetComponentInChildren(
-                                typeof(ARCoreExtensions));
-                        if (extensionsComponent != null)
-                        {
-                            if (!sessionToPathMap.ContainsKey(
-                                    extensionsComponent.ARCoreExtensionsConfig))
-                            {
-                                sessionToPathMap.Add(
-                                    extensionsComponent.ARCoreExtensionsConfig, editorScene.path);
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return sessionToPathMap;
         }
     }
 }

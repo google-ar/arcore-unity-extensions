@@ -30,9 +30,9 @@ namespace Google.XR.ARCoreExtensions
     public static class ARRecordingManager
     {
         /// <summary>
-        /// The current state of the recorder.
+        /// Gets the current state of the recorder.
         /// </summary>
-        /// <returns>The current <cref="RecordingStatus"/>.</returns>
+        /// <returns>The current <see cref="RecordingStatus"/>.</returns>
         public static RecordingStatus RecordingStatus
         {
             get
@@ -43,17 +43,19 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Starts a new recording, using the provided <cref="ARCoreRecordingConfig"/> to define the
-        /// location to save the dataset and other options. If a recording is already in progress
-        /// this call will fail. Check <cref="RecordingStatus"/> before making this call. When an
-        /// ARCore session is paused (unless <cref="ARCoreRecordingConfig"/>.<c>AutoStopOnPause</c>
-        /// is enabled), recording may continue. During this time the camera feed will be recorded
-        /// as a black screen, but sensor data will continue to be captured.
+        /// Starts a new recording, using the provided <see cref="ARCoreRecordingConfig"/> to define
+        /// the location to save the dataset and other options. If a recording is already in
+        /// progress this call will fail. Check <see cref="RecordingStatus"/> before making this
+        /// call. When an ARCore session is paused (unless <see
+        /// cref="ARCoreRecordingConfig"/>.<c>AutoStopOnPause</c> is enabled), recording may
+        /// continue. During this time the camera feed will be recorded as a black screen, but
+        /// sensor data will continue to be captured.
         /// </summary>
-        /// <param name="config"><cref="ARCoreRecordingConfig"/> containing the path to save the
+        /// <param name="config"><see cref="ARCoreRecordingConfig"/> containing the path to save the
         /// dataset along with other recording options.</param>
-        /// <returns><cref="RecordingResult"/>.<c>OK</c> if the recording is started (or will start
-        /// on the next Session resume.) Or a <cref="RecordingResult"/> if there was an error.
+        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the recording is started (or will
+        /// start on the next Session resume.) Or a <see cref="RecordingResult"/> if there was an
+        /// error.
         /// </returns>
         public static RecordingResult StartRecording(ARCoreRecordingConfig config)
         {
@@ -63,10 +65,11 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Stops the current recording. If there is no recording in progress, this method will
-        /// return <cref="RecordingResult"/>.<c>OK</c>.
+        /// return <see cref="RecordingResult"/>.<c>OK</c>.
         /// </summary>
-        /// <returns><cref="RecordingResult"/>.<c>OK</c> if the recording was stopped successfully,
-        /// or <cref="RecordingResult">.<c>ErrorRecordingFailed</c> if there was an error.</returns>
+        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the recording was stopped
+        /// successfully, or <see cref="RecordingResult"/>.<c>ErrorRecordingFailed</c> if there was
+        /// an error.</returns>
         public static RecordingResult StopRecording()
         {
             return SessionApi.StopRecording(ARCoreExtensions._instance.currentARCoreSessionHandle);

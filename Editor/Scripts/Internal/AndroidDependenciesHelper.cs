@@ -21,19 +21,68 @@
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
     using UnityEditor;
+    using UnityEditor.SceneManagement;
     using UnityEngine;
+    using UnityEngine.SceneManagement;
 
     /// <summary>
-    /// This handles the addition and removal android dependencies, and run PlayServicesResolver
-    /// plugin.
+    /// This handles the addition and removal android dependencies, and run
+    /// ExternalDependencyManager plugin.
     /// </summary>
     public static class AndroidDependenciesHelper
     {
+        // GUID of plugin [ARCore Extensions Package]/Editor/ExternalDependencyManager/
+        //     Editor/Google.JarResolver_{version}.dll.meta
+        private const string _jarResolverGuid = "a8f371f579f2426d93a8c958438275b7";
+
         private static readonly string _templateFileExtension = ".template";
         private static readonly string _playServiceDependencyFileExtension = ".xml";
+
+        /// <summary>
+        /// Gets all session configs from active scenes.
+        /// </summary>
+        /// <returns>A dictionary contains session config to scene path mapping.</returns>
+        public static Dictionary<ARCoreExtensionsConfig, string> GetAllSessionConfigs()
+        {
+            Dictionary<ARCoreExtensionsConfig, string> sessionToPathMap =
+                new Dictionary<ARCoreExtensionsConfig, string>();
+            foreach (EditorBuildSettingsScene editorScene in EditorBuildSettings.scenes)
+            {
+                if (editorScene.enabled)
+                {
+                    Scene scene = SceneManager.GetSceneByPath(editorScene.path);
+                    if (!scene.isLoaded)
+                    {
+                        scene = EditorSceneManager.OpenScene(
+                            editorScene.path, OpenSceneMode.Additive);
+                    }
+
+                    foreach (GameObject gameObject in scene.GetRootGameObjects())
+                    {
+                        ARCoreExtensions extensionsComponent =
+                            (ARCoreExtensions)gameObject.GetComponentInChildren(
+                                typeof(ARCoreExtensions));
+                        if (extensionsComponent != null)
+                        {
+                            if (!sessionToPathMap.ContainsKey(
+                                    extensionsComponent.ARCoreExtensionsConfig))
+                            {
+                                sessionToPathMap.Add(
+                                    extensionsComponent.ARCoreExtensionsConfig, editorScene.path);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return sessionToPathMap;
+        }
 
         /// <summary>
         /// Handle the updating of the AndroidManifest tags by enabling/disabling the dependencies
@@ -65,9 +114,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Handle the addition or removal Android dependencies using the PlayServicesResolver.
+        /// Handle the addition or removal Android dependencies using the ExternalDependencyManager.
         /// Adding the dependencies is done by renaming the dependencies .template file to a .xml
-        /// file so that it will be picked up by the PlayServicesResolver plugin.
+        /// file so that it will be picked up by the ExternalDependencyManager plugin.
         /// </summary>
         /// <param name="enabledDependencies">If set to <c>true</c> enabled dependencies.</param>
         /// <param name="dependenciesTemplateGuid">Dependencies template GUID.</param>
@@ -114,6 +163,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// </summary>
         public static void DoPlayServicesResolve()
         {
+            EnableJarResolver();
+
             const string namespaceName = "GooglePlayServices";
             const string className = "PlayServicesResolver";
             const string methodName = "MenuResolve";
@@ -217,6 +268,23 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
 
             return jdkPath;
+        }
+
+        private static void EnableJarResolver()
+        {
+            string jarResolverPath = AssetDatabase.GUIDToAssetPath(_jarResolverGuid);
+            if (jarResolverPath == null)
+            {
+                Debug.LogError("ARCoreExtensions: Could not locate Google.JarResolver plugin.");
+                return;
+            }
+
+            PluginImporter pluginImporter =
+                AssetImporter.GetAtPath(jarResolverPath) as PluginImporter;
+            if (!pluginImporter.GetCompatibleWithEditor())
+            {
+                pluginImporter.SetCompatibleWithEditor(true);
+            }
         }
     }
 }
