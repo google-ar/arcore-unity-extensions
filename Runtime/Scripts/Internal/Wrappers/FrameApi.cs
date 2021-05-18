@@ -1,0 +1,121 @@
+//-----------------------------------------------------------------------
+// <copyright file="FrameApi.cs" company="Google LLC">
+//
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Google.XR.ARCoreExtensions.Internal
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+    using UnityEngine;
+
+#if UNITY_ANDROID
+    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
+#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#endif
+
+    internal class FrameApi
+    {
+
+        public static RecordingResult RecordTrackData(
+            IntPtr sessionHandle, IntPtr frameHandle, Guid trackId, byte[] data)
+        {
+            ApiArStatus status = ApiArStatus.ErrorFatal;
+#if UNITY_ANDROID
+            GCHandle trackIdHandle = GCHandle.Alloc(trackId.ToByteArray(), GCHandleType.Pinned);
+            GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+            status = ExternApi.ArFrame_recordTrackData(
+                sessionHandle,
+                frameHandle,
+                trackIdHandle.AddrOfPinnedObject(),
+                dataHandle.AddrOfPinnedObject(),
+                data.Length);
+
+            if (trackIdHandle.IsAllocated)
+            {
+                trackIdHandle.Free();
+            }
+
+            if (dataHandle.IsAllocated)
+            {
+                dataHandle.Free();
+            }
+#endif
+
+            return status.ToRecordingResult();
+        }
+
+        public static List<TrackData> GetUpdatedTrackData(IntPtr sessionHandle,
+                                                          IntPtr frameHandle,
+                                                          Guid trackId)
+        {
+            List<TrackData> trackDataList = new List<TrackData>();
+#if UNITY_ANDROID
+            IntPtr listHandle = TrackDataListApi.Create(sessionHandle);
+
+            GCHandle trackIdHandle = GCHandle.Alloc(trackId.ToByteArray(),
+                                                    GCHandleType.Pinned);
+
+            ExternApi.ArFrame_getUpdatedTrackData(sessionHandle,
+                                                  frameHandle,
+                                                  trackIdHandle.AddrOfPinnedObject(),
+                                                  listHandle);
+
+            if (trackIdHandle.IsAllocated)
+            {
+                trackIdHandle.Free();
+            }
+
+            int count = TrackDataListApi.GetCount(sessionHandle, listHandle);
+            for (int i = 0; i < count; i++)
+            {
+                IntPtr trackDataHandle =
+                    TrackDataListApi.AcquireItem(sessionHandle, listHandle, i);
+
+                TrackData trackData;
+                trackData.FrameTimestamp =
+                    TrackDataApi.GetFrameTimestamp(sessionHandle, trackDataHandle);
+                trackData.Data = TrackDataApi.GetData(sessionHandle, trackDataHandle);
+
+                trackDataList.Add(trackData);
+            }
+
+            TrackDataListApi.Destroy(listHandle);
+#endif // UNITY_ANDROID
+            return trackDataList;
+        }
+        private struct ExternApi
+        {
+#if UNITY_ANDROID
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_recordTrackData(
+                IntPtr sessionHandle, IntPtr frameHandle, IntPtr trackIdBytes, IntPtr payloadBytes,
+                int payloadSize);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFrame_getUpdatedTrackData(
+                IntPtr sessionHandle, IntPtr frameHandle, IntPtr trackId, IntPtr trackDataList);
+#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+#endif
+        }
+    }
+}

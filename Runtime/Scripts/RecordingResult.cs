@@ -31,7 +31,22 @@ namespace Google.XR.ARCoreExtensions
         OK,
 
         /// <summary>
-        /// The <see cref="ARCoreRecordingConfig"/> was null or invalid.
+        /// The call to <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>
+        /// failed because ARCore is currently attempting to resume or pause the session.
+        ///
+        /// Try calling it again in the next frame. Note:
+        /// <list type="bullet">
+        /// <item>Resuming session may require several frames to complete.</item>
+        /// <item>Pausing session may take up to 10 seconds to pause.</item>
+        /// </list>
+        /// </summary>
+        SessionNotReady,
+
+        /// <summary>
+        /// When using <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>, this
+        /// means the <see cref="ARCoreRecordingConfig"/> was null or invalid.
+        /// When using <see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/>,
+        /// this means the track id or payload given are null or invalid.
         /// </summary>
         ErrorInvalidArgument,
 
@@ -41,7 +56,10 @@ namespace Google.XR.ARCoreExtensions
         ErrorRecordingFailed,
 
         /// <summary>
-        /// A recording is already in progress.
+        /// When using <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>, this
+        /// means a recording is already in progress.
+        /// When using <see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/>, this means
+        /// the session may not be ready yet, common immediately after resume.
         /// </summary>
         ErrorIllegalState,
     }

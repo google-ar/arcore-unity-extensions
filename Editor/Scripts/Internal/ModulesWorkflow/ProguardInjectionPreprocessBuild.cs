@@ -28,6 +28,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.Text;
     using System.Xml;
     using System.Xml.Linq;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;
@@ -57,7 +58,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             get
             {
-                return 0;
+                // This preprocess build might need to check whether the module is required.
+                // So it should be executed after CompatiblityCheckPreprocessBuild.
+                return 2;
             }
         }
 
@@ -85,7 +88,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
             foreach (IDependentModule module in featureModules)
             {
-                if (module.IsEnabled(settings))
+                if (module.IsEnabled(settings, UnityEditor.BuildTarget.Android))
                 {
                     string moduleProguardSnippet = module.GetProguardSnippet(settings);
                     if (!string.IsNullOrEmpty(moduleProguardSnippet))

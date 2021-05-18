@@ -79,6 +79,14 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
+        public IntPtr ARCoreFrameHandle
+        {
+            get
+            {
+                return _frameHandle;
+            }
+        }
+
         public void SetEnabled(bool enabled)
         {
             _isEnabled = enabled;

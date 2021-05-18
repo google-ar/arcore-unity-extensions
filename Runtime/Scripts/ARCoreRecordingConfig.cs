@@ -21,11 +21,16 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
+    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>
     /// Configuration to record camera and sensor data from an ARCore session.
     /// </summary>
+    [CreateAssetMenu(
+        fileName = "ARCoreRecordingConfig",
+        menuName = "ARCore Extensions/ARCore Recording Config",
+        order = 3)]
     public class ARCoreRecordingConfig : ScriptableObject
     {
         /// <summary>
@@ -43,5 +48,12 @@ namespace Google.XR.ARCoreExtensions
         /// black screen until the session is resumed.
         /// </summary>
         public bool AutoStopOnPause = true;
-   }
+
+        /// <summary>
+        /// The list of <c><see cref="Track"/></c> to add the recording config. This field is not
+        /// available in the editor and should be set at runtime.
+        /// </summary>
+        [HideInInspector]
+        public List<Track> Tracks = new List<Track>();
+    }
 }

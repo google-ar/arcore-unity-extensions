@@ -60,8 +60,6 @@ namespace Google.XR.ARCoreExtensions.Internal
             return apiPose;
         }
 
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
-         Justification = "External call.")]
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]

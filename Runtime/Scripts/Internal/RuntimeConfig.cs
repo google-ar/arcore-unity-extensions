@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
@@ -33,6 +34,8 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static RuntimeConfig Instance;
 
         public string IOSCloudServicesApiKey;
+
+        public List<string> ModulesEnabled = new List<string>();
 
         // GUID to folder [ARCore Extensions]/Runtime
         private const string _runtimeFolderGUID = "df6f7c8173aef4ce18044d1392042d34";
@@ -90,6 +93,13 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             LoadInstance();
             Instance.IOSCloudServicesApiKey = apiKey;
+            UploadInstance();
+        }
+
+        public static void SetEnabledModules(List<string> modulesEnabled)
+        {
+            LoadInstance();
+            Instance.ModulesEnabled = modulesEnabled;
             UploadInstance();
         }
 #endif

@@ -24,7 +24,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Xml.Linq;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor.Android;
+    using UnityEngine;
 
     /// <summary>
     /// Inject customized manifest after the Android Gradle project is generated.
@@ -42,7 +44,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             get
             {
-                return 0;
+                // Skip 0 so other developers could let their workflow run first.
+                return 1;
             }
         }
 
@@ -61,7 +64,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
             foreach (IDependentModule module in featureModules)
             {
-                if (module.IsEnabled(settings))
+                if (module.IsEnabled(settings, UnityEditor.BuildTarget.Android))
                 {
                     XDocument xDocument =
                         AndroidManifestMerger.TransferToXDocument(

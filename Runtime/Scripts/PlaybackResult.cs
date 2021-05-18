@@ -31,6 +31,18 @@ namespace Google.XR.ARCoreExtensions
         OK,
 
         /// <summary>
+        /// The call to <see cref="ARPlaybackManager.SetPlaybackDataset(string)"/>
+        /// failed because ARCore is currently attempting to resume or pause the session.
+        ///
+        /// Try calling it again in the next frame. Note:
+        /// <list type="bullet">
+        /// <item>Resuming session may require several frames to complete.</item>
+        /// <item>Pausing session may take up to 10 seconds to pause.</item>
+        /// </list>
+        /// </summary>
+        SessionNotReady,
+
+        /// <summary>
         /// The session was not paused when setting the playback dataset.
         /// </summary>
         ErrorSessionNotPaused,

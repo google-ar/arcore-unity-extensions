@@ -20,18 +20,23 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
+    using System.Collections.Generic;
     using Google.XR.ARCoreExtensions.Internal;
+    using UnityEngine;
+    using UnityEngine.XR.ARFoundation;
+    using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
     /// Provides access to session playback functionality.
     /// </summary>
-    public static class ARPlaybackManager
+    public class ARPlaybackManager : MonoBehaviour
     {
         /// <summary>
         /// Gets the current state of the playback.
         /// </summary>
         /// <returns>The current <see cref="PlaybackStatus"/>.</returns>
-        public static PlaybackStatus PlaybackStatus
+        public PlaybackStatus PlaybackStatus
         {
             get
             {
@@ -45,25 +50,103 @@ namespace Google.XR.ARCoreExtensions
         /// sensor data.
         ///
         /// Restrictions:
-        /// - Due to the way session data is processed, ARCore APIs may sometimes produce different
-        ///   results during playback than during recording and produce different results during
-        ///   subsequent playback sessions. For exmaple, the number of detected planes and other
-        ///   trackables, the precise timing of their detection and their pose over time may be
-        ///   different in subsequent playback sessions.
-        /// - Can only be called while the session is paused. Playback of the MP4 dataset file will
-        ///   start once the session is resumed.
-        /// - The MP4 dataset file must use the same camera facing direction as is configured in the
-        ///   session.
-        ///
+        /// <list type="bullet">
+        /// <item>
+        /// Can only be called while the session is paused. Playback of the MP4 dataset file will
+        /// start once the session is resumed.
+        /// </item>
+        /// <item>
+        /// The MP4 dataset file must use the same camera facing direction as is configured in the
+        /// session.
+        /// </item>
+        /// <item>
+        /// Due to the way session data is processed, ARCore APIs may sometimes produce different
+        /// results during playback than during recording and produce different results during
+        /// subsequent playback sessions. For exmaple, the number of detected planes and other
+        /// trackables, the precise timing of their detection and their pose over time may be
+        /// different in subsequent playback sessions.
+        /// </item>
+        /// <item>
+        /// Once playback has started pausing the session (by disabling the ARSession) will
+        /// suspend processing of all camera image frames and any other recorded sensor data in
+        /// the dataset. Camera image frames and sensor frame data that is discarded in this way
+        /// will not be reprocessed when the session is again resumed (by re-enabling the
+        /// ARSession). AR tracking for the session will generally suffer due to the gap in
+        /// processed data.
+        /// </item>
+        /// </list>
+        /// </summary>
         /// <param name="datasetFilepath"> The filepath of the MP4 dataset. Null if
         /// stopping the playback and resuming a live feed.</param>
         /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback filepath was
         /// set without issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the
         /// error.</returns>
-        public static PlaybackResult SetPlaybackDataset(string datasetFilepath)
+        public PlaybackResult SetPlaybackDataset(string datasetFilepath)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
+                ARCoreExtensions._instance.Session.subsystem != null &&
+                ARCoreExtensions._instance.Session.subsystem.nativePtr != null)
+            {
+                return PlaybackResult.SessionNotReady;
+            }
+
             return SessionApi.SetPlaybackDataset(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, datasetFilepath);
+        }
+
+        /// <summary>
+        /// Gets the set of data recorded to the given track available during playback on this
+        /// frame.
+        /// Note, currently playback continues internally while the session is paused. Therefore, on
+        /// pause/resume, track data discovered internally will be discarded to prevent stale track
+        /// data from flowing through when the session resumed.
+        /// Note, if the app's frame rate is higher than ARCore's frame rate, subsequent
+        /// <c><cref="XRCameraFrame"/></c> objects may reference the same underlying ARCore Frame,
+        /// which would mean the list of <c><see cref="TrackData"/></c> returned could be the same.
+        /// One can differentiate by examining <c><see cref="TrackData.FrameTimestamp"/></c>.
+        /// </summary>
+        /// <param name="trackId">The ID of the track being queried.</param>
+        /// <returns>Returns a list of <see cref="TrackData"/>. Will be empty if none are available.
+        /// </returns>
+        public List<TrackData> GetUpdatedTrackData(Guid trackId)
+        {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
+                ARCoreExtensions._instance.Session.subsystem != null &&
+                ARCoreExtensions._instance.Session.subsystem.nativePtr != null)
+            {
+                Debug.LogWarning("Failed to fetch track data. The Session is not yet available. " +
+                                 "Try again later.");
+                return new List<TrackData>();
+            }
+
+            ARCameraManager cameraManager = ARCoreExtensions._instance.CameraManager;
+
+            var cameraParams = new XRCameraParams
+            {
+                zNear = cameraManager.GetComponent<Camera>().nearClipPlane,
+                zFar = cameraManager.GetComponent<Camera>().farClipPlane,
+                screenWidth = Screen.width,
+                screenHeight = Screen.height,
+                screenOrientation = Screen.orientation
+            };
+
+            if (!cameraManager.subsystem.TryGetLatestFrame(cameraParams, out XRCameraFrame frame))
+            {
+                Debug.LogWarning("Failed to fetch track data. The current XRCameraFrame is not " +
+                                 "available. Try again later.");
+                return new List<TrackData>();
+            }
+
+            if (frame.timestampNs == 0 || frame.nativePtr == IntPtr.Zero)
+            {
+                Debug.LogWarning("Failed to fetch track data. The current XRCameraFrame is not " +
+                                 "ready. Try again later.");
+                return new List<TrackData>();
+            }
+
+            return FrameApi.GetUpdatedTrackData(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, frame.FrameHandle(),
+                trackId);
         }
     }
 }

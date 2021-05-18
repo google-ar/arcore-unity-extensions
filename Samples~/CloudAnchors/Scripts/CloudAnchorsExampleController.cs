@@ -370,7 +370,9 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
                 }
                 else if (!IsOriginPlaced && _currentMode == ApplicationMode.Hosting)
                 {
+#pragma warning disable CS0618 // TODO(b/181068602): Modify the way of adding anchor.
                     ARAnchor anchor = AnchorManager.AddAnchor(hitResults[0].pose);
+#pragma warning restore CS0618
                     WorldOrigin = anchor.transform;
                     InstantiateAnchor(anchor);
                     OnAnchorInstantiated(true);

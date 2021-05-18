@@ -39,8 +39,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         //     Editor/Google.JarResolver_{version}.dll.meta
         private const string _jarResolverGuid = "a8f371f579f2426d93a8c958438275b7";
 
-        private static readonly string _templateFileExtension = ".template";
-        private static readonly string _playServiceDependencyFileExtension = ".xml";
 
         /// <summary>
         /// Gets all session configs from active scenes.
@@ -111,50 +109,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
 
             pluginImporter.SetCompatibleWithPlatform(BuildTarget.Android, enabledDependencies);
-        }
-
-        /// <summary>
-        /// Handle the addition or removal Android dependencies using the ExternalDependencyManager.
-        /// Adding the dependencies is done by renaming the dependencies .template file to a .xml
-        /// file so that it will be picked up by the ExternalDependencyManager plugin.
-        /// </summary>
-        /// <param name="enabledDependencies">If set to <c>true</c> enabled dependencies.</param>
-        /// <param name="dependenciesTemplateGuid">Dependencies template GUID.</param>
-        public static void UpdateAndroidDependencies(bool enabledDependencies,
-            string dependenciesTemplateGuid)
-        {
-            string dependenciesTemplatePath =
-                AssetDatabase.GUIDToAssetPath(dependenciesTemplateGuid);
-            if (dependenciesTemplatePath == null)
-            {
-                Debug.LogError(
-                    "ARCoreExtensions: Failed to enable Android dependencies xml. " +
-                    "Template file is missing.");
-                return;
-            }
-
-            string dependenciesXMLPath = dependenciesTemplatePath.Replace(
-                _templateFileExtension, _playServiceDependencyFileExtension);
-
-            if (enabledDependencies && !File.Exists(dependenciesXMLPath))
-            {
-                Debug.LogFormat(
-                    "Adding {0}.",
-                    System.IO.Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
-
-                File.Copy(dependenciesTemplatePath, dependenciesXMLPath);
-                AssetDatabase.Refresh();
-            }
-            else if (!enabledDependencies && File.Exists(dependenciesXMLPath))
-            {
-                Debug.LogFormat(
-                    "Removing {0}.",
-                    System.IO.Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
-
-                File.Delete(dependenciesXMLPath);
-                File.Delete(dependenciesXMLPath + ".meta");
-                AssetDatabase.Refresh();
-            }
         }
 
         /// <summary>

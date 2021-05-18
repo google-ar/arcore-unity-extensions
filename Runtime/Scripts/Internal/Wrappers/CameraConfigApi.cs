@@ -22,11 +22,10 @@ namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
     using UnityEngine;
 
-#if UNITY_IOS && !UNITY_EDITOR
-    using AndroidImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
-#else
+#if UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
@@ -36,8 +35,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, IntPtr cameraConfigHandle)
         {
             CameraConfigFacingDirection facingDirection = CameraConfigFacingDirection.Back;
+#if UNITY_ANDROID
             ExternApi.ArCameraConfig_getFacingDirection(sessionHandle, cameraConfigHandle,
                 ref facingDirection);
+#endif
             return facingDirection;
         }
 
@@ -46,8 +47,10 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             int width = 0;
             int height = 0;
+#if UNITY_ANDROID
             ExternApi.ArCameraConfig_getTextureDimensions(
                 sessionHandle, cameraConfigHandle, ref width, ref height);
+#endif
             return new Vector2Int(width, height);
         }
 
@@ -56,8 +59,10 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             int minFps = 0;
             int maxFps = 0;
+#if UNITY_ANDROID
             ExternApi.ArCameraConfig_getFpsRange(
                 sessionHandle, cameraConfigHandle, ref minFps, ref maxFps);
+#endif
             return new Vector2Int(minFps, maxFps);
         }
 
@@ -65,8 +70,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, IntPtr cameraConfigHandle)
         {
             int depth = (int)CameraConfigDepthSensorUsage.DoNotUse;
+#if UNITY_ANDROID
             ExternApi.ArCameraConfig_getDepthSensorUsage(
                 sessionHandle, cameraConfigHandle, ref depth);
+#endif
             return (CameraConfigDepthSensorUsage)depth;
         }
 
@@ -74,16 +81,16 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, IntPtr cameraConfigHandle)
         {
             int stereo = (int)CameraConfigStereoCameraUsage.DoNotUse;
+#if UNITY_ANDROID
             ExternApi.ArCameraConfig_getStereoCameraUsage(sessionHandle, cameraConfigHandle,
                 ref stereo);
+#endif
             return (CameraConfigStereoCameraUsage)stereo;
         }
 
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
-         Justification = "External call.")]
         private struct ExternApi
         {
-#pragma warning disable 626
+#if UNITY_ANDROID
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfig_getFacingDirection(
                 IntPtr sessionHandle,
@@ -105,7 +112,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfig_getStereoCameraUsage(
                 IntPtr sessionHandle, IntPtr cameraConfigHandle, ref int stereoCameraUsage);
-#pragma warning restore 626
+#endif // UNITY_ANDROID
         }
     }
 }

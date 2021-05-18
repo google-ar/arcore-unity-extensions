@@ -21,6 +21,7 @@
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System.Diagnostics.CodeAnalysis;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;

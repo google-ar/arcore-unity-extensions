@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEngine;
 

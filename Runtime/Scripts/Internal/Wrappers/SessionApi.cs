@@ -26,12 +26,10 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System.Runtime.InteropServices;
     using UnityEngine;
 
-#if UNITY_IOS && !UNITY_EDITOR
-    using AndroidImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
-    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
-#else
+#if UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class SessionApi
@@ -42,20 +40,16 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         public static void UpdateSessionConfig(
-            IntPtr sessionHandle,
-            IntPtr configHandle,
-            ARCoreExtensionsConfig config)
+            IntPtr sessionHandle, IntPtr configHandle, ARCoreExtensionsConfig config)
         {
 #if UNITY_ANDROID
             ApiCloudAnchorMode cloudAnchorMode = (ApiCloudAnchorMode)config.CloudAnchorMode;
             ExternApi.ArConfig_setCloudAnchorMode(
                     sessionHandle, configHandle, cloudAnchorMode);
-#endif
+#endif // UNITY_ANDROID
         }
 
-        public static IntPtr HostCloudAnchor(
-            IntPtr sessionHandle,
-            IntPtr anchorHandle)
+        public static IntPtr HostCloudAnchor(IntPtr sessionHandle, IntPtr anchorHandle)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
             ApiArStatus status = ExternApi.ArSession_hostAndAcquireNewCloudAnchor(
@@ -70,10 +64,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             return cloudAnchorHandle;
         }
 
-        public static IntPtr HostCloudAnchor(
-            IntPtr sessionHandle,
-            IntPtr anchorHandle,
-            int ttlDays)
+        public static IntPtr HostCloudAnchor(IntPtr sessionHandle, IntPtr anchorHandle, int ttlDays)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
             ApiArStatus status = ExternApi.ArSession_hostAndAcquireNewCloudAnchorWithTtl(
@@ -89,12 +80,12 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         public static void SetAuthToken(IntPtr sessionHandle, string authToken)
         {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             ExternApi.ArSession_setAuthToken(sessionHandle, authToken);
+#endif
         }
 
-        public static IntPtr ResolveCloudAnchor(
-            IntPtr sessionHandle,
-            string cloudAnchorId)
+        public static IntPtr ResolveCloudAnchor(IntPtr sessionHandle, string cloudAnchorId)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
             ApiArStatus status = ExternApi.ArSession_resolveAndAcquireNewCloudAnchor(
@@ -129,45 +120,52 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static RecordingStatus GetRecordingStatus(IntPtr sessionHandle)
         {
             ApiRecordingStatus apiStatus = ApiRecordingStatus.None;
+#if UNITY_ANDROID
             ExternApi.ArSession_getRecordingStatus(sessionHandle, ref apiStatus);
+#endif
             return apiStatus.ToRecordingStatus();
         }
 
         public static RecordingResult StartRecording(
             IntPtr sessionHandle, ARCoreRecordingConfig config)
         {
+            ApiArStatus status = ApiArStatus.ErrorFatal;
+#if UNITY_ANDROID
             IntPtr recordingConfigHandle = RecordingConfigApi.Create(sessionHandle, config);
-
-            ApiArStatus status = ExternApi.ArSession_startRecording(
-                sessionHandle, recordingConfigHandle);
-
+            status = ExternApi.ArSession_startRecording(sessionHandle, recordingConfigHandle);
             RecordingConfigApi.Destroy(recordingConfigHandle);
+#endif
             return status.ToRecordingResult();
         }
 
         public static RecordingResult StopRecording(IntPtr sessionHandle)
         {
-            ApiArStatus status = ExternApi.ArSession_stopRecording(sessionHandle);
+            ApiArStatus status = ApiArStatus.ErrorFatal;
+#if UNITY_ANDROID
+            status = ExternApi.ArSession_stopRecording(sessionHandle);
+#endif
             return status.ToRecordingResult();
         }
 
         public static PlaybackStatus GetPlaybackStatus(IntPtr sessionHandle)
         {
             ApiPlaybackStatus apiStatus = ApiPlaybackStatus.None;
+#if UNITY_ANDROID
             ExternApi.ArSession_getPlaybackStatus(sessionHandle, ref apiStatus);
+#endif
             return apiStatus.ToPlaybackStatus();
         }
 
         public static PlaybackResult SetPlaybackDataset(
             IntPtr sessionHandle, string datasetFilepath)
         {
-            ApiArStatus status =
-                ExternApi.ArSession_setPlaybackDataset(sessionHandle, datasetFilepath);
+            ApiArStatus status = ApiArStatus.ErrorFatal;
+#if UNITY_ANDROID
+            status = ExternApi.ArSession_setPlaybackDataset(sessionHandle, datasetFilepath);
+#endif
             return status.ToPlaybackResult();
         }
 
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
-            Justification = "External call.")]
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]
@@ -191,19 +189,21 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr anchorHandle,
                 int ttlDays,
                 ref IntPtr cloudAnchorHandle);
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [IOSImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_setAuthToken(
                 IntPtr sessionHandle,
                 String authToken);
+#endif
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_estimateFeatureMapQualityForHosting(
                 IntPtr sessionHandle,
                 IntPtr poseHandle,
                 ref int featureMapQuality);
+#if UNITY_ANDROID
 
-#pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_getConfig(
                 IntPtr sessionHandle,
@@ -254,7 +254,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_setPlaybackDataset(
                 IntPtr sessionHandle, string datasetFilepath);
-#pragma warning restore 626
+#endif // UNITY_ANDROID
         }
     }
 }

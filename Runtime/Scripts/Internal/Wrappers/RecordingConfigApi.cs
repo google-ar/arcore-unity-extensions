@@ -21,10 +21,9 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Runtime.InteropServices;
 
-#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
-    using AndroidImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
-#else
+#if UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
@@ -33,6 +32,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static IntPtr Create(IntPtr sessionHandle, ARCoreRecordingConfig config)
         {
             IntPtr configHandle = IntPtr.Zero;
+#if UNITY_ANDROID
             ExternApi.ArRecordingConfig_create(sessionHandle, ref configHandle);
 
             if (config != null)
@@ -45,19 +45,33 @@ namespace Google.XR.ARCoreExtensions.Internal
                     sessionHandle,
                     configHandle,
                     config.AutoStopOnPause ? 1 : 0);
+                foreach (Track track in config.Tracks)
+                {
+                    IntPtr trackHandle = TrackApi.Create(sessionHandle, track);
+
+                    ExternApi.ArRecordingConfig_addTrack(sessionHandle, configHandle, trackHandle);
+
+                    // Internally the recording config uses the TrackData to generate its
+                    // own local structures, so it is appropriate to destroy it after sending it to
+                    // the recording config.
+                    TrackApi.Destroy(trackHandle);
+                }
             }
+#endif
 
             return configHandle;
         }
 
         public static void Destroy(IntPtr recordingConfigHandle)
         {
+#if UNITY_ANDROID
             ExternApi.ArRecordingConfig_destroy(recordingConfigHandle);
+#endif
         }
 
         private struct ExternApi
         {
-#pragma warning disable 626
+#if UNITY_ANDROID
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArRecordingConfig_create(
                 IntPtr session, ref IntPtr configHandle);
@@ -73,7 +87,11 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArRecordingConfig_setAutoStopOnPause(
                 IntPtr session, IntPtr configHandle, int configEnabled);
-#pragma warning restore 626
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArRecordingConfig_addTrack(
+                IntPtr session, IntPtr configHandle, IntPtr trackHandle);
+#endif
         }
     }
 }

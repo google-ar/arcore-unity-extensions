@@ -21,10 +21,9 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Runtime.InteropServices;
 
-#if UNITY_IOS && !UNITY_EDITOR
-    using AndroidImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
-#else
+#if UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
@@ -35,18 +34,20 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             if (extensionsFilter != null)
             {
+#if UNITY_ANDROID
                 ExternApi.ArCameraConfigFilter_setTargetFps(
                     sessionHandle, filterHandle, (int)extensionsFilter.TargetCameraFramerate);
                 ExternApi.ArCameraConfigFilter_setDepthSensorUsage(
                     sessionHandle, filterHandle, (int)extensionsFilter.DepthSensorUsage);
                 ExternApi.ArCameraConfigFilter_setStereoCameraUsage(
                     sessionHandle, filterHandle, (int)extensionsFilter.StereoCameraUsage);
+#endif
             }
         }
 
         private struct ExternApi
         {
-#pragma warning disable 626
+#if UNITY_ANDROID
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfigFilter_setTargetFps(IntPtr sessionHandle,
                 IntPtr cameraConfigFilterHandle, int fpsFilter);
@@ -58,7 +59,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfigFilter_setStereoCameraUsage(
                 IntPtr sessionHandle, IntPtr cameraConfigFilterHandle, int stereoFilter);
-#pragma warning restore 626
+#endif
         }
     }
 }

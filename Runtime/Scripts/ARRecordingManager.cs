@@ -23,17 +23,19 @@ namespace Google.XR.ARCoreExtensions
     using System;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
+    using UnityEngine.XR.ARFoundation;
+    using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
     /// Provides access to session recording functionality.
     /// </summary>
-    public static class ARRecordingManager
+    public class ARRecordingManager : MonoBehaviour
     {
         /// <summary>
         /// Gets the current state of the recorder.
         /// </summary>
         /// <returns>The current <see cref="RecordingStatus"/>.</returns>
-        public static RecordingStatus RecordingStatus
+        public RecordingStatus RecordingStatus
         {
             get
             {
@@ -57,8 +59,15 @@ namespace Google.XR.ARCoreExtensions
         /// start on the next Session resume.) Or a <see cref="RecordingResult"/> if there was an
         /// error.
         /// </returns>
-        public static RecordingResult StartRecording(ARCoreRecordingConfig config)
+        public RecordingResult StartRecording(ARCoreRecordingConfig config)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
+                ARCoreExtensions._instance.Session.subsystem != null &&
+                ARCoreExtensions._instance.Session.subsystem.nativePtr != null)
+            {
+                return RecordingResult.SessionNotReady;
+            }
+
             return SessionApi.StartRecording(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, config);
         }
@@ -70,9 +79,72 @@ namespace Google.XR.ARCoreExtensions
         /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the recording was stopped
         /// successfully, or <see cref="RecordingResult"/>.<c>ErrorRecordingFailed</c> if there was
         /// an error.</returns>
-        public static RecordingResult StopRecording()
+        public RecordingResult StopRecording()
         {
             return SessionApi.StopRecording(ARCoreExtensions._instance.currentARCoreSessionHandle);
+        }
+
+        /// <summary>
+        /// Writes a data sample in the specified external data track. The external samples recorded
+        /// using this API will be muxed into the recorded MP4 dataset in a corresponding additional
+        /// MP4 stream.
+        ///
+        /// For smooth playback of the MP4 on video players and for future compatibility
+        /// of the MP4 datasets with ARCore's playback of external data tracks it is
+        /// recommended that the external samples are recorded at a frequency no higher
+        /// than 90kHz.
+        ///
+        /// Additionally, if the external samples are recorded at a frequency lower than
+        /// 1Hz, empty padding samples will be automatically recorded at approximately
+        /// one second intervals to fill in the gaps.
+        ///
+        /// Recording external samples introduces additional CPU and/or I/O overhead and
+        /// may affect app performance.
+        /// </summary>
+        /// <param name="trackId">The unique ID of the track being recorded to. This will be
+        /// the <see cref="TrackData.Id"/> used to configure the track.</param>
+        /// <param name="data">The data being recorded at current time.</param>
+        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the data was recorded successfully,
+        /// or a different <see cref="RecordingResult"/> if there was an error.
+        /// </returns>
+        public RecordingResult RecordTrackData(Guid trackId, byte[] data)
+        {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
+                ARCoreExtensions._instance.Session.subsystem != null &&
+                ARCoreExtensions._instance.Session.subsystem.nativePtr != null)
+            {
+                Debug.LogWarning("Failed to record track data. The Session is not yet available. " +
+                                 "Try again later.");
+                return RecordingResult.ErrorIllegalState;
+            }
+
+            ARCameraManager cameraManager = ARCoreExtensions._instance.CameraManager;
+            var cameraParams = new XRCameraParams
+            {
+                zNear = cameraManager.GetComponent<Camera>().nearClipPlane,
+                zFar = cameraManager.GetComponent<Camera>().farClipPlane,
+                screenWidth = Screen.width,
+                screenHeight = Screen.height,
+                screenOrientation = Screen.orientation
+            };
+
+            if (!cameraManager.subsystem.TryGetLatestFrame(cameraParams, out XRCameraFrame frame))
+            {
+                Debug.LogWarning("Failed to record track data. The current XRCameraFrame is not " +
+                                 "available. Try again later.");
+                return RecordingResult.ErrorIllegalState;
+            }
+
+            if (frame.timestampNs == 0 || frame.nativePtr == IntPtr.Zero)
+            {
+                Debug.LogWarning("Failed to record track data. The current XRCameraFrame is not " +
+                                 "ready. Try again later.");
+                return RecordingResult.ErrorRecordingFailed;
+            }
+
+            return FrameApi.RecordTrackData(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, frame.FrameHandle(), trackId,
+                data);
         }
     }
 }

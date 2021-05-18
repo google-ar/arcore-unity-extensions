@@ -89,7 +89,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 return false;
             }
 
-            foreach (var loader in generalSettings.Manager.loaders)
+            foreach (var loader in generalSettings.Manager.activeLoaders)
             {
                 if (loader is ARCoreLoader)
                 {

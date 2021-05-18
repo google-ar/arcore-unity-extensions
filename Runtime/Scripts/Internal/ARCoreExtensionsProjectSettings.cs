@@ -18,7 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.Editor.Internal
+#if UNITY_EDITOR
+namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -37,10 +38,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
      Justification = "Internal.")]
     public enum AndroidAuthenticationStrategy
     {
-        None = 0,
+        [DisplayName("Do Not Use")]
+        DoNotUse = 0,
         [DisplayName("Keyless (recommended)")]
         Keyless = 1,
-        [DisplayName("Api Key")]
+        [DisplayName("API Key")]
         ApiKey = 2,
     }
 
@@ -53,10 +55,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
      Justification = "Internal.")]
     public enum IOSAuthenticationStrategy
     {
-        None = 0,
+        [DisplayName("Do Not Use")]
+        DoNotUse = 0,
         [DisplayName("Authentication Token (recommended)")]
         AuthenticationToken = 1,
-        [DisplayName("Api Key")]
+        [DisplayName("API Key")]
         ApiKey = 2,
     }
 
@@ -82,9 +85,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// </summary>
         [DisplayName("Android Authentication Strategy")]
         [DynamicHelp("GetAndroidStrategyHelpInfo")]
-        [EnumRange("GetAndroidStrategyRange")]
         public AndroidAuthenticationStrategy AndroidAuthenticationStrategySetting =
-            AndroidAuthenticationStrategy.None;
+            AndroidAuthenticationStrategy.DoNotUse;
 
         /// <summary>
         /// Android Api Key.
@@ -99,9 +101,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         [DisplayName("iOS Authentication Strategy")]
         [DisplayCondition("IsIosStrategyDisplayed")]
         [DynamicHelp("GetIosStrategyHelpInfo")]
-        [EnumRange("GetIosStrategyRange")]
         public IOSAuthenticationStrategy IOSAuthenticationStrategySetting =
-            IOSAuthenticationStrategy.None;
+            IOSAuthenticationStrategy.DoNotUse;
 
         /// <summary>
         /// IOS Api Key.
@@ -139,8 +140,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             // Default settings.
             IsIOSSupportEnabled = false;
-            AndroidAuthenticationStrategySetting = AndroidAuthenticationStrategy.None;
-            IOSAuthenticationStrategySetting = IOSAuthenticationStrategy.None;
+            AndroidAuthenticationStrategySetting = AndroidAuthenticationStrategy.DoNotUse;
+            IOSAuthenticationStrategySetting = IOSAuthenticationStrategy.DoNotUse;
             AndroidCloudServicesApiKey = string.Empty;
             IOSCloudServicesApiKey = string.Empty;
 
@@ -155,20 +156,14 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 }
             }
 
-            if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.None)
+            if (!string.IsNullOrEmpty(AndroidCloudServicesApiKey))
             {
-                AndroidAuthenticationStrategySetting =
-                    string.IsNullOrEmpty(AndroidCloudServicesApiKey) ?
-                    AndroidAuthenticationStrategy.Keyless :
-                    AndroidAuthenticationStrategy.ApiKey;
+                AndroidAuthenticationStrategySetting = AndroidAuthenticationStrategy.ApiKey;
             }
 
-            if (IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.None)
+            if (!string.IsNullOrEmpty(IOSCloudServicesApiKey))
             {
-                IOSAuthenticationStrategySetting =
-                    string.IsNullOrEmpty(IOSCloudServicesApiKey) ?
-                    IOSAuthenticationStrategy.AuthenticationToken :
-                    IOSAuthenticationStrategy.ApiKey;
+                IOSAuthenticationStrategySetting = IOSAuthenticationStrategy.ApiKey;
             }
 
             // Update the settings version as needed.
@@ -229,20 +224,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Reflection function used by 'EnumRange' for property
-        /// 'AndroidAuthenticationStrategySetting'.
-        /// </summary>
-        /// <returns>Enum range for 'AndroidAuthenticationStrategySetting'.</returns>
-        public Array GetAndroidStrategyRange()
-        {
-            return new AndroidAuthenticationStrategy[]
-            {
-                AndroidAuthenticationStrategy.ApiKey,
-                AndroidAuthenticationStrategy.Keyless,
-            };
-        }
-
-        /// <summary>
         /// Reflection function used by 'DisplayCondition' for property
         /// 'IOSAuthenticationStrategySetting'.
         /// </summary>
@@ -275,19 +256,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Reflection function used by 'EnumRange' for property 'IOSAuthenticationStrategy'.
-        /// </summary>
-        /// <returns>Enum range for 'IOSAuthenticationStrategy'.</returns>
-        public Array GetIosStrategyRange()
-        {
-            return new IOSAuthenticationStrategy[]
-            {
-                IOSAuthenticationStrategy.ApiKey,
-                IOSAuthenticationStrategy.AuthenticationToken,
-            };
-        }
-
-        /// <summary>
         /// Reflection function used by 'DynamicHelp' for property 'IOSAuthenticationStrategy'.
         /// </summary>
         /// <returns>Help info for 'IOSAuthenticationStrategy'.</returns>
@@ -299,6 +267,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     "Persistent Cloud Anchors will not be available on iOS when 'API Key'" +
                     " authentication strategy is selected.",
                     HelpAttribute.HelpMessageType.Warning);
+            }
+            else if (IOSAuthenticationStrategySetting ==
+                IOSAuthenticationStrategy.AuthenticationToken)
+            {
+                return new HelpAttribute(
+                    "Authentication Token is selected as the Cloud Anchor Authentication. " +
+                    "To authenticate with the Google Cloud Anchor Service, use " +
+                    "ARAnchorManager.SetAuthToken(string) in runtime.",
+                    HelpAttribute.HelpMessageType.Info);
             }
             else
             {
@@ -312,7 +289,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// would be input as the parameter to this attribute. Note, the function must return
     /// the type bool, take no parameters, and be a member of ARCoreProjectSettings.
     /// </summary>
-    internal class DisplayConditionAttribute : Attribute
+    public class DisplayConditionAttribute : Attribute
     {
         /// <summary>
         /// Reflection function that return the type bool, take no parameters,
@@ -335,7 +312,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// It could be used for either a field or an enum. If this attribute isn’t provided,
     /// then the default field name would be the field name.
     /// </summary>
-    internal class DisplayNameAttribute : Attribute
+    public class DisplayNameAttribute : Attribute
     {
         /// <summary>
         /// Display string in the GUI.
@@ -357,7 +334,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// The function must be a member of ARCoreProjectSettings, return the type
     /// System.Array, and take no parameters.
     /// </summary>
-    internal class EnumRangeAttribute : Attribute
+    public class EnumRangeAttribute : Attribute
     {
         /// <summary>
         /// Reflection function that return the type System.Array, take no parameters,
@@ -375,3 +352,4 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
     }
 }
+#endif // UNITY_EDITOR

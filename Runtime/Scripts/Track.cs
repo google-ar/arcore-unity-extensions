@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="Track.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,29 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
+    using UnityEngine;
+
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Definition of a track to record on. Data recorded to a given track will be muxed into a
+    /// corresponding MP4 stream.
     /// </summary>
-    public class VersionInfo
+    public struct Track
     {
         /// <summary>
-        /// The current ARCore Extensions package version.
+        /// Unique ID for the track.
         /// </summary>
-        public static readonly string Version = "1.24.0";
+        public Guid Id;
+
+        /// <summary>
+        /// Arbitrary byte array describing the track. The encoding is the user's choice. This is
+        /// a null-terminated string.
+        /// </summary>
+        public byte[] Metadata;
+
+        /// <summary>
+        /// MIME type of the track data as a null terminated string.
+        /// </summary>
+        public string MimeType;
     }
 }
