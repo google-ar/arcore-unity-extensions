@@ -134,7 +134,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 throw new BuildFailedException(
                     "Main Gradle template is not used in this build. " +
                     "ARCore Extensions for AR Foundation requires " +
-                    "gradle plugin version >= 3.6.0. Nevigate to " +
+                    "gradle plugin version >= 3.6.0. Navigate to " +
                     "'Project Settings > Player > Android Tab > Publish Settings > Build', " +
                     "check 'Custom Main Gradle Template'. Then edit the generated file " +
                     "'Assets/Plugins/Android/mainTemplate.gradle' by adding dependency " +
@@ -148,7 +148,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 throw new BuildFailedException(
                     "Launcher Gradle Template is not used in this build. " +
                     "ARCore Extensions for AR Foundation requires " +
-                    "gradle plugin version >= 3.6.0. Nevigate to " +
+                    "gradle plugin version >= 3.6.0. Navigate to " +
                     "'Project Settings > Player > Android Tab > Publish Settings > Build', " +
                     "check 'Custom Launcher Gradle Template'. Then edit the generated file " +
                     "'Assets/Plugins/Android/launcherTemplate.gradle' by adding dependency " +

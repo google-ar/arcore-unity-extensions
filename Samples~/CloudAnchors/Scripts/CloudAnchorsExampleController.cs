@@ -61,6 +61,11 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         public ARAnchorManager AnchorManager;
 
         /// <summary>
+        /// The active ARPlaneManager used in the example.
+        /// </summary>
+        public ARPlaneManager PlaneManager;
+
+        /// <summary>
         /// The active AR Raycast Manager used in the example.
         /// </summary>
         public ARRaycastManager RaycastManager;
@@ -370,9 +375,15 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
                 }
                 else if (!IsOriginPlaced && _currentMode == ApplicationMode.Hosting)
                 {
-#pragma warning disable CS0618 // TODO(b/181068602): Modify the way of adding anchor.
-                    ARAnchor anchor = AnchorManager.AddAnchor(hitResults[0].pose);
-#pragma warning restore CS0618
+                    ARPlane plane = PlaneManager.GetPlane(hitResults[0].trackableId);
+                    if (plane == null)
+                    {
+                        Debug.LogWarningFormat("Failed to find the ARPlane with TrackableId {0}",
+                            hitResults[0].trackableId);
+                        return;
+                    }
+
+                    ARAnchor anchor = AnchorManager.AttachAnchor(plane, hitResults[0].pose);
                     WorldOrigin = anchor.transform;
                     InstantiateAnchor(anchor);
                     OnAnchorInstantiated(true);

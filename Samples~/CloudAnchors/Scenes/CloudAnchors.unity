@@ -668,6 +668,7 @@ MonoBehaviour:
   SessionCore: {fileID: 1457490596}
   ARExtentions: {fileID: 1647151349}
   AnchorManager: {fileID: 1321540048}
+  PlaneManager: {fileID: 1321540050}
   RaycastManager: {fileID: 1321540047}
   NetworkUIController: {fileID: 1077067569}
   LobbyScreen: {fileID: 476493625}

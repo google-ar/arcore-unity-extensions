@@ -35,10 +35,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     public static class AndroidDependenciesHelper
     {
-        // GUID of plugin [ARCore Extensions Package]/Editor/ExternalDependencyManager/
-        //     Editor/Google.JarResolver_{version}.dll.meta
-        private const string _jarResolverGuid = "a8f371f579f2426d93a8c958438275b7";
-
 
         /// <summary>
         /// Gets all session configs from active scenes.
@@ -226,7 +222,27 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         private static void EnableJarResolver()
         {
-            string jarResolverPath = AssetDatabase.GUIDToAssetPath(_jarResolverGuid);
+            string jarResolverPath = null;
+            string[] guids = AssetDatabase.FindAssets("Google.JarResolver");
+            foreach (var guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+
+                if (path.EndsWith(".dll"))
+                {
+                    if (jarResolverPath != null)
+                    {
+                        Debug.LogErrorFormat("ARCoreExtensions: " +
+                            "There are multiple Google.JarResolver plugins detected. " +
+                            "One is {0}, another is {1}. Please remove one of them.",
+                            jarResolverPath, path);
+                        return;
+                    }
+
+                    jarResolverPath = path;
+                }
+            }
+
             if (jarResolverPath == null)
             {
                 Debug.LogError("ARCoreExtensions: Could not locate Google.JarResolver plugin.");

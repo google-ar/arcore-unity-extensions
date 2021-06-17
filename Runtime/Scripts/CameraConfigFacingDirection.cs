@@ -30,7 +30,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Back-facing (world) camera is enabled.
         ///
-        /// Available on all <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// Available on all <a href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a>.
         /// </summary>
         Back = 0,
@@ -39,7 +39,7 @@ namespace Google.XR.ARCoreExtensions
         /// Front-facing (selfie) camera is enabled.
         ///
         /// See <a
-        /// href="https://developers.google.com/ar/discover/supported-devices">
+        /// href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a> for available camera configs by device.
         ///
         /// To limit distribution of your app to only devices that have a

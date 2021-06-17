@@ -33,6 +33,20 @@ namespace Google.XR.ARCoreExtensions.Internal
 
     internal class FrameApi
     {
+        public static Vector2 TransformCoordinates2d(
+            IntPtr sessionHandle,
+            IntPtr frameHandle,
+            ApiCoordinates2dType inputType,
+            ApiCoordinates2dType outputType,
+            ref Vector2 uvIn)
+        {
+            Vector2 uvOut = new Vector2(uvIn.x, uvIn.y);
+#if UNITY_ANDROID
+            ExternApi.ArFrame_transformCoordinates2d(
+                sessionHandle, frameHandle, inputType, 1, ref uvIn, outputType, ref uvOut);
+#endif
+            return uvOut;
+        }
 
         public static RecordingResult RecordTrackData(
             IntPtr sessionHandle, IntPtr frameHandle, Guid trackId, byte[] data)
@@ -102,9 +116,14 @@ namespace Google.XR.ARCoreExtensions.Internal
 #endif // UNITY_ANDROID
             return trackDataList;
         }
+
         private struct ExternApi
         {
 #if UNITY_ANDROID
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFrame_transformCoordinates2d(IntPtr session, IntPtr frame,
+                ApiCoordinates2dType inputType, int numVertices, ref Vector2 uvsIn,
+                ApiCoordinates2dType outputType, ref Vector2 uvsOut);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArFrame_recordTrackData(

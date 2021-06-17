@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="ApiCoordinates2dType.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
+namespace Google.XR.ARCoreExtensions.Internal
 {
-    /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
-    /// </summary>
-    public class VersionInfo
+    // 2d coordinate systems supported by ARCore.
+    internal enum ApiCoordinates2dType
     {
-        /// <summary>
-        /// The current ARCore Extensions package version.
-        /// </summary>
-        public static readonly string Version = "1.25.0";
+        TexturePixels = 0,
+        TextureNormalized = 1,
+        ImagePixels = 2,
+        ImageNormalized = 3,
+        FeatureTrackingImage = 4,
+        FeatureTrackingImageNormalized = 5,
+        OpenGLDeviceNormalized = 6,
+        View = 7,
+        ViewNormalized = 8,
     }
 }

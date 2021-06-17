@@ -49,7 +49,7 @@ namespace Google.XR.ARCoreExtensions
         /// Most commonly used to filter camera configurations when the app requires
         /// exclusive access to the hardware depth sensor outside of ARCore, for example to
         /// support 3D mesh reconstruction. Available on all
-        /// <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// <a href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a>.
         /// </summary>
         [Tooltip("ARCore will not use the hardware depth sensor, such as a time-of-flight sensor" +

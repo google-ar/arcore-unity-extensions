@@ -43,7 +43,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// ARCore will not attempt to use a stereo camera, even if one is
         /// present.
-        /// Valid on all <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// Valid on all <a href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a>.
         /// </summary>
         [Tooltip("ARCore will not use the stereo camera, even if it is present. " +

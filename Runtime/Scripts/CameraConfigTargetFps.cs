@@ -33,7 +33,7 @@ namespace Google.XR.ARCoreExtensions
         /// Target 30fps camera capture frame rate.
         ///
         /// Available on all
-        /// <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// <a href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a>.
         /// </summary>
         [Tooltip("Target 30fps camera capture frame rate. " +
@@ -45,7 +45,7 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// Increases power consumption and may increase app memory usage.
         ///
-        /// See the <a href="https://developers.google.com/ar/discover/supported-devices">
+        /// See the <a href="https://developers.google.com/ar/devices">
         /// ARCore supported devices</a> page for a list of
         /// devices that currently support 60fps.
         /// </summary>

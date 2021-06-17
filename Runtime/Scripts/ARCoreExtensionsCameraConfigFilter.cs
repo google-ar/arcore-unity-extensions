@@ -35,7 +35,7 @@ namespace Google.XR.ARCoreExtensions
     ///
     /// Beginning with ARCore SDK 1.15.0, some devices support additional camera configs with lower
     /// GPU texture resolutions than the device's default GPU texture resolution. See the
-    /// <a href="https://developers.google.com/ar/discover/supported-devices">ARCore supported
+    /// <a href="https://developers.google.com/ar/devices">ARCore supported
     /// devices</a> page for an up to date list of devices with this capability.
     ///
     /// An app may adjust its capabilities at runtime by selecting a wider range of config filters
