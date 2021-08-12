@@ -36,6 +36,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
         private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
 
+        // Use Assets/ExtensionsAssets/Editor for generated iOS pod dependency.
+        private const string _extensionAssetsEditorFolder = "/ExtensionsAssets/Editor";
+
         private const string _arCoreIOSDependencyFileName = "ARCoreiOSDependencies";
         private const string _arCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
 
@@ -73,10 +76,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             EnableIOSResolver();
 
-            string dependencyFolderFullPath = Path.GetFullPath(
+            string templateFolderFullPath = Path.GetFullPath(
                 AssetDatabase.GUIDToAssetPath(_arCoreIOSDependencyFolderGUID));
+            string dependencyFolderFullPath = Application.dataPath + _extensionAssetsEditorFolder;
+            Directory.CreateDirectory(dependencyFolderFullPath);
             string iOSPodDependencyTemplatePath =
-                Path.Combine(dependencyFolderFullPath, dependencyFileName + ".template");
+                Path.Combine(templateFolderFullPath, dependencyFileName + ".template");
             string iOSPodDependencyXMLPath =
                 Path.Combine(dependencyFolderFullPath, dependencyFileName + ".xml");
 

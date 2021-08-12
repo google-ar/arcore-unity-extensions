@@ -32,9 +32,8 @@ namespace Google.XR.ARCoreExtensions
     {
         /// <summary>
         /// Get the 4x4 image display matrix for the camera frame. This is used by the texture
-        /// returned <c><see cref="AROcclusionManagerExtensions.GetPersonMaskTexture(
-        /// UnityEngine.XR.ARFoundation.AROcclusionManager)"/></c> to calculate the display
-        /// coordinates.
+        /// populated based on CPU images
+        /// to calculate the display coordinates.
         /// </summary>
         /// <param name="frame">The XRCameraFrame instance.</param>
         /// <returns>The 4x4 image display matrix.</returns>

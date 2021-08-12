@@ -37,10 +37,10 @@ namespace Google.XR.ARCoreExtensions.Internal
 
             if (config != null)
             {
-                ExternApi.ArRecordingConfig_setMp4DatasetFilePath(
+                ExternApi.ArRecordingConfig_setMp4DatasetUri(
                     sessionHandle,
                     configHandle,
-                    config.Mp4DatasetFilepath);
+                    config.Mp4DatasetUri?.AbsoluteUri);
                 ExternApi.ArRecordingConfig_setAutoStopOnPause(
                     sessionHandle,
                     configHandle,
@@ -81,8 +81,8 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr configHandle);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArRecordingConfig_setMp4DatasetFilePath(
-                IntPtr session, IntPtr configHandle, String datasetPath);
+            public static extern void ArRecordingConfig_setMp4DatasetUri(
+                IntPtr session, IntPtr configHandle, String datasetUri);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArRecordingConfig_setAutoStopOnPause(

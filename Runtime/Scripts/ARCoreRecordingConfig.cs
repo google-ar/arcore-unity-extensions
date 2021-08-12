@@ -34,13 +34,6 @@ namespace Google.XR.ARCoreExtensions
     public class ARCoreRecordingConfig : ScriptableObject
     {
         /// <summary>
-        /// A full path and filename on the device where the MP4 recording (including video data
-        /// from the camera and other device sensors) will be saved. If the file already exists it
-        /// will be overwritten.
-        /// </summary>
-        public string Mp4DatasetFilepath;
-
-        /// <summary>
         /// Set to <c>true</c> to cause the recording to stop automatically when the session is
         /// paused, or set to <c>false</c> to allow the recording to continue until the session is
         /// destroyed or the recording is stopped manually. When set to <c>false</c> and the session
@@ -55,5 +48,47 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         [HideInInspector]
         public List<Track> Tracks = new List<Track>();
+
+        /// <summary>
+        /// A uri where the MP4 recording (including video data from the camera
+        /// and other device sensors) will be saved. If the resource already
+        /// exists it will be overwritten. The AbsoluteUri property of the Uri
+        /// will be passed to ARCore to create an android.net.Uri
+        /// The Uri must point to a seekable resource.
+        /// </summary>
+        [HideInInspector]
+        public Uri Mp4DatasetUri;
+
+        /// <summary>
+        /// Gets or sets the uri on the device where the MP4 recording will be
+        /// saved as a file path. The recording consists of video data from the
+        /// camera along with data from the device sensors. If the file already
+        /// exists it will be overwritten.
+        /// </summary>
+        ///
+        /// @deprecated Please use Mp4DatasetUri instead.
+        [Obsolete("This field has been deprecated. Please use Mp4DatasetUri instead.")]
+        public string Mp4DatasetFilepath
+        {
+            get
+            {
+                if (Mp4DatasetUri == null)
+                {
+                    return null;
+                }
+
+                if (!Mp4DatasetUri.IsFile)
+                {
+                    return null;
+                }
+
+                return Mp4DatasetUri.AbsolutePath;
+            }
+
+            set
+            {
+                Mp4DatasetUri = new Uri(value);
+            }
+        }
     }
 }

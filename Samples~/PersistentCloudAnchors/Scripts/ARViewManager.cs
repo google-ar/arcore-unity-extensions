@@ -111,6 +111,14 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         private const string _insufficientLightMessage = "Too dark. Try moving to a well-lit area.";
 
         /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientLight">
+        /// in Android S or above.</see>
+        /// </summary>
+        private const string _insufficientLightMessageAndroidS =
+            "Too dark. Try moving to a well-lit area. " +
+            "Also, make sure the Block Camera is set to off in system settings.";
+
+        /// <summary>
         /// Helper message for <see cref="NotTrackingReason.InsufficientFeatures">.</see>
         /// </summary>
         private const string _insufficientFeatureMessage =
@@ -130,6 +138,16 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// The time between enters AR View and ARCore session starts to host or resolve.
         /// </summary>
         private const float _startPrepareTime = 3.0f;
+
+        /// <summary>
+        /// Android 12 (S) SDK version.
+        /// </summary>
+        private const int _androidSSDKVesion = 31;
+
+        /// <summary>
+        /// Pixel Model keyword.
+        /// </summary>
+        private const string _pixelModel = "pixel";
 
         /// <summary>
         /// The timer to indicate whether the AR View has passed the start prepare time.
@@ -169,6 +187,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         private List<ARCloudAnchor> _cachedCloudAnchors = new List<ARCloudAnchor>();
 
         private Color _activeColor;
+        private AndroidJavaClass _versionInfo;
 
         /// <summary>
         /// Get the camera pose for the current frame.
@@ -220,6 +239,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         public void Awake()
         {
             _activeColor = SaveButton.GetComponentInChildren<Text>().color;
+            _versionInfo = new AndroidJavaClass("android.os.Build$VERSION");
         }
 
         /// <summary>
@@ -379,7 +399,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                     // Point the hitPose rotation roughly away from the raycast/camera
                     // to match ARCore.
                     hitPose.rotation.eulerAngles =
-                            new Vector3(0.0f, Controller.MainCamera.transform.eulerAngles.y, 0.0f);
+                        new Vector3(0.0f, Controller.MainCamera.transform.eulerAngles.y, 0.0f);
                 }
 
                 _anchor = Controller.AnchorManager.AttachAnchor(plane, hitPose);
@@ -551,7 +571,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                         OnAnchorHostedFinished(false, cloudAnchor.cloudAnchorState.ToString());
                     }
                     else if (Controller.Mode ==
-                       PersistentCloudAnchorsController.ApplicationMode.Resolving)
+                        PersistentCloudAnchorsController.ApplicationMode.Resolving)
                     {
                         Debug.LogFormat("Failed to resolve the Cloud Anchor {0} with error {1}.",
                             cloudAnchor.cloudAnchorId, cloudAnchor.cloudAnchorState);
@@ -679,7 +699,15 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                         TrackingHelperText.text = _relocalizingMessage;
                         return;
                     case NotTrackingReason.InsufficientLight:
-                        TrackingHelperText.text = _insufficientLightMessage;
+                        if (_versionInfo.GetStatic<int>("SDK_INT") < _androidSSDKVesion)
+                        {
+                            TrackingHelperText.text = _insufficientLightMessage;
+                        }
+                        else
+                        {
+                            TrackingHelperText.text = _insufficientLightMessageAndroidS;
+                        }
+
                         return;
                     case NotTrackingReason.InsufficientFeatures:
                         TrackingHelperText.text = _insufficientFeatureMessage;

@@ -81,6 +81,9 @@ namespace Google.XR.ARCoreExtensions
         /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback filepath was
         /// set without issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the
         /// error.</returns>
+        /// @deprecated Please use SetPlaybackDatasetUri(Uri) instead.
+        [Obsolete("This method has been deprecated. "
+            + "Please use SetPlaybackDatasetUri(Uri) instead.")]
         public PlaybackResult SetPlaybackDataset(string datasetFilepath)
         {
             if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
@@ -92,6 +95,32 @@ namespace Google.XR.ARCoreExtensions
 
             return SessionApi.SetPlaybackDataset(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, datasetFilepath);
+        }
+
+        /// <summary>
+        /// Sets the uri for a dataset to be played back. The ARCore Session must be paused when
+        /// using this method. Resume the Session for the change to take effect. The AbsoluteUri
+        /// property of the Uri will be passed to ARCore to create an android.net.Uri.
+        ///
+        /// The uri must point to a seekable resource.
+        ///
+        /// See <c><see cref="SetPlaybackDataset(string)"/></c> for more restrictions.
+        /// </summary>
+        /// <param name="datasetUri"> The uri of the MP4 dataset. Null if stopping the playback and
+        /// resuming a live feed.</param>
+        /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback uri was set without
+        /// issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the error.</returns>
+        public PlaybackResult SetPlaybackDatasetUri(Uri datasetUri)
+        {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
+                ARCoreExtensions._instance.Session.subsystem != null &&
+                ARCoreExtensions._instance.Session.subsystem.nativePtr != null)
+            {
+                return PlaybackResult.SessionNotReady;
+            }
+
+            return SessionApi.SetPlaybackDatasetUri(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, datasetUri.AbsoluteUri);
         }
 
         /// <summary>

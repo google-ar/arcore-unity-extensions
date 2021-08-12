@@ -118,6 +118,14 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         private const string _insufficientLightMessage = "Too dark. Try moving to a well-lit area.";
 
         /// <summary>
+        /// Helper message for <see cref="NotTrackingReason.InsufficientLight">
+        /// in Android S or above.</see>
+        /// </summary>
+        private const string _insufficientLightMessageAndroidS =
+            "Too dark. Try moving to a well-lit area. " +
+            "Also, make sure the Block Camera is set to off in system settings.";
+
+        /// <summary>
         /// Helper message for <see cref="NotTrackingReason.InsufficientFeatures">.</see>
         /// </summary>
         private const string _insufficientFeatureMessage =
@@ -143,6 +151,16 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// The time between room starts up and ARCore session starts resolving.
         /// </summary>
         private const float _resolvingPrepareTime = 3.0f;
+
+        /// <summary>
+        /// Android 12 (S) SDK version.
+        /// </summary>
+        private const int _androidSSDKVesion = 31;
+
+        /// <summary>
+        /// Pixel Model keyword.
+        /// </summary>
+        private const string _pixelModel = "pixel";
 
         /// <summary>
         /// Record the time since the room started. If it passed the resolving prepare time,
@@ -185,6 +203,8 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         /// The current active UI screen.
         /// </summary>
         private ActiveScreen _currentActiveScreen = ActiveScreen.LobbyScreen;
+
+        private AndroidJavaClass _versionInfo;
 
         /// <summary>
         /// The Network Manager.
@@ -283,6 +303,14 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
         {
             Application.OpenURL(
                 "https://developers.google.com/ar/cloud-anchors-privacy");
+        }
+
+        /// <summary>
+        /// The Unity Awake() method.
+        /// </summary>
+        public void Awake()
+        {
+            _versionInfo = new AndroidJavaClass("android.os.Build$VERSION");
         }
 
         /// <summary>
@@ -697,7 +725,15 @@ namespace Google.XR.ARCoreExtensions.Samples.CloudAnchors
                         TrackingHelperText.text = _insufficientLightMessage;
                         return;
                     case NotTrackingReason.InsufficientFeatures:
-                        TrackingHelperText.text = _insufficientFeatureMessage;
+                        if (_versionInfo.GetStatic<int>("SDK_INT") < _androidSSDKVesion)
+                        {
+                            TrackingHelperText.text = _insufficientLightMessage;
+                        }
+                        else
+                        {
+                            TrackingHelperText.text = _insufficientLightMessageAndroidS;
+                        }
+
                         return;
                     case NotTrackingReason.ExcessiveMotion:
                         TrackingHelperText.text = _excessiveMotionMessage;

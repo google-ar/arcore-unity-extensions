@@ -30,8 +30,13 @@ namespace Google.XR.ARCoreExtensions.Internal
     public class AndroidPermissionsManager : AndroidJavaProxy
     {
         internal const string _cameraPermission = "android.permission.CAMERA";
+        internal const string _fineLocationPermission = "android.permission.ACCESS_FINE_LOCATION";
+        internal const string _coarseLocationPermission =
+            "android.permission.ACCESS_COARSE_LOCATION";
+
         private static AndroidPermissionsManager _instance;
-        private static Action<bool> _permissionRequest = null;
+        private static List<string> _permissionNames = null;
+        private static Action<string, bool> _permissionRequest = null;
         private static AndroidJavaObject _activity = null;
         private static AndroidJavaObject _permissionService = null;
 
@@ -64,27 +69,41 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <summary>
         /// Requests an Android permission from the user.
         /// </summary>
-        /// <param name="permissionName">The permission to be requested (e.g.
+        /// <param name="permissionNames">The permissions to be requested (e.g.
         /// android.permission.CAMERA).</param>
         /// <param name="onRequestFinished">The callback event when the request got a result.
         /// </param>
-        public static void RequestPermission(string permissionName, Action<bool> onRequestFinished)
+        public static void RequestPermission(string[] permissionNames,
+            Action<string, bool> onRequestFinished)
         {
-            if (IsPermissionGranted(permissionName))
+            List<string> ungrantedPermissions = new List<string>();
+            foreach (var permission in permissionNames)
             {
-                onRequestFinished(true);
+                if (!IsPermissionGranted(permission))
+                {
+                    ungrantedPermissions.Add(permission);
+                }
+                else
+                {
+                    onRequestFinished(permission, true);
+                }
+            }
+
+            if (ungrantedPermissions.Count == 0)
+            {
                 return;
             }
 
-            if (_permissionRequest != null)
+            if (_permissionNames != null)
             {
                 Debug.LogError("Attempted to make simultaneous Android permissions requests.");
                 return;
             }
 
+            _permissionNames = ungrantedPermissions;
             _permissionRequest = onRequestFinished;
             GetPermissionsService().Call("RequestPermissionAsync", GetUnityActivity(),
-                new[] { permissionName }, GetInstance());
+                _permissionNames.ToArray(), GetInstance());
         }
 
         /// <summary>
@@ -153,7 +172,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <param name="granted">If permission is granted or not.</param>
         private void OnPermissionResult(string permissionName, bool granted)
         {
-            if (_permissionRequest == null)
+            if (_permissionNames == null || !_permissionNames.Contains(permissionName))
             {
                 Debug.LogErrorFormat(
                     "AndroidPermissionsManager received an unexpected permissions result {0}",
@@ -162,10 +181,15 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
 
             // Cache completion method and reset request state.
+            _permissionNames.Remove(permissionName);
             var onRequestFinished = _permissionRequest;
-            _permissionRequest = null;
+            if (_permissionNames.Count == 0)
+            {
+                _permissionNames = null;
+                _permissionRequest = null;
+            }
 
-            onRequestFinished(granted);
+            onRequestFinished(permissionName, granted);
         }
     }
 }

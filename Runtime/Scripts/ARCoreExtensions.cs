@@ -97,6 +97,9 @@ namespace Google.XR.ARCoreExtensions
             List<XRCameraConfiguration> supportedConfigurations);
 
 #if UNITY_ANDROID
+        internal const int _androidSSDKVersion = 31;
+        private static AndroidJavaClass _versionInfo;
+
         private string _currentPermissionRequest = null;
 
         private HashSet<string> _requiredPermissionNames = new HashSet<string>();
@@ -144,6 +147,9 @@ namespace Google.XR.ARCoreExtensions
             }
 
             _instance = this;
+#if UNITY_ANDROID
+            _versionInfo = new AndroidJavaClass("android.os.Build$VERSION");
+#endif
         }
 
         /// <summary>
@@ -314,15 +320,34 @@ namespace Google.XR.ARCoreExtensions
                 return;
             }
 
+            string[] requestPermissions;
             _currentPermissionRequest = _requiredPermissionNames.First();
+            if (_versionInfo.GetStatic<int>("SDK_INT") >= _androidSSDKVersion &&
+                _currentPermissionRequest.Equals(AndroidPermissionsManager._fineLocationPermission))
+            {
+                requestPermissions = new[] {
+                    _currentPermissionRequest,
+                    AndroidPermissionsManager._coarseLocationPermission,
+                };
+            }
+            else
+            {
+                requestPermissions = new[] { _currentPermissionRequest };
+            }
+
             AndroidPermissionsManager.RequestPermission(
-                _currentPermissionRequest, OnPermissionRequestFinish);
+                requestPermissions, OnPermissionRequestFinish);
         }
 
-        private void OnPermissionRequestFinish(bool isGranted)
+        private void OnPermissionRequestFinish(string permissionName, bool isGranted)
         {
             Debug.LogFormat("{0} {1}.",
-                isGranted ? "Granted" : "Denied", _currentPermissionRequest);
+                isGranted ? "Granted" : "Denied", permissionName);
+            if (_currentPermissionRequest != permissionName)
+            {
+                return;
+            }
+
             _requiredPermissionNames.Remove(_currentPermissionRequest);
             _currentPermissionRequest = null;
             _arCoreSubsystem.SetConfigurationDirty();

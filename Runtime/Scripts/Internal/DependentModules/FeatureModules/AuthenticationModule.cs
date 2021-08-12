@@ -147,29 +147,31 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// module but this module is still enabled, it would call this function to get
         /// a warning message.
         /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
         /// <param name="buildTarget">Target build platform.</param>
         /// <returns>
         /// The warning message if this module is enabled but not required by any sessionConfigs.
         /// </returns>
         public override string GetEnabledNotRequiredWarning(
+            ARCoreExtensionsProjectSettings settings,
             UnityEditor.BuildTarget buildTarget)
         {
+            string featureName = "Cloud Anchor";
+            string platformName;
             if (buildTarget == UnityEditor.BuildTarget.iOS)
             {
-                return "Cloud Anchor Authentication is enabled in " +
-                    "ARCore Extensions Project Settings " +
-                    "but Cloud Anchor is not used in any Scenes in Build.\n" +
-                    "To turn off authentication, select Do Not Use in Edit > " +
-                    "Project Settings > XR > ARCore Extensions > iOS Authentication Strategy.";
+                platformName = "iOS";
             }
             else
             {
-                return "Cloud Anchor Authentication is enabled in " +
-                    "ARCore Extensions Project Settings " +
-                    "but Cloud Anchor is not used in any Scenes in Build.\n" +
-                    "To turn off authentication, select Do Not Use in Edit > " +
-                    "Project Settings > XR > ARCore Extensions > Android Authentication Strategy.";
+                platformName = "Android";
             }
+
+            return string.Format("{0} Authentication is enabled in ARCore Extensions Project " +
+                    "Settings but {0} is not used in any Scenes in Build.\n" +
+                    "To turn off authentication, select Do Not Use in Edit > " +
+                    "Project Settings > XR > ARCore Extensions > {1} Authentication Strategy.",
+                    featureName, platformName);
         }
 
         /// <summary>

@@ -43,8 +43,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     public class ExternalDependencyResolverPreprocessBuild : IPreprocessBuildWithReport
     {
-        private const string _buildResourceFolderGUID = "117437286c43f4eeb845c3257f2a8546";
-        private const string _dependenciesDirectory = "/DependenciesTempFolder";
+        private const string _dependenciesDirectory =
+            "/ExtensionsAssets/Editor/DependenciesTempFolder";
+
         private const string _androidDependenciesFileSuffix = "Dependencies.xml";
         private const string _androidDependenciesFormat =
             @"<dependencies>
@@ -82,9 +83,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (target == UnityEditor.BuildTarget.Android)
             {
                 Debug.Log("ARCoreExtensions: Cleaning up Android library dependencies.");
-                string folderPath =
-                    AssetDatabase.GUIDToAssetPath(_buildResourceFolderGUID) +
-                    _dependenciesDirectory;
+                string folderPath = Application.dataPath + _dependenciesDirectory;
                 Directory.Delete(folderPath, true);
                 AssetDatabase.Refresh();
                 AndroidDependenciesHelper.DoPlayServicesResolve();
@@ -161,8 +160,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public void ManageAndroidDependencies(ARCoreExtensionsProjectSettings settings)
         {
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
-            string folderPath =
-                AssetDatabase.GUIDToAssetPath(_buildResourceFolderGUID) + _dependenciesDirectory;
+
+            // Use Assets/ExtensionsAssets for all building generated resources.
+            string folderPath = Application.dataPath + _dependenciesDirectory;
             Directory.CreateDirectory(folderPath);
             foreach (IDependentModule module in featureModules)
             {

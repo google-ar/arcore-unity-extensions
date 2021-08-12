@@ -98,7 +98,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 if (moduleNecessity == ModuleNecessity.NotRequired &&
                     module.IsEnabled(settings, buildTarget))
                 {
-                    Debug.LogWarning(module.GetEnabledNotRequiredWarning(buildTarget));
+                    Debug.LogWarning(module.GetEnabledNotRequiredWarning(settings, buildTarget));
                 }
             }
         }

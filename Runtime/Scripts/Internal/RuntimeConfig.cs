@@ -37,10 +37,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         public List<string> ModulesEnabled = new List<string>();
 
-        // GUID to folder [ARCore Extensions]/Runtime
-        private const string _runtimeFolderGUID = "df6f7c8173aef4ce18044d1392042d34";
-
-        private const string _runtimeConfigFolder = "/Configurations/RuntimeSettings";
+        private const string _runtimeConfigFolder = "Assets/ExtensionsAssets/Runtime";
 
         private const string _runtimeConfigAsset = "RuntimeConfig.asset";
 
@@ -52,14 +49,13 @@ namespace Google.XR.ARCoreExtensions.Internal
                 return;
             }
 
-            string folderPath =
-                AssetDatabase.GUIDToAssetPath(_runtimeFolderGUID) + _runtimeConfigFolder;
-            if (!Directory.Exists(folderPath))
+            if (!Directory.Exists(_runtimeConfigFolder))
             {
-                Directory.CreateDirectory(folderPath);
+                Directory.CreateDirectory(_runtimeConfigFolder);
             }
 
-            string assetPath = folderPath + "/" + _runtimeConfigAsset;
+            // Need to be reletive path.
+            string assetPath = Path.Combine(_runtimeConfigFolder, _runtimeConfigAsset);
             if (!File.Exists(assetPath))
             {
                 Debug.Log("Created ARCore Extensions RuntimeConfig for Preloaded Assets.");
@@ -76,7 +72,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static void UploadInstance()
         {
             var preloadedAssets = PlayerSettings.GetPreloadedAssets().ToList();
-            preloadedAssets.RemoveAll(x => x.GetType() == typeof(RuntimeConfig));
+            preloadedAssets.RemoveAll(x => x != null && x.GetType() == typeof(RuntimeConfig));
 
             if (Instance == null)
             {

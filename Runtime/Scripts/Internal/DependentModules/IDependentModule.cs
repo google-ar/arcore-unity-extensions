@@ -109,10 +109,13 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// module but this module is still enabled, it would call this function to get
         /// a warning message.
         /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
+        /// <param name="buildTarget">Target build platform.</param>
         /// <returns>
         /// The warning message if this module is enabled but not required by any sessionConfigs.
         /// </returns>
-        string GetEnabledNotRequiredWarning(UnityEditor.BuildTarget buildTarget);
+        string GetEnabledNotRequiredWarning(
+            ARCoreExtensionsProjectSettings settings, UnityEditor.BuildTarget buildTarget);
 
         /// <summary>
         /// Return the XML snippet to include if this module is enabled. The string output will be
