@@ -45,6 +45,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private const string _userProguardDirectory = "Plugins/Android/";
         private const string _userProguardFile = "proguard-user.txt";
         private const string _userProguardDisabledFile = "proguard-user.txt.DISABLED";
+        private const string _userProguardDefault = "-keep class com.unity3d.plugin.* { *; }";
         private const string _moduleProguardRuleEnds = "\n### Module Progurad Rules ends ###\n";
         private const string _moduleProguardRuleStarts =
             "\n### Module Progurad Rules starts ###\n";
@@ -83,8 +84,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// current build.</param>
         public void InjectModuleProguardRules(ARCoreExtensionsProjectSettings settings)
         {
-            bool needToEnableProguardInBuild = false;
             StringBuilder moduleProguardSnippets = new StringBuilder();
+            moduleProguardSnippets.AppendFormat("\n## Default ##\n{0}\n", _userProguardDefault);
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
             foreach (IDependentModule module in featureModules)
             {
@@ -93,24 +94,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     string moduleProguardSnippet = module.GetProguardSnippet(settings);
                     if (!string.IsNullOrEmpty(moduleProguardSnippet))
                     {
-                        needToEnableProguardInBuild = true;
                         moduleProguardSnippets.AppendFormat("\n## {0} ##\n{1}\n",
                             module.GetType().Name, moduleProguardSnippet);
                     }
                 }
             }
 
-            if (needToEnableProguardInBuild)
-            {
-                string previousProguardRule = LoadPreviousProguardRule();
-                string userProguardFullPath = Path.Combine(
-                    Application.dataPath, _userProguardDirectory + _userProguardFile);
-                string curModuleProguardRule = moduleProguardSnippets.ToString();
-                Directory.CreateDirectory(
-                    Path.Combine(Application.dataPath, _userProguardDirectory));
-                File.WriteAllText(userProguardFullPath,
-                    ReplaceModuleProguardRule(previousProguardRule, curModuleProguardRule));
-            }
+            string previousProguardRule = LoadPreviousProguardRule();
+            string userProguardFullPath = Path.Combine(
+                Application.dataPath, _userProguardDirectory + _userProguardFile);
+            string curModuleProguardRule = moduleProguardSnippets.ToString();
+            Directory.CreateDirectory(
+                Path.Combine(Application.dataPath, _userProguardDirectory));
+            File.WriteAllText(userProguardFullPath,
+                ReplaceModuleProguardRule(previousProguardRule, curModuleProguardRule));
         }
 
         /// <summary>

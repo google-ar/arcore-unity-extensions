@@ -50,17 +50,17 @@ namespace Google.XR.ARCoreExtensions
         public List<Track> Tracks = new List<Track>();
 
         /// <summary>
-        /// A uri where the MP4 recording (including video data from the camera
+        /// A URI where the MP4 recording (including video data from the camera
         /// and other device sensors) will be saved. If the resource already
-        /// exists it will be overwritten. The AbsoluteUri property of the Uri
-        /// will be passed to ARCore to create an android.net.Uri
-        /// The Uri must point to a seekable resource.
+        /// exists it will be overwritten. The <c>AbsoluteUri</c> property of the Uri
+        /// will be passed to ARCore to create an <c>android.net.Uri</c>.
+        /// The URI must point to a seekable resource.
         /// </summary>
         [HideInInspector]
         public Uri Mp4DatasetUri;
 
         /// <summary>
-        /// Gets or sets the uri on the device where the MP4 recording will be
+        /// Gets or sets the URI on the device where the MP4 recording will be
         /// saved as a file path. The recording consists of video data from the
         /// camera along with data from the device sensors. If the file already
         /// exists it will be overwritten.
