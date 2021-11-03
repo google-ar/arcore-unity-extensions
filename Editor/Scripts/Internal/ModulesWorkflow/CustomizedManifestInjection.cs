@@ -37,7 +37,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         [SuppressMessage(
             "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
             Justification = "Internal")]
         public int callbackOrder

@@ -43,7 +43,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// before ones with higher values.
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
-         Justification = "Overriden property.")]
+         Justification = "Overridden property.")]
         public int callbackOrder
         {
             get
@@ -73,7 +73,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
                 Check64BitArch();
 
-#if UNITY_2019_4
+#if UNITY_2019_4_OR_NEWER && !UNITY_2020_3_OR_NEWER
                 CheckGradleTemplate();
 #endif
             }
@@ -116,7 +116,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         private void CheckGradleTemplate()
         {
-            // Need to set gradle version >= 5.6.4 by
+            // Need to set gradle version >= 6.1.1 by
             // 'Preferences > External Tools > Android > Gradle'.
             var gradlePath = EditorPrefs.GetString("GradlePath");
             if (string.IsNullOrEmpty(gradlePath))
@@ -124,35 +124,35 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 throw new BuildFailedException(
                     "'Preferences > External Tools > Android > Gradle' is empty. " +
                     "ARCore Extensions for AR Foundation requires a customized Gradle with " +
-                    "version >= 5.6.4.");
+                    "version >= 6.1.1.");
             }
 
-            // Need to use gradle plugin version >= 3.6.0 in main gradle by editing
+            // Need to use gradle plugin version >= 4.0.1 in main gradle by editing
             // 'Assets/Plugins/Android/mainTemplate.gradle'.
             if (!File.Exists(Path.Combine(Application.dataPath, _mainTemplatePath)))
             {
                 throw new BuildFailedException(
                     "Main Gradle template is not used in this build. " +
                     "ARCore Extensions for AR Foundation requires " +
-                    "gradle plugin version >= 3.6.0. Navigate to " +
+                    "gradle plugin version >= 4.0.1. Navigate to " +
                     "'Project Settings > Player > Android Tab > Publish Settings > Build', " +
                     "check 'Custom Main Gradle Template'. Then edit the generated file " +
                     "'Assets/Plugins/Android/mainTemplate.gradle' by adding dependency " +
-                    "'com.android.tools.build:gradle:3.6.0.'.");
+                    "'com.android.tools.build:gradle:4.0.1.'.");
             }
 
-            // Need to use gradle plugin version >= 3.6.0 in launcher gradle by editing
+            // Need to use gradle plugin version >= 4.0.1 in launcher gradle by editing
             // 'Assets/Plugins/Android/launcherTemplate.gradle'.
             if (!File.Exists(Path.Combine(Application.dataPath, _launcherTemplatePath)))
             {
                 throw new BuildFailedException(
                     "Launcher Gradle Template is not used in this build. " +
                     "ARCore Extensions for AR Foundation requires " +
-                    "gradle plugin version >= 3.6.0. Navigate to " +
+                    "gradle plugin version >= 4.0.1. Navigate to " +
                     "'Project Settings > Player > Android Tab > Publish Settings > Build', " +
                     "check 'Custom Launcher Gradle Template'. Then edit the generated file " +
                     "'Assets/Plugins/Android/launcherTemplate.gradle' by adding dependency " +
-                    "'com.android.tools.build:gradle:3.6.0.'.");
+                    "'com.android.tools.build:gradle:4.0.1.'.");
             }
         }
     }

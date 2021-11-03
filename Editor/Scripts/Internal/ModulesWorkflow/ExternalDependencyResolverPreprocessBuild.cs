@@ -58,15 +58,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         [SuppressMessage(
             "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         public int callbackOrder
         {
             get
             {
                 // This preprocess build might need to check whether the module is required.
-                // So it should be executed after CompatiblityCheckPreprocessBuild.
+                // So it should be executed after CompatibilityCheckPreprocessBuild.
                 return 2;
             }
         }
@@ -80,6 +80,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static void OnPostprocessBuild(
             UnityEditor.BuildTarget target, string pathToBuiltProject)
         {
+            if (!UnityEditorInternal.InternalEditorUtility.inBatchMode)
+            {
+                // Only clean up resolver in Batch Mode.
+                return;
+            }
             if (target == UnityEditor.BuildTarget.Android)
             {
                 Debug.Log("ARCoreExtensions: Cleaning up Android library dependencies.");
@@ -100,7 +105,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// A callback before the build is started to manage the dependecies.
+        /// A callback before the build is started to manage the dependencies.
         /// </summary>
         /// <param name="report">A report containing information about the build.</param>
         public void OnPreprocessBuild(BuildReport report)
@@ -117,7 +122,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Manage the ios dependecies based on the project settings.
+        /// Manage the ios dependencies based on the project settings.
         /// </summary>
         /// <param name="settings">
         /// The <see cref="ARCoreExtensionsProjectSettings"/> used by current build.
@@ -153,7 +158,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
-        /// Manage the android dependecies based on the project settings.
+        /// Manage the android dependencies based on the project settings.
         /// </summary>
         /// <param name="settings">The <see cref="ARCoreExtensionsProjectSettings"/> used by
         /// current build.</param>

@@ -36,7 +36,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     {
         [SuppressMessage(
             "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
             Justification = "Internal")]
         public int callbackOrder
@@ -63,13 +63,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 return;
             }
 
-            CheckCompatibilityWithAllSesssionConfigs(
+            CheckCompatibilityWithAllSessionConfigs(
                 ARCoreExtensionsProjectSettings.Instance,
                 AndroidDependenciesHelper.GetAllSessionConfigs(),
                 buildTarget);
         }
 
-        private static void CheckCompatibilityWithAllSesssionConfigs(
+        private static void CheckCompatibilityWithAllSessionConfigs(
             ARCoreExtensionsProjectSettings settings,
             Dictionary<ARCoreExtensionsConfig, string> sessionToSceneMap,
             UnityEditor.BuildTarget buildTarget)

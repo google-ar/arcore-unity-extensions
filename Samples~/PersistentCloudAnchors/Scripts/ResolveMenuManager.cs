@@ -68,7 +68,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         private Color _activeColor;
 
         /// <summary>
-        /// Callback handling the validaton of the input field.
+        /// Callback handling the validation of the input field.
         /// </summary>
         /// <param name="inputString">Current value of the input field.</param>
         public void OnInputFieldValueChanged(string inputString)

@@ -43,7 +43,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         public ARSession SessionCore;
 
         /// <summary>
-        /// The ARCoreExtentions used in the example.
+        /// The ARCoreExtensions used in the example.
         /// </summary>
         public ARCoreExtensions Extensions;
 

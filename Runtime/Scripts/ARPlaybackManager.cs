@@ -62,7 +62,7 @@ namespace Google.XR.ARCoreExtensions
         /// <item>
         /// Due to the way session data is processed, ARCore APIs may sometimes produce different
         /// results during playback than during recording and produce different results during
-        /// subsequent playback sessions. For exmaple, the number of detected planes and other
+        /// subsequent playback sessions. For example, the number of detected planes and other
         /// trackables, the precise timing of their detection and their pose over time may be
         /// different in subsequent playback sessions.
         /// </item>

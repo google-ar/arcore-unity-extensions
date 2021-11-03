@@ -30,8 +30,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     public static class IOSSupportHelper
     {
         // GUID of plugin [ARCore Extensions Package]/Editor/ExternalDependencyManager/
-        //     Editor/Google.IOSResolver_{version}.dll.meta
-        private const string _iosResolverGuid = "f7ad2228faf74a398ae7d46a32a25174";
+        //     Editor/Google.IOSResolver.dll.meta
+        private const string _iosResolverGuid = "0be593908d82451686bc8e5cc843a86f";
 
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
         private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
@@ -87,14 +87,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
             if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath))
             {
-                Debug.LogFormat("Adding {0}.", dependencyFileName);
-
                 if (!File.Exists(iOSPodDependencyTemplatePath))
                 {
                     Debug.LogError(
                         "Failed to enable ARCore iOS dependency xml. Template file is missing.");
                     return;
                 }
+
+                Debug.LogFormat("Adding {0}:\n{1}",
+                    dependencyFileName, File.ReadAllText(iOSPodDependencyTemplatePath));
 
                 File.Copy(iOSPodDependencyTemplatePath, iOSPodDependencyXMLPath);
                 AssetDatabase.Refresh();

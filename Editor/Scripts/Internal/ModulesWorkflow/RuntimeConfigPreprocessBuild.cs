@@ -36,15 +36,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     {
         [SuppressMessage(
             "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-            Justification = "Overriden property.")]
+            Justification = "Overridden property.")]
         public int callbackOrder
         {
             get
             {
                 // This preprocess build might need to check whether the module is required.
-                // So it should be executed after CompatiblityCheckPreprocessBuild.
+                // So it should be executed after CompatibilityCheckPreprocessBuild.
                 return 2;
             }
         }

@@ -200,7 +200,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         }
 
         /// <summary>
-        /// Callback handling the validaton of the input field.
+        /// Callback handling the validation of the input field.
         /// </summary>
         /// <param name="inputString">The current value of the input field.</param>
         public void OnInputFieldValueChanged(string inputString)

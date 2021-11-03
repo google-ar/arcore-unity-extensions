@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+    using System;
     using System.Reflection;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
@@ -65,7 +66,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             float propertyHeight = GetOriginalPropertyHeight(property, label);
             labelPosition.height = labelHeight;
 
-            // Draw property based on defualt Unity GUI behavior.
+            // Draw property based on default Unity GUI behavior.
             string warningMessage = GetIncompatibleAttributeWarning(property);
             if (!string.IsNullOrEmpty(warningMessage))
             {
@@ -111,6 +112,26 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 {
                     EditorGUI.Slider(labelPosition, property,
                         rangeAttribute.min, rangeAttribute.max, label);
+                }
+            }
+            else if (GetPropertyAttribute<EnumFlagsAttribute>() != null)
+            {
+                var flagsAttribute = GetPropertyAttribute<EnumFlagsAttribute>();
+                string[] itemNames = Enum.GetNames(flagsAttribute.EnumType);
+                int[] itemValues = Enum.GetValues(flagsAttribute.EnumType) as int[];
+
+                property.intValue =
+                     EditorGUI.MaskField(position, label, property.intValue, itemNames);
+
+                if (property.intValue == -1)
+                {
+                    int maskValue = 0;
+                    foreach (int itemValue in itemValues)
+                    {
+                        maskValue |= itemValue;
+                    }
+
+                    property.intValue = maskValue;
                 }
             }
             else

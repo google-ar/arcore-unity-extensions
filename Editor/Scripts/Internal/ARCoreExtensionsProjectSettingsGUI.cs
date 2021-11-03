@@ -44,11 +44,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// This function would be called via reflection so it needs to be public.
         /// </summary>
         /// <typeparam name="T">The enum type.</typeparam>
-        /// <param name="availbleEnums">Array of enums.</param>
+        /// <param name="availableEnums">Array of enums.</param>
         /// <returns>Array of strings representing those enums.</returns>
-        public static string[] GetEnumNames<T>(Array availbleEnums)
+        public static string[] GetEnumNames<T>(Array availableEnums)
         {
-            return availbleEnums.OfType<T>().Select(
+            return availableEnums.OfType<T>().Select(
                     v =>
                     {
                         MemberInfo memberInfo = typeof(T).GetMember(v.ToString()).First();
@@ -108,27 +108,27 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField(fieldName);
 
-                    Array availbleEnums;
+                    Array availableEnums;
                     EnumRangeAttribute enumRange = GetAttribute<EnumRangeAttribute>(fieldInfo);
                     if (enumRange != null)
                     {
                         MethodInfo checkingFunction =
                             targetType.GetMethod(enumRange.CheckingFunction);
-                        availbleEnums = (Array)checkingFunction.Invoke(
+                        availableEnums = (Array)checkingFunction.Invoke(
                             targetObject, new object[] { });
                     }
                     else
                     {
-                        availbleEnums = Enum.GetValues(fieldInfo.FieldType);
+                        availableEnums = Enum.GetValues(fieldInfo.FieldType);
                     }
 
                     string[] enumNames =
                         (string[])typeof(ARCoreExtensionsProjectSettingsGUI)
                         .GetMethod("GetEnumNames")
                         .MakeGenericMethod(fieldInfo.FieldType)
-                        .Invoke(null, new object[] { availbleEnums });
+                        .Invoke(null, new object[] { availableEnums });
                     var currentValue = fieldInfo.GetValue(targetObject);
-                    int currentIndex = Array.IndexOf(availbleEnums, currentValue);
+                    int currentIndex = Array.IndexOf(availableEnums, currentValue);
                     if (currentIndex == -1)
                     {
                         currentIndex = 0;
@@ -139,7 +139,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                             currentIndex,
                             enumNames,
                             GUILayout.Width(_groupFieldIndent));
-                    fieldInfo.SetValue(targetObject, availbleEnums.GetValue(selectedIndex));
+                    fieldInfo.SetValue(targetObject, availableEnums.GetValue(selectedIndex));
                     EditorGUILayout.EndHorizontal();
                 }
                 else if (fieldInfo.FieldType == typeof(Boolean))

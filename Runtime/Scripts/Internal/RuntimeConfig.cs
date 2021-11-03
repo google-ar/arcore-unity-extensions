@@ -54,7 +54,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 Directory.CreateDirectory(_runtimeConfigFolder);
             }
 
-            // Need to be reletive path.
+            // Need to be relative path.
             string assetPath = Path.Combine(_runtimeConfigFolder, _runtimeConfigAsset);
             if (!File.Exists(assetPath))
             {
