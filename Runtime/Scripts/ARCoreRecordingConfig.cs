@@ -29,7 +29,7 @@ namespace Google.XR.ARCoreExtensions
     /// </summary>
     [CreateAssetMenu(
         fileName = "ARCoreRecordingConfig",
-        menuName = "ARCore Extensions/ARCore Recording Config",
+        menuName = "XR/ARCore Recording Config",
         order = 3)]
     public class ARCoreRecordingConfig : ScriptableObject
     {

@@ -48,7 +48,7 @@ namespace Google.XR.ARCoreExtensions
     /// </remarks>
     [CreateAssetMenu(
         fileName = "ARCoreExtensionsCameraConfigFilter",
-        menuName = "ARCore Extensions/Camera Config Filter",
+        menuName = "XR/Camera Config Filter",
         order = 2)]
     public class ARCoreExtensionsCameraConfigFilter : ScriptableObject
     {

@@ -49,8 +49,8 @@ namespace Google.XR.ARCoreExtensions
         ErrorInternal,
 
         /// <summary>
-        /// The app cannot communicate with the ARCore Cloud because of an invalid or unauthorized
-        /// API key in the manifest, or because there was no API key present in the manifest.
+        /// The app cannot communicate with the ARCore Cloud because of an invalid authentication.
+        /// Check Project Settings > XR > ARCore Extensions for a valid authentication strategy.
         /// </summary>
         ErrorNotAuthorized,
 

@@ -38,7 +38,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             var provider =
                 new ARCoreExtensionsProjectSettingsProvider(
-                    "Project/XR/ARCore Extensions", SettingsScope.Project);
+                    "Project/XR Plug-in Management/ARCore Extensions", SettingsScope.Project);
 
             // Automatically extract all keywords from public static GUI content.
             provider.keywords =
