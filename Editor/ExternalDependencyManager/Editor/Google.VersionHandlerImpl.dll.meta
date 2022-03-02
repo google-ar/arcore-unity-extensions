@@ -30,9 +30,9 @@ PluginImporter:
   userData:
   validateReferences: 1
 fileFormatVersion: 2
-guid: fc4231a6e59847f1881d0f88ad2c8ba8
+guid: 5e074ba969404f13a11d17908aab8e5f
 labels:
 - gvh
-- gvh_version-1.2.166
-- gvhp_exportpath-ExternalDependencyManager/Editor/Google.VersionHandlerImpl_v1.2.166.dll
+- gvh_version-1.2.168
+- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.168/Google.VersionHandlerImpl.dll
 - gvhp_targets-editor

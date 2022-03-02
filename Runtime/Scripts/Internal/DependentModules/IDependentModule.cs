@@ -144,11 +144,11 @@ namespace Google.XR.ARCoreExtensions.Internal
         string GetAndroidDependenciesSnippet(ARCoreExtensionsProjectSettings settings);
 
         /// <summary>
-        /// Return the iOS dependency template file name of this module, which would be used by
-        /// External Dependencies Resolvor while building iOS app.
+        /// Return an array of iOS dependency template file names of this module,
+        /// which would be used by External Dependencies Resolvor while building iOS app.
         /// </summary>
-        /// <returns>iOS dependency template file name of this module.</returns>
-        string GetIOSDependenciesTemplateFileName();
+        /// <returns>iOS dependency template file names of this module.</returns>
+        string[] GetIOSDependenciesTemplateFileNames();
 #endif // UNITY_EDITOR
     }
 }

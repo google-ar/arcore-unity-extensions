@@ -133,25 +133,26 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
             foreach (IDependentModule module in featureModules)
             {
-                string iOSDependenciesTemplateFile = module.GetIOSDependenciesTemplateFileName();
-                if (!string.IsNullOrEmpty(iOSDependenciesTemplateFile))
+                string[] iOSDependenciesTemplates = module.GetIOSDependenciesTemplateFileNames();
+                if (iOSDependenciesTemplates != null && iOSDependenciesTemplates.Length > 0)
                 {
                     bool isModuleEnabled = module.IsEnabled(
                         settings, UnityEditor.BuildTarget.iOS);
-                    if (isModuleEnabled)
+                    foreach (string iOSDependenciesTemplateFile in iOSDependenciesTemplates)
                     {
-                        Debug.LogFormat("ARCoreExtensions: Include {0} for {1}.",
-                            iOSDependenciesTemplateFile, module.GetType().Name);
-                        _enabledIOSTemplate.Add(iOSDependenciesTemplateFile);
-                        IOSSupportHelper.UpdateIOSPodDependencies(
-                            true, iOSDependenciesTemplateFile);
-                    }
-                    else
-                    {
-                        Debug.LogFormat("ARCoreExtensions: Exclude {0} for {1}.",
-                            iOSDependenciesTemplateFile, module.GetType().Name);
-                        IOSSupportHelper.UpdateIOSPodDependencies(
-                            false, iOSDependenciesTemplateFile);
+                        if (!string.IsNullOrEmpty(iOSDependenciesTemplateFile))
+                        {
+                            Debug.LogFormat("ARCoreExtensions: {0} {1} for {2}.",
+                                isModuleEnabled ? "Include" : "Exclude",
+                                iOSDependenciesTemplateFile,
+                                module.GetType().Name);
+                            IOSSupportHelper.UpdateIOSPodDependencies(
+                                isModuleEnabled, iOSDependenciesTemplateFile);
+                            if (isModuleEnabled)
+                            {
+                                _enabledIOSTemplate.Add(iOSDependenciesTemplateFile);
+                            }
+                        }
                     }
                 }
             }

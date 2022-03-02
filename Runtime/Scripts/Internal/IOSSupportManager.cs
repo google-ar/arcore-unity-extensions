@@ -183,11 +183,11 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 var cameraParams = new XRCameraParams
                 {
-                zNear = _cameraManager.GetComponent<Camera>().nearClipPlane,
-                zFar = _cameraManager.GetComponent<Camera>().farClipPlane,
-                screenWidth = Screen.width,
-                screenHeight = Screen.height,
-                screenOrientation = Screen.orientation
+                    zNear = _cameraManager.GetComponent<Camera>().nearClipPlane,
+                    zFar = _cameraManager.GetComponent<Camera>().farClipPlane,
+                    screenWidth = Screen.width,
+                    screenHeight = Screen.height,
+                    screenOrientation = Screen.orientation
                 };
 
                 if (!_cameraManager.subsystem.TryGetLatestFrame(

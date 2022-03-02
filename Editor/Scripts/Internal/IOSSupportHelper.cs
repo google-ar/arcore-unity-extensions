@@ -29,10 +29,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     public static class IOSSupportHelper
     {
-        // GUID of plugin [ARCore Extensions Package]/Editor/ExternalDependencyManager/
-        //     Editor/Google.IOSResolver.dll.meta
-        private const string _iosResolverGuid = "0be593908d82451686bc8e5cc843a86f";
-
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
         private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
 
@@ -137,7 +133,27 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
         private static void EnableIOSResolver()
         {
-            string iosResolverPath = AssetDatabase.GUIDToAssetPath(_iosResolverGuid);
+            string iosResolverPath = null;
+            string[] guids = AssetDatabase.FindAssets("Google.IOSResolver");
+            foreach (var guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+
+                if (path.EndsWith(".dll"))
+                {
+                    if (iosResolverPath != null)
+                    {
+                        Debug.LogErrorFormat("ARCoreExtensions: " +
+                            "There are multiple Google.IOSResolver plugins detected. " +
+                            "One is {0}, another is {1}. Please remove one of them.",
+                            iosResolverPath, path);
+                        return;
+                    }
+
+                    iosResolverPath = path;
+                }
+            }
+
             if (iosResolverPath == null)
             {
                 Debug.LogError("ARCoreExtensions: Could not locate Google.IOSResolver plugin.");

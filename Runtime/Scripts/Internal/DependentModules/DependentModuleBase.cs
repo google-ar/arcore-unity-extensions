@@ -155,13 +155,13 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Return the iOS dependency template file name of this module, which would be used by
-        /// External Dependencies Resolvor while building iOS app.
+        /// Return an array of iOS dependency template file names of this module,
+        /// which would be used by External Dependencies Resolvor while building iOS app.
         /// </summary>
-        /// <returns>iOS dependency template file name of this module.</returns>
-        public virtual string GetIOSDependenciesTemplateFileName()
+        /// <returns>iOS dependency template file names of this module.</returns>
+        public virtual string[] GetIOSDependenciesTemplateFileNames()
         {
-            return string.Empty;
+            return new string[] { };
         }
 #endif // UNITY_EDITOR
     }
