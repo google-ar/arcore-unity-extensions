@@ -6,8 +6,8 @@ All files in the following folders:
 
 are licensed as follows:
 
-Covered by the **Google APIs Terms of Service** at
-[https://developers.google.com/terms/](https://developers.google.com/terms/)
+Governed by the **ARCore Additional Terms of Service** at
+[https://developers.google.com/ar/develop/terms](https://developers.google.com/ar/develop/terms)
 
 ===============================================================================
 

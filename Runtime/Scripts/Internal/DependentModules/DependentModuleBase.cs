@@ -21,7 +21,6 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
-    using System.Xml;
     using UnityEngine;
 
     /// <summary>
@@ -142,26 +141,17 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Return the snippet to be used in External Dependencies Resolvor while building
-        /// Android app. The string output will be added into a new created file whose name
-        /// would combine the module name and "Dependencies.xml".
+        /// Return all JarArtifacts to be used in External Dependencies Resolvor while building
+        /// Android app.
+        /// It will generate an AndroidResolverDependencies.xml file under ProjectSettings folder
+        /// and then be used in Gradle build process.
         /// </summary>
         /// <param name="settings">ARCore Extensions Project Settings.</param>
-        /// <returns>The string snippet to be used in Play Services Resolver.</returns>
-        public virtual string GetAndroidDependenciesSnippet(
+        /// <returns>An array defining all Android dependencies.</returns>
+        public virtual JarArtifact[] GetAndroidDependencies(
             ARCoreExtensionsProjectSettings settings)
         {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Return an array of iOS dependency template file names of this module,
-        /// which would be used by External Dependencies Resolvor while building iOS app.
-        /// </summary>
-        /// <returns>iOS dependency template file names of this module.</returns>
-        public virtual string[] GetIOSDependenciesTemplateFileNames()
-        {
-            return new string[] { };
+            return null;
         }
 #endif // UNITY_EDITOR
     }

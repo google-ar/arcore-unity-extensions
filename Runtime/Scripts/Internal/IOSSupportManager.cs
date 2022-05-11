@@ -28,6 +28,12 @@ namespace Google.XR.ARCoreExtensions.Internal
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
 
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using IOSImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+
     internal class IOSSupportManager
     {
         private const string _iosCloudServicesApiKeyPath =
@@ -38,6 +44,8 @@ namespace Google.XR.ARCoreExtensions.Internal
         private bool _isEnabled = false;
 
         private string _iosCloudServicesApiKey = string.Empty;
+
+        private ARCoreExtensionsConfig _cachedConfig;
 
         private IntPtr _sessionHandle = IntPtr.Zero;
 
@@ -125,7 +133,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 Debug.Log("Reset cross platform ARCoreSession.");
                 if (_frameHandle != IntPtr.Zero)
                 {
-                    SessionApi.ReleaseFrame(_frameHandle);
+                    FrameApi.ReleaseFrame(_frameHandle);
                     _frameHandle = IntPtr.Zero;
                 }
 
@@ -163,7 +171,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private void OnFrameUpdate(ARCameraFrameEventArgs frameEventArgs)
         {
-            if (!ShouldUpdateARCoreSession())
+            if (!_isEnabled)
             {
                 return;
             }
@@ -175,7 +183,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
             if (_frameHandle != IntPtr.Zero)
             {
-                SessionApi.ReleaseFrame(_frameHandle);
+                FrameApi.ReleaseFrame(_frameHandle);
                 _frameHandle = IntPtr.Zero;
             }
 
@@ -211,30 +219,30 @@ namespace Google.XR.ARCoreExtensions.Internal
                         "{0}", status);
                     return;
                 }
+
+                // Update session configuration.
+                if (ARCoreExtensions._instance.ARCoreExtensionsConfig != null &&
+                    !ARCoreExtensions._instance.ARCoreExtensionsConfig.Equals(_cachedConfig))
+                {
+                    _cachedConfig = ScriptableObject.CreateInstance<ARCoreExtensionsConfig>();
+                    _cachedConfig.CopyFrom(ARCoreExtensions._instance.ARCoreExtensionsConfig);
+                    ConfigApi.ConfigureSession(_sessionHandle, _cachedConfig);
+                }
             }
         }
 
-        private bool ShouldUpdateARCoreSession()
-        {
-            return _isEnabled &&
-                ARCoreExtensions._instance.ARCoreExtensionsConfig.CloudAnchorMode !=
-                    CloudAnchorMode.Disabled;
-        }
-
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1113:MethodsMustBeUpperCamelCase",
-         Justification = "External call.")]
         private struct ExternApi
         {
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [IOSImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_create(
                 string apiKey, string bundleIdentifier, ref IntPtr sessionHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_destroy(IntPtr session);
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [IOSImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_updateAndAcquireArFrame(
                 IntPtr sessionHandle, IntPtr arkitFrameHandle, ref IntPtr arFrame);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_destroy(IntPtr session);
         }
     }
 }

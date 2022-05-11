@@ -20,42 +20,19 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Xml;
-    using System.Xml.Linq;
     using Google.XR.ARCoreExtensions.Internal;
-    using UnityEditor;
     using UnityEditor.Build;
     using UnityEditor.Build.Reporting;
     using UnityEditor.Callbacks;
-    using UnityEditor.XR.Management;
     using UnityEngine;
-    using UnityEngine.XR.ARCore;
-    using UnityEngine.XR.Management;
 
     /// <summary>
     /// Manage the dependencies for play service resolver.
     /// </summary>
     public class ExternalDependencyResolverPreprocessBuild : IPreprocessBuildWithReport
     {
-        private const string _dependenciesDirectory =
-            "/ExtensionsAssets/Editor/DependenciesTempFolder";
-
-        private const string _androidDependenciesFileSuffix = "Dependencies.xml";
-        private const string _androidDependenciesFormat =
-            @"<dependencies>
-                <androidPackages>
-                {0}
-                </androidPackages>
-            </dependencies>";
-
-        private static HashSet<string> _enabledIOSTemplate = new HashSet<string>();
-
         [SuppressMessage(
             "UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
             Justification = "Overridden property.")]
@@ -85,22 +62,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 // Only clean up resolver in Batch Mode.
                 return;
             }
+
             if (target == UnityEditor.BuildTarget.Android)
             {
                 Debug.Log("ARCoreExtensions: Cleaning up Android library dependencies.");
-                string folderPath = Application.dataPath + _dependenciesDirectory;
-                Directory.Delete(folderPath, true);
-                AssetDatabase.Refresh();
-                AndroidDependenciesHelper.DoPlayServicesResolve();
-            }
-            else if (target == UnityEditor.BuildTarget.iOS)
-            {
-                foreach (string enabledTemplateFile in _enabledIOSTemplate)
-                {
-                    Debug.LogFormat("ARCoreExtensions: Cleaning up {0} in PostprocessBuild.",
-                            enabledTemplateFile);
-                    IOSSupportHelper.UpdateIOSPodDependencies(false, enabledTemplateFile);
-                }
+                ExternalDependencyResolverHelper.ClearDependencies();
             }
         }
 
@@ -113,80 +79,31 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             UnityEditor.BuildTarget buildTarget = report.summary.platform;
             if (buildTarget == UnityEditor.BuildTarget.Android)
             {
+                ExternalDependencyResolverHelper.ClearDependencies();
                 ManageAndroidDependencies(ARCoreExtensionsProjectSettings.Instance);
             }
-            else if (buildTarget == UnityEditor.BuildTarget.iOS)
+            else if (buildTarget == UnityEditor.BuildTarget.iOS &&
+                ARCoreExtensionsProjectSettings.Instance.IsIOSSupportEnabled)
             {
-                ManageIOSDependencies(ARCoreExtensionsProjectSettings.Instance);
+                ExternalDependencyResolverHelper.EnableDependencyResolver(
+                    ExternalDependencyResolverHelper.IOSResolverName);
             }
         }
 
-        /// <summary>
-        /// Manage the ios dependencies based on the project settings.
-        /// </summary>
-        /// <param name="settings">
-        /// The <see cref="ARCoreExtensionsProjectSettings"/> used by current build.
-        /// </param>
-        public void ManageIOSDependencies(ARCoreExtensionsProjectSettings settings)
+        private void ManageAndroidDependencies(ARCoreExtensionsProjectSettings settings)
         {
-            _enabledIOSTemplate.Clear();
             List<IDependentModule> featureModules = DependentModulesManager.GetModules();
             foreach (IDependentModule module in featureModules)
             {
-                string[] iOSDependenciesTemplates = module.GetIOSDependenciesTemplateFileNames();
-                if (iOSDependenciesTemplates != null && iOSDependenciesTemplates.Length > 0)
+                if (!module.IsEnabled(settings, UnityEditor.BuildTarget.Android))
                 {
-                    bool isModuleEnabled = module.IsEnabled(
-                        settings, UnityEditor.BuildTarget.iOS);
-                    foreach (string iOSDependenciesTemplateFile in iOSDependenciesTemplates)
-                    {
-                        if (!string.IsNullOrEmpty(iOSDependenciesTemplateFile))
-                        {
-                            Debug.LogFormat("ARCoreExtensions: {0} {1} for {2}.",
-                                isModuleEnabled ? "Include" : "Exclude",
-                                iOSDependenciesTemplateFile,
-                                module.GetType().Name);
-                            IOSSupportHelper.UpdateIOSPodDependencies(
-                                isModuleEnabled, iOSDependenciesTemplateFile);
-                            if (isModuleEnabled)
-                            {
-                                _enabledIOSTemplate.Add(iOSDependenciesTemplateFile);
-                            }
-                        }
-                    }
+                    continue;
                 }
-            }
-        }
 
-        /// <summary>
-        /// Manage the android dependencies based on the project settings.
-        /// </summary>
-        /// <param name="settings">The <see cref="ARCoreExtensionsProjectSettings"/> used by
-        /// current build.</param>
-        public void ManageAndroidDependencies(ARCoreExtensionsProjectSettings settings)
-        {
-            List<IDependentModule> featureModules = DependentModulesManager.GetModules();
-
-            // Use Assets/ExtensionsAssets for all building generated resources.
-            string folderPath = Application.dataPath + _dependenciesDirectory;
-            Directory.CreateDirectory(folderPath);
-            foreach (IDependentModule module in featureModules)
-            {
-                if (module.IsEnabled(settings, UnityEditor.BuildTarget.Android))
+                JarArtifact[] dependencies = module.GetAndroidDependencies(settings);
+                if (dependencies != null && dependencies.Length > 0)
                 {
-                    string dependenciesSnippet = module.GetAndroidDependenciesSnippet(settings);
-                    if (!string.IsNullOrEmpty(dependenciesSnippet))
-                    {
-                        string fileName = module.GetType().Name + _androidDependenciesFileSuffix;
-                        string fullPath = Path.Combine(folderPath, fileName);
-                        string finalSnippet = XDocument.Parse(string.Format(
-                            _androidDependenciesFormat, dependenciesSnippet)).ToString();
-                        File.WriteAllText(fullPath, finalSnippet);
-                        Debug.LogFormat("Module {0} added Android library dependencies:\n{1}",
-                            module.GetType().Name, finalSnippet);
-                        AssetDatabase.Refresh();
-                        AndroidDependenciesHelper.DoPlayServicesResolve();
-                    }
+                    ExternalDependencyResolverHelper.RegisterAndroidDependencies(dependencies);
                 }
             }
         }

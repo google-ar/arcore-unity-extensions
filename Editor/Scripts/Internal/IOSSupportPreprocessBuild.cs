@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
@@ -58,7 +59,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 Debug.LogFormat("Building application with ARCore Extensions for AR Foundation " +
                     "iOS Support {0}", arcoreiOSEnabled ? "ENABLED" : "DISABLED");
 
-                IOSSupportHelper.SetARCoreIOSSupportEnabled(arcoreiOSEnabled);
+                // Setup scripting define symbols:
+                IOSSupportHelper.UpdateIOSScriptingDefineSymbols(
+                    ARCoreExtensionsProjectSettings.Instance);
+
+                // Setup CocoaPod templates:
+                IOSSupportHelper.UpdateIOSPodDependencies(
+                    arcoreiOSEnabled, IOSSupportHelper.ARCoreIOSDependencyFileName);
+                Dictionary<string, bool> templates =
+                    ARCoreExtensionsProjectSettings.Instance.GetIOSDependenciesStatus();
+                foreach (var keyvalue in templates)
+                {
+                    IOSSupportHelper.UpdateIOSPodDependencies(
+                        arcoreiOSEnabled && keyvalue.Value, keyvalue.Key);
+                }
             }
         }
     }

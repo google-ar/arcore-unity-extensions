@@ -28,12 +28,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEditor;
     using UnityEngine;
 
-
     /// <summary>
     /// The GUI of ARCoreExtensionsProjectSettings.
     /// </summary>
     public class ARCoreExtensionsProjectSettingsGUI
     {
+        private static readonly int _headerHeightOffset = 10;
         private static readonly float _toggleLabelWidth = 180;
         private static readonly float _groupLabelIndent = 15;
         private static readonly float _groupFieldIndent =
@@ -90,6 +90,19 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 if (!ShouldDisplay(fieldInfo, targetObject))
                 {
                     continue;
+                }
+
+                HeaderAttribute header = GetAttribute<HeaderAttribute>(fieldInfo);
+                if (header != null)
+                {
+                    GUIStyle headerStyle = new GUIStyle(EditorStyles.boldLabel);
+                    headerStyle.padding.top += _headerHeightOffset;
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(
+                        header.header,
+                        headerStyle,
+                        GUILayout.Height((2 * _headerHeightOffset) + headerStyle.lineHeight));
+                    EditorGUILayout.EndHorizontal();
                 }
 
                 string fieldName;

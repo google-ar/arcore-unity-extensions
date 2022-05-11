@@ -22,36 +22,33 @@ namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using UnityEngine;
 
-#if UNITY_ANDROID
-    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+#if UNITY_IOS
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#if CLOUDANCHOR_IOS_SUPPORT
+    using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using CloudAnchorImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+#if GEOSPATIAL_IOS_SUPPORT
+    using EarthImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using EarthImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+#else // UNITY_ANDROID
+    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
+    using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+    using EarthImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class SessionApi
     {
-        public static void ReleaseFrame(IntPtr frameHandle)
-        {
-            ExternApi.ArFrame_release(frameHandle);
-        }
-
-        public static void UpdateSessionConfig(
-            IntPtr sessionHandle, IntPtr configHandle, ARCoreExtensionsConfig config)
-        {
-#if UNITY_ANDROID
-            ApiCloudAnchorMode cloudAnchorMode = (ApiCloudAnchorMode)config.CloudAnchorMode;
-            ExternApi.ArConfig_setCloudAnchorMode(
-                    sessionHandle, configHandle, cloudAnchorMode);
-#endif // UNITY_ANDROID
-        }
-
         public static IntPtr HostCloudAnchor(IntPtr sessionHandle, IntPtr anchorHandle)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
             ApiArStatus status = ExternApi.ArSession_hostAndAcquireNewCloudAnchor(
                 sessionHandle,
                 anchorHandle,
@@ -60,13 +57,14 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 Debug.LogErrorFormat("Failed to host a new Cloud Anchor, status '{0}'", status);
             }
-
+#endif
             return cloudAnchorHandle;
         }
 
         public static IntPtr HostCloudAnchor(IntPtr sessionHandle, IntPtr anchorHandle, int ttlDays)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
             ApiArStatus status = ExternApi.ArSession_hostAndAcquireNewCloudAnchorWithTtl(
                 sessionHandle, anchorHandle, ttlDays, ref cloudAnchorHandle);
             if (status != ApiArStatus.Success)
@@ -74,7 +72,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 Debug.LogErrorFormat("Failed to host a Cloud Anchor with TTL {0}, status '{1}'",
                     ttlDays, status);
             }
-
+#endif
             return cloudAnchorHandle;
         }
 
@@ -88,6 +86,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static IntPtr ResolveCloudAnchor(IntPtr sessionHandle, string cloudAnchorId)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
             ApiArStatus status = ExternApi.ArSession_resolveAndAcquireNewCloudAnchor(
                 sessionHandle,
                 cloudAnchorId,
@@ -96,15 +95,16 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 Debug.LogErrorFormat("Failed to resolve a new Cloud Anchor, status '{0}'", status);
             }
-
+#endif
             return cloudAnchorHandle;
         }
 
         public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
             IntPtr sessionHandle, Pose pose)
         {
-            IntPtr poseHandle = PoseApi.Create(sessionHandle, pose);
             int featureMapQuality = (int)FeatureMapQuality.Insufficient;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            IntPtr poseHandle = PoseApi.Create(sessionHandle, pose);
             var status = ExternApi.ArSession_estimateFeatureMapQualityForHosting(
                 sessionHandle, poseHandle, ref featureMapQuality);
             PoseApi.Destroy(poseHandle);
@@ -113,7 +113,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 Debug.LogErrorFormat("Failed to estimate feature map quality with status '{0}'.",
                     status);
             }
-
+#endif
             return (FeatureMapQuality)featureMapQuality;
         }
 
@@ -176,74 +176,75 @@ namespace Google.XR.ARCoreExtensions.Internal
             return status.ToPlaybackResult();
         }
 
+        public static FeatureSupported IsGeospatialModeSupported(
+            IntPtr sessionHandle, GeospatialMode mode)
+        {
+            FeatureSupported supported = FeatureSupported.Unknown;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            int isSupported = 0;
+            ExternApi.ArSession_isGeospatialModeSupported(
+                sessionHandle, mode.ToApiGeospatialMode(), ref isSupported);
+            supported = isSupported == 0 ?
+                FeatureSupported.Unsupported : FeatureSupported.Supported;
+#endif
+            return supported;
+        }
+
+        public static IntPtr AcquireEarth(IntPtr sessionHandle)
+        {
+            var earthHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArSession_acquireEarth(sessionHandle, ref earthHandle);
+#endif
+            return earthHandle;
+        }
+
         private struct ExternApi
         {
-            [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArFrame_release(IntPtr frameHandle);
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_hostAndAcquireNewCloudAnchor(
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
                 ref IntPtr cloudAnchorHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_resolveAndAcquireNewCloudAnchor(
                 IntPtr sessionHandle,
                 string cloudAnchorId,
                 ref IntPtr cloudAnchorHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_hostAndAcquireNewCloudAnchorWithTtl(
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
                 int ttlDays,
                 ref IntPtr cloudAnchorHandle);
-#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
 
-            [IOSImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_setAuthToken(
-                IntPtr sessionHandle,
-                String authToken);
-#endif
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_estimateFeatureMapQualityForHosting(
                 IntPtr sessionHandle,
                 IntPtr poseHandle,
                 ref int featureMapQuality);
-#if UNITY_ANDROID
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_isGeospatialModeSupported(
+                IntPtr sessionHandle, ApiGeospatialMode mode, ref int out_is_supported);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_acquireEarth(IntPtr sessionHandle,
+                                                             ref IntPtr earthHandle);
+#if UNITY_IOS
+#if ARCORE_EXTENSIONS_IOS_SUPPORT
+            [IOSImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_setAuthToken(
+                IntPtr sessionHandle, string authToken);
+#endif // ARCORE_EXTENSIONS_IOS_SUPPORT
+#elif UNITY_ANDROID
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_getConfig(
                 IntPtr sessionHandle,
                 IntPtr configHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern ApiArStatus ArSession_configure(
-                IntPtr sessionHandle,
-                IntPtr configHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArConfig_create(
-                IntPtr sessionHandle,
-                ref IntPtr configHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArConfig_destroy(
-                IntPtr configHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArConfig_setCloudAnchorMode(
-                IntPtr sessionHandle,
-                IntPtr configHandle,
-                ApiCloudAnchorMode mode);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArConfig_getCloudAnchorMode(
-                IntPtr sessionHandle,
-                IntPtr configHandle,
-                ref ApiCloudAnchorMode mode);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_getRecordingStatus(

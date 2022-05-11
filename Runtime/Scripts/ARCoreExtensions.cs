@@ -308,6 +308,16 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void OnValidate()
         {
+
+            if (ARCoreExtensionsConfig != null && CameraManager != null &&
+                CameraManager.requestedFacingDirection != CameraFacingDirection.World &&
+                ARCoreExtensionsConfig.GeospatialMode == GeospatialMode.Enabled)
+            {
+                Debug.LogErrorFormat(
+                    "Geospatial Mode {0} is incompatible with user-facing (selfie) camera. " +
+                    "Choose 'World' camera in ARCameraManager instead.",
+                    ARCoreExtensionsConfig.GeospatialMode);
+            }
         }
 
         private void RequestPermission()
@@ -363,7 +373,7 @@ namespace Google.XR.ARCoreExtensions
             if (eventArgs.arSession.AsIntPtr() != IntPtr.Zero &&
                 eventArgs.arConfig.AsIntPtr() != IntPtr.Zero)
             {
-                SessionApi.UpdateSessionConfig(
+                ConfigApi.UpdateSessionConfig(
                     eventArgs.arSession.AsIntPtr(), eventArgs.arConfig.AsIntPtr(), _cachedConfig);
             }
         }

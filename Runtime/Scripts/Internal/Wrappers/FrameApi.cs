@@ -25,14 +25,21 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System.Runtime.InteropServices;
     using UnityEngine;
 
-#if UNITY_ANDROID
-    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+#if UNITY_IOS
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#elif UNITY_ANDROID
+    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class FrameApi
     {
+        public static void ReleaseFrame(IntPtr frameHandle)
+        {
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            ExternApi.ArFrame_release(frameHandle);
+#endif
+        }
+
         public static Vector2 TransformCoordinates2d(
             IntPtr sessionHandle,
             IntPtr frameHandle,
@@ -77,21 +84,18 @@ namespace Google.XR.ARCoreExtensions.Internal
             return status.ToRecordingResult();
         }
 
-        public static List<TrackData> GetUpdatedTrackData(IntPtr sessionHandle,
-                                                          IntPtr frameHandle,
-                                                          Guid trackId)
+        public static List<TrackData> GetUpdatedTrackData(
+            IntPtr sessionHandle, IntPtr frameHandle, Guid trackId)
         {
             List<TrackData> trackDataList = new List<TrackData>();
 #if UNITY_ANDROID
             IntPtr listHandle = TrackDataListApi.Create(sessionHandle);
 
-            GCHandle trackIdHandle = GCHandle.Alloc(trackId.ToByteArray(),
-                                                    GCHandleType.Pinned);
+            GCHandle trackIdHandle = GCHandle.Alloc(
+                trackId.ToByteArray(), GCHandleType.Pinned);
 
-            ExternApi.ArFrame_getUpdatedTrackData(sessionHandle,
-                                                  frameHandle,
-                                                  trackIdHandle.AddrOfPinnedObject(),
-                                                  listHandle);
+            ExternApi.ArFrame_getUpdatedTrackData(
+                sessionHandle, frameHandle, trackIdHandle.AddrOfPinnedObject(), listHandle);
 
             if (trackIdHandle.IsAllocated)
             {
@@ -133,8 +137,13 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArFrame_getUpdatedTrackData(
                 IntPtr sessionHandle, IntPtr frameHandle, IntPtr trackId, IntPtr trackDataList);
-#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
-#endif
+#elif UNITY_IOS
+
+#if ARCORE_EXTENSIONS_IOS_SUPPORT
+            [IOSImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFrame_release(IntPtr frameHandle);
+#endif // ARCORE_EXTENSIONS_IOS_SUPPORT
+#endif // UNITY_IOS
         }
     }
 }

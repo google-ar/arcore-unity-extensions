@@ -20,10 +20,6 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
-    using System;
-    using System.IO;
-    using System.Xml;
-    using System.Xml.Linq;
     using UnityEngine;
 
     /// <summary>
@@ -46,19 +42,8 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             if (buildTarget == UnityEditor.BuildTarget.iOS)
             {
-                bool isEnabled = settings.IOSAuthenticationStrategySetting !=
+                return settings.IOSAuthenticationStrategySetting !=
                     IOSAuthenticationStrategy.DoNotUse;
-                if (settings.IsIOSSupportEnabled && !isEnabled)
-                {
-                    Debug.LogWarning(
-                        "Cloud Anchor APIs require one of the iOS authentication strategies. " +
-                        "If it’s not in use, you can uncheck iOS Support Enabled in " +
-                        "Edit > Project Settings > XR > ARCore Extensions " +
-                        "so ARCore Extensions won’t import Cloud Anchor iOS cocoapod into " +
-                        "your project.");
-                }
-
-                return isEnabled;
             }
             else
             {
@@ -85,39 +70,96 @@ namespace Google.XR.ARCoreExtensions.Internal
             ARCoreExtensionsProjectSettings settings, ARCoreExtensionsConfig sessionConfig,
             UnityEditor.BuildTarget buildTarget)
         {
+            string optionFeaturesSettings =
+                "Edit > Project Settings > XR > ARCore Extensions > Optional Features";
+            if (sessionConfig.CloudAnchorMode != CloudAnchorMode.Disabled &&
+                !settings.CloudAnchorEnabled)
+            {
+                Debug.LogErrorFormat(
+                    "Cloud Anchors feature is required by CloudAnchorMode {0}. " +
+                    "It must be set in {1} > Cloud Anchors.",
+                    sessionConfig.CloudAnchorMode,
+                    optionFeaturesSettings);
+                return false;
+            }
+            else if (sessionConfig.GeospatialMode != GeospatialMode.Disabled && !settings.GeospatialEnabled)
+            {
+                Debug.LogErrorFormat(
+                    "Geospatial feature is required by GeospatialMode {0}. " +
+                    "It must be set in {1} > Geospatial.",
+                    sessionConfig.GeospatialMode,
+                    optionFeaturesSettings);
+                return false;
+            }
+
             if (buildTarget == UnityEditor.BuildTarget.iOS)
             {
+                string requirement = string.Empty;
+                string iosAuthSettings =
+                    "Edit > Project Settings > XR > ARCore Extensions > " +
+                    "iOS Authentication Strategy";
                 if (sessionConfig.CloudAnchorMode == CloudAnchorMode.Enabled &&
                     settings.IOSAuthenticationStrategySetting ==
                     IOSAuthenticationStrategy.DoNotUse)
                 {
-                    Debug.LogErrorFormat(
-                        "Cloud Anchor authentication is required by CloudAnchorMode {0}. " +
-                        "An iOS Authentication Strategy must be set in " +
-                        "Edit > Project Settings > XR > ARCore Extensions > " +
-                        "iOS Authentication Strategy when CloudAnchorMode is {0}",
+                    requirement = string.Format(
+                        "A valid authentication strategy is required by CloudAnchorMode {0}.",
                         sessionConfig.CloudAnchorMode);
-                    return false;
+                }
+                else if (
+                    sessionConfig.GeospatialMode == GeospatialMode.Enabled &&
+                    settings.IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.DoNotUse)
+                {
+                    requirement = string.Format(
+                        "A valid authentication strategy is required by GeospatialMode {0}.",
+                        sessionConfig.GeospatialMode);
                 }
 
-                return true;
+                if (string.IsNullOrEmpty(requirement))
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogErrorFormat("{0} It must be set in {1}.",
+                        requirement, iosAuthSettings);
+                    return false;
+                }
             }
             else
             {
+                string requirement = string.Empty;
+                string androidAuthSettings =
+                    "Edit > Project Settings > XR > ARCore Extensions > " +
+                    "Android Authentication Strategy";
                 if (sessionConfig.CloudAnchorMode == CloudAnchorMode.Enabled &&
                     settings.AndroidAuthenticationStrategySetting ==
                     AndroidAuthenticationStrategy.DoNotUse)
                 {
-                    Debug.LogErrorFormat(
-                        "Cloud Anchor authentication is required by CloudAnchorMode {0}. " +
-                        "An Android Authentication Strategy must be set in " +
-                        "Edit > Project Settings > XR > ARCore Extensions > " +
-                        "Android Authentication Strategy when CloudAnchorMode is {0}.",
+                    requirement = string.Format(
+                        "A valid authentication strategy is required by CloudAnchorMode {0}.",
                         sessionConfig.CloudAnchorMode);
-                    return false;
+                }
+                else if (
+                    sessionConfig.GeospatialMode == GeospatialMode.Enabled &&
+                    settings.AndroidAuthenticationStrategySetting ==
+                    AndroidAuthenticationStrategy.DoNotUse)
+                {
+                    requirement = string.Format(
+                        "A valid authentication strategy is required by GeospatialMode {0}.",
+                        sessionConfig.GeospatialMode);
                 }
 
-                return true;
+                if (string.IsNullOrEmpty(requirement))
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogErrorFormat("{0} It must be set in {1}.",
+                        requirement, androidAuthSettings);
+                    return false;
+                }
             }
         }
 
@@ -139,6 +181,11 @@ namespace Google.XR.ARCoreExtensions.Internal
                 return ModuleNecessity.Required;
             }
 
+            if (sessionConfig.GeospatialMode != GeospatialMode.Disabled)
+            {
+                return ModuleNecessity.Required;
+            }
+
             return ModuleNecessity.NotRequired;
         }
 
@@ -153,25 +200,15 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// The warning message if this module is enabled but not required by any sessionConfigs.
         /// </returns>
         public override string GetEnabledNotRequiredWarning(
-            ARCoreExtensionsProjectSettings settings,
-            UnityEditor.BuildTarget buildTarget)
+            ARCoreExtensionsProjectSettings settings, UnityEditor.BuildTarget buildTarget)
         {
-            string featureName = "Cloud Anchor";
-            string platformName;
-            if (buildTarget == UnityEditor.BuildTarget.iOS)
-            {
-                platformName = "iOS";
-            }
-            else
-            {
-                platformName = "Android";
-            }
-
-            return string.Format("{0} Authentication is enabled in ARCore Extensions Project " +
-                    "Settings but {0} is not used in any Scenes in Build.\n" +
+            string platformName = buildTarget == UnityEditor.BuildTarget.iOS ? "iOS" : "Android";
+            return string.Format(
+                    "{0} Authentication is enabled in ARCore Extensions Project Settings " +
+                    "but the feature is not used by any Scenes in Build.\n" +
                     "To turn off authentication, select Do Not Use in Edit > " +
-                    "Project Settings > XR > ARCore Extensions > {1} Authentication Strategy.",
-                    featureName, platformName);
+                    "Project Settings > XR > ARCore Extensions > {0} Authentication Strategy.",
+                    platformName);
         }
 
         /// <summary>
@@ -218,26 +255,26 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Return the snippet to be used in Play Services Resolver while building Android app.
-        /// The string output will be added into a new created file whose name would combine the
-        /// module name and "Dependencies.xml".
+        /// Return all JarArtifacts to be used in External Dependencies Resolvor while building
+        /// Android app.
+        /// It will generate an AndroidResolverDependencies.xml file under ProjectSettings folder
+        /// and then be used in Gradle build process.
         /// </summary>
         /// <param name="settings">ARCore Extensions Project Settings.</param>
-        /// <returns>The dependencies to be resolved in Play Services Resolver.</returns>
-        public override string GetAndroidDependenciesSnippet(
+        /// <returns>An array defining all Android dependencies.</returns>
+        public override JarArtifact[] GetAndroidDependencies(
             ARCoreExtensionsProjectSettings settings)
         {
             if (settings.AndroidAuthenticationStrategySetting ==
                 AndroidAuthenticationStrategy.Keyless)
             {
-                return @"<!-- Required by Keyless authentication, allows dynamite-loaded part of
-                    ARCore to access Google Play Services APIs via reflection in order to
-                    access authentication APIs. -->
-                    <androidPackage
-                        spec=""com.google.android.gms:play-services-auth-base:16+"" />";
+                return new JarArtifact[]{
+                    new JarArtifact( "com.google.android.gms", "play-services-auth-base", "16+")};
             }
-
-            return string.Empty;
+            else
+            {
+                return null;
+            }
         }
 #endif // UNITY_EDITOR
     }

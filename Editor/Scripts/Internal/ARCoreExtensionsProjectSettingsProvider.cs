@@ -53,6 +53,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
             if (GUI.changed)
             {
+                IOSSupportHelper.UpdateIOSScriptingDefineSymbols(
+                    ARCoreExtensionsProjectSettings.Instance);
                 ARCoreExtensionsProjectSettings.Instance.Save();
             }
         }

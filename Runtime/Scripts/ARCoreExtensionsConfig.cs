@@ -42,6 +42,16 @@ namespace Google.XR.ARCoreExtensions
         [FormerlySerializedAs("EnableCloudAnchors")]
         public CloudAnchorMode CloudAnchorMode = CloudAnchorMode.Disabled;
 
+        [Header("Geospatial")]
+
+        /// <summary>
+        /// Choose the Geospatial API mode, allowing the use of <c><see cref="AREarthManager"/></c>.
+        /// </summary>
+        [Tooltip("Choose if the ARCore Geospatial API is enabled, allowing Earth localisation " +
+            "features. To enable Geospatial Mode, ensure Geospatial is selected in ARCore " +
+            "Extensions Project Settings > Optional Features.")]
+        public GeospatialMode GeospatialMode = GeospatialMode.Disabled;
+
         /// <summary>
         /// Gets or sets a value indicating whether the Cloud Anchors are enabled.
         /// </summary>
@@ -72,6 +82,7 @@ namespace Google.XR.ARCoreExtensions
         {
             ARCoreExtensionsConfig otherConfig = other as ARCoreExtensionsConfig;
             if (otherConfig == null ||
+                GeospatialMode != otherConfig.GeospatialMode ||
                 CloudAnchorMode != otherConfig.CloudAnchorMode)
             {
                 return false;
@@ -96,6 +107,7 @@ namespace Google.XR.ARCoreExtensions
         public void CopyFrom(ARCoreExtensionsConfig otherConfig)
         {
             CloudAnchorMode = otherConfig.CloudAnchorMode;
+            GeospatialMode = otherConfig.GeospatialMode;
         }
     }
 }

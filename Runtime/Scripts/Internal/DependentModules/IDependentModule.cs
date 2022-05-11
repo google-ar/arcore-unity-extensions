@@ -20,10 +20,6 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
-    using System;
-    using System.Xml;
-    using UnityEngine;
-
     /// <summary>
     /// The necessity of module.
     /// </summary>
@@ -135,20 +131,90 @@ namespace Google.XR.ARCoreExtensions.Internal
         string GetProguardSnippet(ARCoreExtensionsProjectSettings settings);
 
         /// <summary>
-        /// Return the snippet to be used in External Dependencies Resolvor while building
-        /// Android app. The string output will be added into a new created file whose name
-        /// would combine the module name and "Dependencies.xml".
+        /// Return all JarArtifacts to be used in External Dependencies Resolvor while building
+        /// Android app.
+        /// It will generate an AndroidResolverDependencies.xml file under ProjectSettings folder
+        /// and then be used in Gradle build process.
         /// </summary>
         /// <param name="settings">ARCore Extensions Project Settings.</param>
-        /// <returns>The string snippet to be used in Play Services Resolver.</returns>
-        string GetAndroidDependenciesSnippet(ARCoreExtensionsProjectSettings settings);
+        /// <returns>An array defining all Android dependencies.</returns>
+        JarArtifact[] GetAndroidDependencies(ARCoreExtensionsProjectSettings settings);
+#endif // UNITY_EDITOR
+    }
+
+    /// <summary>
+    /// Defines all necessary information for a Jar artifact,
+    /// used in resolving Android dependencies.
+    /// </summary>
+    public struct JarArtifact
+    {
+        /// <summary>
+        /// The Group Id of the artifact.
+        /// </summary>
+        public string Group;
 
         /// <summary>
-        /// Return an array of iOS dependency template file names of this module,
-        /// which would be used by External Dependencies Resolvor while building iOS app.
+        /// The Artifact Id of the artifact.
         /// </summary>
-        /// <returns>iOS dependency template file names of this module.</returns>
-        string[] GetIOSDependenciesTemplateFileNames();
-#endif // UNITY_EDITOR
+        public string Artifact;
+
+        /// <summary>
+        /// The version constraint of the artifact.
+        /// </summary>
+        public string Version;
+
+        /// <summary>
+        /// Optional list of Android SDK package identifiers.
+        ///
+        /// This is not required for common packages:
+        /// <list type="bullet">
+        /// <item>com.android.support:support-xxx</item>
+        /// <item>com.google.android.gms:xxx</item>
+        /// <item>com.google.firebase:firebase-xxx</item>
+        /// </list>
+        /// </summary>
+        public string[] PackageIds;
+
+        /// <summary>
+        /// Constructor for a JarArtifact.
+        /// </summary>
+        /// <param name="group">The Group Id of the artifact.</param>
+        /// <param name="artifact">The Artifact Id.</param>
+        /// <param name="version">The version constraint.</param>
+        public JarArtifact(string group, string artifact, string version) :
+            this(group, artifact, version, null)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for a JarArtifact.
+        /// </summary>
+        /// <param name="group">The Group Id.</param>
+        /// <param name="artifact">The Artifact Id.</param>
+        /// <param name="version">The version constraint.</param>
+        /// <param name="packages">Optional list of Android SDK package identifiers.</param>
+        public JarArtifact(string group, string artifact, string version, string[] packages) :
+            this()
+        {
+            Group = group;
+            Artifact = artifact;
+            Version = version;
+            PackageIds = packages;
+        }
+
+        /// <summary>
+        /// Gets the key for this dependency.
+        /// The key is a tuple of the group, artifact and version constraint.
+        /// </summary>
+        public string Key => Group + ":" + Artifact + ":" + Version;
+
+        /// <summary>
+        /// Gets the information of the JarArtifact.
+        /// </summary>
+        /// <returns>A string contains group id, artifact id, and version.</returns>
+        public override string ToString()
+        {
+            return Key;
+        }
     }
 }

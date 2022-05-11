@@ -20,7 +20,9 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+    using System.Collections.Generic;
     using System.IO;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEngine;
 
@@ -29,37 +31,21 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     public static class IOSSupportHelper
     {
+        /// <summary>
+        /// Scripting define symbol to inject when iOS support is enabled on the project.
+        /// </summary>
+        public static string ARCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
+
+        /// <summary>
+        /// IOS dependency to import when iOS support is enabled on this project.
+        /// </summary>
+        public static string ARCoreIOSDependencyFileName = "ARCoreiOSDependencies";
+
         // GUID of folder [ARCore Extensions Package]/Editor/BuildResources/
         private const string _arCoreIOSDependencyFolderGUID = "117437286c43f4eeb845c3257f2a8546";
 
         // Use Assets/ExtensionsAssets/Editor for generated iOS pod dependency.
         private const string _extensionAssetsEditorFolder = "/ExtensionsAssets/Editor";
-
-        private const string _arCoreIOSDependencyFileName = "ARCoreiOSDependencies";
-        private const string _arCoreExtensionIOSSupportSymbol = "ARCORE_EXTENSIONS_IOS_SUPPORT";
-
-        /// <summary>
-        /// Enables ARCore iOS Support in Extensions.
-        /// </summary>
-        /// <param name="arcoreIOSEnabled">Indicates whether to enable or disable iOS support.
-        /// </param>
-        public static void SetARCoreIOSSupportEnabled(bool arcoreIOSEnabled)
-        {
-            if (arcoreIOSEnabled)
-            {
-                Debug.Log(
-                    "Enabling iOS Support for ARCore Extensions for AR Foundation. " +
-                    "Note that you will need to add ARKit XR Plugin " +
-                    "to your project to make ARCore Extensions work on iOS.");
-            }
-            else
-            {
-                Debug.Log("Disabling ARCore Extensions iOS support.");
-            }
-
-            UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
-            UpdateIOSPodDependencies(arcoreIOSEnabled, _arCoreIOSDependencyFileName);
-        }
 
         /// <summary>
         /// Updates the iOS pod dependency based on iOS support state.
@@ -70,8 +56,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static void UpdateIOSPodDependencies(bool arcoreIOSEnabled,
             string dependencyFileName)
         {
-            EnableIOSResolver();
-
             string templateFolderFullPath = Path.GetFullPath(
                 AssetDatabase.GUIDToAssetPath(_arCoreIOSDependencyFolderGUID));
             string dependencyFolderFullPath = Application.dataPath + _extensionAssetsEditorFolder;
@@ -107,64 +91,43 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             }
         }
 
-        private static void UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled)
+        /// <summary>
+        /// Updates the Scripting Define Symbols on iOS platforms based on the given project
+        /// settings.
+        /// </summary>
+        /// <param name="projectSettings">The project settings for update.</param>
+        public static void UpdateIOSScriptingDefineSymbols(
+            ARCoreExtensionsProjectSettings projectSettings)
         {
-            string iOSScriptingDefineSymbols =
-                PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS);
-            bool iOSSupportDefined = iOSScriptingDefineSymbols.Contains(
-                _arCoreExtensionIOSSupportSymbol);
-
-            if (arcoreIOSEnabled && !iOSSupportDefined)
+            bool iosEnabled = projectSettings.IsIOSSupportEnabled;
+            UpdateIOSScriptingDefineSymbols(ARCoreExtensionIOSSupportSymbol, iosEnabled);
+            Dictionary<string, bool> iOSFeatureEnabled = projectSettings.GetIOSSymbolsStatus();
+            foreach (var keyvalue in iOSFeatureEnabled)
             {
-                Debug.LogFormat("Adding {0} define symbol.", _arCoreExtensionIOSSupportSymbol);
-                iOSScriptingDefineSymbols += ";" + _arCoreExtensionIOSSupportSymbol;
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
-            }
-            else if (!arcoreIOSEnabled && iOSSupportDefined)
-            {
-                Debug.LogFormat("Removing {0} define symbol.", _arCoreExtensionIOSSupportSymbol);
-                iOSScriptingDefineSymbols = iOSScriptingDefineSymbols.Replace(
-                    _arCoreExtensionIOSSupportSymbol, string.Empty);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
+                UpdateIOSScriptingDefineSymbols(keyvalue.Key, iosEnabled && keyvalue.Value);
             }
         }
 
-        private static void EnableIOSResolver()
+        private static void UpdateIOSScriptingDefineSymbols(string symbol, bool enabled)
         {
-            string iosResolverPath = null;
-            string[] guids = AssetDatabase.FindAssets("Google.IOSResolver");
-            foreach (var guid in guids)
+            HashSet<string> symbolSet = new HashSet<string>(
+                PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS)
+                .Split(new char[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
+            bool iOSSupportDefined = symbolSet.Contains(symbol);
+
+            if (enabled && !iOSSupportDefined)
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-
-                if (path.EndsWith(".dll"))
-                {
-                    if (iosResolverPath != null)
-                    {
-                        Debug.LogErrorFormat("ARCoreExtensions: " +
-                            "There are multiple Google.IOSResolver plugins detected. " +
-                            "One is {0}, another is {1}. Please remove one of them.",
-                            iosResolverPath, path);
-                        return;
-                    }
-
-                    iosResolverPath = path;
-                }
+                Debug.LogFormat("Adding {0} define symbol.", symbol);
+                symbolSet.Add(symbol);
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(
+                    BuildTargetGroup.iOS, string.Join(";", symbolSet));
             }
-
-            if (iosResolverPath == null)
+            else if (!enabled && iOSSupportDefined)
             {
-                Debug.LogError("ARCoreExtensions: Could not locate Google.IOSResolver plugin.");
-                return;
-            }
-
-            PluginImporter pluginImporter =
-                AssetImporter.GetAtPath(iosResolverPath) as PluginImporter;
-            if (!pluginImporter.GetCompatibleWithEditor())
-            {
-                pluginImporter.SetCompatibleWithEditor(true);
+                Debug.LogFormat("Removing {0} define symbol.", symbol);
+                symbolSet.Remove(symbol);
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(
+                    BuildTargetGroup.iOS, string.Join(";", symbolSet));
             }
         }
     }

@@ -41,6 +41,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 List<IDependentModule> modules = new List<IDependentModule>()
                 {
+                    new LocationModule(),
                     new AuthenticationModule(),
                 };
 

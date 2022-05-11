@@ -44,6 +44,8 @@ namespace Google.XR.ARCoreExtensions.Internal
         ErrorDataInvalidFormat = -18,
         ErrorDatatUnsupportedVersion = -19,
         ErrorIllegalState = -20,
+        ErrorLocationPermissionNotGranted = -21,
+        ErrorGooglePlayServicesLocationLibraryNotLinked = -22,
         ErrorRecordingFailed = -23,
         ErrorPlaybackFailed = -24,
         ErrorSessionUnsupported = -25,

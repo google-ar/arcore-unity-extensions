@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: PersistentCloudAnchorConfig
   m_EditorClassIdentifier: 
   CloudAnchorMode: 1
+  GeospatialMode: 0

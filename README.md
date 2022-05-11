@@ -33,8 +33,8 @@ The package release notes are available on the
 ## Terms & Conditions
 
 By downloading the ARCore Extensions for AR Foundation, you agree that the
-[Google APIs Terms of Service](//developers.google.com/terms/) governs your use
-thereof.
+[**ARCore Additional Terms of Service**](https://developers.google.com/ar/develop/terms)
+governs your use thereof.
 
 
 ## User privacy requirements

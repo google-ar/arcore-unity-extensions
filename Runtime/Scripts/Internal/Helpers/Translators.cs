@@ -30,6 +30,13 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private static readonly Matrix4x4 _unityWorldToGLWorldInverse
             = _unityWorldToGLWorld.inverse;
+
+        private static readonly Quaternion _unityWorldToGLWorldRotation
+            = Quaternion.LookRotation(
+                _unityWorldToGLWorld.GetColumn(2), _unityWorldToGLWorld.GetColumn(1));
+
+        private static readonly Quaternion _glWorldToUnityWorldRotation
+            = Quaternion.Inverse(_unityWorldToGLWorldRotation);
         public static CloudAnchorState ToCloudAnchorState(this ApiCloudAnchorState state)
         {
             switch (state)
@@ -184,6 +191,38 @@ namespace Google.XR.ARCoreExtensions.Internal
                         "Playback dataset failed with unexpected status: {0}", apiArStatus);
                     return PlaybackResult.ErrorPlaybackFailed;
             }
+        }
+
+        public static ApiGeospatialMode ToApiGeospatialMode(this GeospatialMode mode)
+        {
+            switch (mode)
+            {
+                case GeospatialMode.Enabled:
+                    return ApiGeospatialMode.Enabled;
+                case GeospatialMode.Disabled:
+                    return ApiGeospatialMode.Disabled;
+                default:
+                    Debug.LogErrorFormat("Unrecognized GeospatialMode value: {0}", mode);
+                    return ApiGeospatialMode.Disabled;
+            }
+        }
+
+        public static Quaternion ToUnityQuaternion(this ApiQuaternion apiQuaternion)
+        {
+            var glWorldQuaternion = new Quaternion(
+                apiQuaternion.Qx, apiQuaternion.Qy, apiQuaternion.Qz, apiQuaternion.Qw);
+            return _unityWorldToGLWorldRotation * glWorldQuaternion;
+        }
+
+        public static ApiQuaternion ToApiQuaternion(this Quaternion quaternion)
+        {
+            Quaternion glWorldQuaternion = _glWorldToUnityWorldRotation * quaternion;
+            var apiQuaternion = new ApiQuaternion();
+            apiQuaternion.Qx = glWorldQuaternion.x;
+            apiQuaternion.Qy = glWorldQuaternion.y;
+            apiQuaternion.Qz = glWorldQuaternion.z;
+            apiQuaternion.Qw = glWorldQuaternion.w;
+            return apiQuaternion;
         }
     }
 }

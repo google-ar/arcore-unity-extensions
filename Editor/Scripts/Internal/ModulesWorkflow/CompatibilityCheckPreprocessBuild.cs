@@ -86,7 +86,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                     {
                         throw new BuildFailedException(
                             string.Format(
-                                "{0} isn't compatible with the ARCoreExtensionsConfig in {1}",
+                                "{0} isn't compatible with the ARCoreExtensionsConfig in {1}.",
                                 module.GetType().Name, entry.Value));
                     }
 

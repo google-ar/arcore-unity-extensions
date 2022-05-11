@@ -21,8 +21,17 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
+
+#if UNITY_IOS
+#if CLOUDANCHOR_IOS_SUPPORT
+    using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using CloudAnchorImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+#else // UNITY_ANDROID
+    using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+#endif
 
     internal class AnchorApi
     {
@@ -30,15 +39,18 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle,
             IntPtr anchorHandle)
         {
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
             IntPtr stringHandle = IntPtr.Zero;
             ExternApi.ArAnchor_acquireCloudAnchorId(
                 sessionHandle, anchorHandle, ref stringHandle);
-
             string cloudAnchorId = Marshal.PtrToStringAnsi(stringHandle);
 
             ExternApi.ArString_release(stringHandle);
 
             return cloudAnchorId;
+#else
+            return null;
+#endif
         }
 
         public static ApiCloudAnchorState GetCloudAnchorState(
@@ -46,10 +58,12 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr anchorHandle)
         {
             ApiCloudAnchorState cloudAnchorState = ApiCloudAnchorState.None;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
             ExternApi.ArAnchor_getCloudAnchorState(
                 sessionHandle,
                 anchorHandle,
                 ref cloudAnchorState);
+#endif
             return cloudAnchorState;
         }
 
@@ -88,13 +102,13 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private struct ExternApi
         {
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAnchor_acquireCloudAnchorId(
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
                 ref IntPtr hostingHandle);
 
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAnchor_getCloudAnchorState(
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,

@@ -31,7 +31,8 @@ namespace Google.XR.ARCoreExtensions
     /// </summary>
     public static class ARAnchorManagerExtensions
     {
-        private static readonly string _gameObjectName = "ARCloudAnchor";
+        private static readonly string _cloudAnchorName = "ARCloudAnchor";
+        private static readonly string _geospatialAnchorName = "ARGeospatialAnchor";
 
         /// <summary>
         /// Creates a new Cloud Anchor using an existing local ARAnchor.
@@ -94,7 +95,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the Cloud Anchor.
             ARCloudAnchor cloudAnchor =
-                (new GameObject(_gameObjectName)).AddComponent<ARCloudAnchor>();
+                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudAnchor>();
             if (cloudAnchor)
             {
                 cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
@@ -142,7 +143,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the Cloud Anchor.
             ARCloudAnchor cloudAnchor =
-                new GameObject(_gameObjectName).AddComponent<ARCloudAnchor>();
+                new GameObject(_cloudAnchorName).AddComponent<ARCloudAnchor>();
             if (cloudAnchor)
             {
                 cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
@@ -165,7 +166,7 @@ namespace Google.XR.ARCoreExtensions
         public static void SetAuthToken(this ARAnchorManager anchorManager, string authToken)
         {
             // Only iOS needs AuthToken for Cloud Anchor persistence.
-#if ARCORE_EXTENSIONS_IOS_SUPPORT && UNITY_IOS
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             if (!string.IsNullOrEmpty(RuntimeConfig.Instance.IOSCloudServicesApiKey))
             {
                 Debug.LogError(
@@ -185,9 +186,10 @@ namespace Google.XR.ARCoreExtensions
             SessionApi.SetAuthToken(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, authToken);
 #else
-            Debug.LogError("AuthToken only works with iOS Supported enabled in " +
-                "ARCore Extensions Project Settings and the target platform has set to iOS.");
-#endif // ARCORE_IOS_SUPPORT && UNITY_IOS
+            Debug.LogError(
+                "AuthToken only works with iOS Support Enabled " +
+                "in ARCore Extensions Project Settings and the target platform has set to iOS.");
+#endif //  UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
         }
 
         /// <summary>
@@ -214,7 +216,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the cloud reference point.
             ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(_gameObjectName)).AddComponent<ARCloudReferencePoint>();
+                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudReferencePoint>();
             if (cloudReferencePoint)
             {
                 cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
@@ -284,7 +286,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the Cloud Anchor.
             ARCloudAnchor cloudAnchor =
-                (new GameObject(_gameObjectName)).AddComponent<ARCloudAnchor>();
+                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudAnchor>();
             if (cloudAnchor)
             {
                 cloudAnchor.SetAnchorHandle(cloudAnchorHandle);
@@ -322,7 +324,7 @@ namespace Google.XR.ARCoreExtensions
 
             // Create the GameObject that is the cloud reference point.
             ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(_gameObjectName)).AddComponent<ARCloudReferencePoint>();
+                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudReferencePoint>();
             if (cloudReferencePoint)
             {
                 cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
@@ -352,6 +354,84 @@ namespace Google.XR.ARCoreExtensions
         {
             return SessionApi.EstimateFeatureMapQualityForHosting(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, pose);
+        }
+
+        /// <summary>
+        /// Creates a new anchor at the specified geodetic location and orientation
+        /// relative to the Earth.
+        ///
+        /// Latitude and longitude are defined by the
+        /// <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
+        /// specification</a>, and altitude values are defined by the elevation above
+        /// the WGS84 ellipsoid.
+        ///
+        /// Creating anchors near the north pole or south pole is not supported. If
+        /// the latitude is within 0.1 degrees of the north pole or south pole (90
+        /// degrees or -90 degrees), this function will return <c>null</c>.
+        ///
+        /// The rotation provided by <paramref name="eunRotation"/> is a rotation
+        /// with respect to an east-up-north coordinate frame. An identity rotation
+        /// will have the anchor oriented such that X+ points to the east, Y+ points up
+        /// away from the center of the earth, and Z+ points to the north.
+        ///
+        /// To create a quaternion that represents a clockwise angle theta from
+        /// north around the +Y anchor frame axis, use the following formula:
+        /// <code>
+        /// Quaternion.AngleAxis(180f - theta, Vector3.up);
+        /// </code>
+        ///
+        /// An anchor's tracking state will be TrackingState.None while
+        /// <see cref="AREarthManager.EarthTrackingState"/> is TrackingState.None.
+        /// The tracking state will permanently become TrackingState.None if the
+        /// configuration is set to <see cref="GeospatialMode"/>.<c>Disabled</c>.
+        /// </summary>
+        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="latitude">
+        /// The latitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="longitude">
+        /// The longitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="altitude">
+        /// The altitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="eunRotation">The rotation of the anchor with respect to
+        /// the east-up-north coordinate frame where X+ points east, Y+ points up
+        /// away from gravity, and Z+ points north. A rotation about the Y+ axis
+        /// creates a rotation counterclockwise from north.</param>
+        /// <returns>
+        /// If successful, a <see cref="ARGeospatialAnchor"/>, otherwise, <c>null</c>.
+        /// </returns>
+        public static ARGeospatialAnchor AddAnchor(
+            this ARAnchorManager anchorManager, double latitude, double longitude,
+            double altitude, Quaternion eunRotation)
+        {
+            IntPtr earthHandle = SessionApi.AcquireEarth(
+                ARCoreExtensions._instance.currentARCoreSessionHandle);
+            if (earthHandle == IntPtr.Zero)
+            {
+                Debug.LogError("Failed to acquire earth.");
+                return null;
+            }
+
+            IntPtr anchorHandle = EarthApi.AddAnchor(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                earthHandle, latitude, longitude, altitude, eunRotation);
+            if (anchorHandle == IntPtr.Zero)
+            {
+                Debug.LogError("Failed to add geospatial anchor.");
+                return null;
+            }
+
+            // Create the GameObject that is the Geospatial Anchor.
+            ARGeospatialAnchor anchor =
+                new GameObject(_geospatialAnchorName).AddComponent<ARGeospatialAnchor>();
+            if (anchor)
+            {
+                anchor.SetAnchorHandle(anchorHandle);
+            }
+
+            // Parent the new Geospatial Anchor to the session origin.
+            anchor.transform.SetParent(
+                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+            return anchor;
         }
     }
 }

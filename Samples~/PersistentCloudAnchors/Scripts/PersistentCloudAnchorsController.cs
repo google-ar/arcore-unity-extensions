@@ -169,7 +169,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         public void OnLearnMoreButtonClicked()
         {
             Application.OpenURL(
-                "https://developers.google.com/ar/cloud-anchors-privacy");
+                "https://developers.google.com/ar/data-privacy");
         }
 
         /// <summary>

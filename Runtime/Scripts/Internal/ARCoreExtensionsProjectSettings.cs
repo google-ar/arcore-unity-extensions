@@ -22,6 +22,7 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Reflection;
@@ -78,6 +79,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// IOS support setting.
         /// </summary>
         [DisplayName("iOS Support Enabled")]
+        [DynamicHelp("GetIOSSupportHelpInfo")]
         public bool IsIOSSupportEnabled;
 
         /// <summary>
@@ -111,6 +113,23 @@ namespace Google.XR.ARCoreExtensions.Internal
         [DisplayCondition("IsIosApiKeyFieldDisplayed")]
         public string IOSCloudServicesApiKey;
 
+        [Header("Optional Features")]
+
+        /// <summary>
+        /// Indicates whether Cloud Anchor is enabled for this project.
+        /// </summary>
+        [DisplayName("Cloud Anchors")]
+        [DynamicHelp("GetCloudAnchorHelpInfo")]
+        public bool CloudAnchorEnabled;
+
+        /// <summary>
+        /// Indicates whether the project is built with the ARCore Geospatial API. When this is
+        /// checked, includes libraries required for the Geospatial API to function in your build.
+        /// </summary>
+        [DisplayName("Geospatial")]
+        [DynamicHelp("GetGeospatialHelpInfo")]
+        public bool GeospatialEnabled;
+
         private const string _projectSettingsPath =
             "ProjectSettings/ARCoreExtensionsProjectSettings.json";
 
@@ -134,6 +153,34 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
+        /// Get scripting define symbols for iOS supported features and their status.
+        /// </summary>
+        /// <returns>A dictionary contains Scripting Define Symbols for iOS features and
+        /// whether it's enabled.</returns>
+        public Dictionary<string, bool> GetIOSSymbolsStatus()
+        {
+            return new Dictionary<string, bool>
+            {
+                { "CLOUDANCHOR_IOS_SUPPORT", CloudAnchorEnabled },
+                { "GEOSPATIAL_IOS_SUPPORT", GeospatialEnabled },
+            };
+        }
+
+        /// <summary>
+        /// Get the filenames of all available CocoaPod templates and their status.
+        /// </summary>
+        /// <returns>An array of all available CocoaPod templates and whether it's enabled.
+        /// </returns>
+        public Dictionary<string, bool> GetIOSDependenciesStatus()
+        {
+            return new Dictionary<string, bool>
+            {
+                { "ARCoreiOSCloudAnchorDependencies", CloudAnchorEnabled },
+                { "ARCoreiOSGeospatialDependencies", GeospatialEnabled },
+            };
+        }
+
+        /// <summary>
         /// Loads previous settings.
         /// </summary>
         public void Load()
@@ -153,6 +200,16 @@ namespace Google.XR.ARCoreExtensions.Internal
                 foreach (FieldInfo fieldInfo in this.GetType().GetFields())
                 {
                     fieldInfo.SetValue(this, fieldInfo.GetValue(settings));
+                }
+
+                // Set the initial value in previous settings to keep Cloud Anchors enabled.
+                int[] versions = string.IsNullOrEmpty(Version) ? new int[0] :
+                    Array.ConvertAll(
+                        Version.Split('.'),
+                        s => { int.TryParse(s, out int num); return num; });
+                if (versions.Length == 3 && versions[0] == 1 && versions[1] <= 30)
+                {
+                    CloudAnchorEnabled = true;
                 }
             }
 
@@ -186,10 +243,30 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Reflection function used by 'DisplayCondition' for property
-        /// 'AndroidCloudServicesApiKey'.
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="IsIOSSupportEnabled"/>.
         /// </summary>
-        /// <returns>Display condition for 'AndroidCloudServicesApiKey'.</returns>
+        /// <returns>Help info for <see cref="IsIOSSupportEnabled"/>.</returns>
+        public HelpAttribute GetIOSSupportHelpInfo()
+        {
+            if (IsIOSSupportEnabled && !GetIOSSymbolsStatus().ContainsValue(true))
+            {
+                return new HelpAttribute(
+                    "iOS support is enabled but no iOS feature is in use, " +
+                    "this will include unnecessary dependencies in your application. " +
+                    "You may select the desired features from 'Optional Features' or " +
+                    "turn off iOS support.",
+                    HelpAttribute.HelpMessageType.Warning);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DisplayConditionAttribute"/> for property
+        /// <see cref="AndroidCloudServicesApiKey"/>.
+        /// </summary>
+        /// <returns>Display condition for <see cref="AndroidCloudServicesApiKey"/>.</returns>
         public bool IsAndroidApiKeyFieldDisplayed()
         {
             if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.ApiKey)
@@ -204,39 +281,10 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Reflection function used by 'DynamicHelp' for property
-        /// 'AndroidAuthenticationStrategySetting'.
+        /// Reflection function used by <see cref="DisplayConditionAttribute"/> for property
+        /// <see cref="IOSCloudServicesApiKey"/>.
         /// </summary>
-        /// <returns>Help info for 'AndroidAuthenticationStrategySetting'.</returns>
-        public HelpAttribute GetAndroidStrategyHelpInfo()
-        {
-            if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.ApiKey)
-            {
-                return new HelpAttribute(
-                    "Persistent Cloud Anchors will not be available on Android when 'API Key'" +
-                    " authentication strategy is selected.",
-                    HelpAttribute.HelpMessageType.Warning);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Reflection function used by 'DisplayCondition' for property
-        /// 'IOSAuthenticationStrategySetting'.
-        /// </summary>
-        /// <returns>Display condition for 'IOSAuthenticationStrategySetting'.</returns>
-        public bool IsIosStrategyDisplayed()
-        {
-            return IsIOSSupportEnabled;
-        }
-
-        /// <summary>
-        /// Reflection function used by 'DisplayCondition' for property 'IOSCloudServicesApiKey'.
-        /// </summary>
-        /// <returns>Display condition for 'IOSCloudServicesApiKey'.</returns>
+        /// <returns>Display condition for <see cref="IOSCloudServicesApiKey"/>.</returns>
         public bool IsIosApiKeyFieldDisplayed()
         {
             if (!IsIOSSupportEnabled)
@@ -256,12 +304,45 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Reflection function used by 'DynamicHelp' for property 'IOSAuthenticationStrategy'.
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="AndroidAuthenticationStrategySetting"/>.
         /// </summary>
-        /// <returns>Help info for 'IOSAuthenticationStrategy'.</returns>
+        /// <returns>Help info for <see cref="AndroidAuthenticationStrategySetting"/>.</returns>
+        public HelpAttribute GetAndroidStrategyHelpInfo()
+        {
+            if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.ApiKey &&
+                CloudAnchorEnabled)
+            {
+                return new HelpAttribute(
+                    "Persistent Cloud Anchors will not be available on Android when 'API Key'" +
+                    " authentication strategy is selected.",
+                    HelpAttribute.HelpMessageType.Warning);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DisplayConditionAttribute"/> for property
+        /// <see cref="IOSAuthenticationStrategySetting"/>.
+        /// </summary>
+        /// <returns>Display condition for <see cref="IOSAuthenticationStrategySetting"/>.</returns>
+        public bool IsIosStrategyDisplayed()
+        {
+            return IsIOSSupportEnabled;
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="IOSAuthenticationStrategySetting"/>.
+        /// </summary>
+        /// <returns>Help info for <see cref="IOSAuthenticationStrategySetting"/>.</returns>
         public HelpAttribute GetIosStrategyHelpInfo()
         {
-            if (IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.ApiKey)
+            if (IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.ApiKey &&
+                CloudAnchorEnabled)
             {
                 return new HelpAttribute(
                     "Persistent Cloud Anchors will not be available on iOS when 'API Key'" +
@@ -272,14 +353,83 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IOSAuthenticationStrategy.AuthenticationToken)
             {
                 return new HelpAttribute(
-                    "Authentication Token is selected as the Cloud Anchor Authentication. " +
-                    "To authenticate with the Google Cloud Anchor Service, use " +
-                    "ARAnchorManager.SetAuthToken(string) in runtime.",
+                    "Authentication Token is selected as iOS Authentication. " +
+                    "To authenticate with the Google Cloud Service, use " +
+                    "ARAnchorManager.SetAuthToken(string) at runtime.",
                     HelpAttribute.HelpMessageType.Info);
             }
             else
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="CloudAnchorEnabled"/>.
+        /// </summary>
+        /// <returns>Help info for <see cref="CloudAnchorEnabled"/>.</returns>
+        public HelpAttribute GetCloudAnchorHelpInfo()
+        {
+            if (!CloudAnchorEnabled)
+            {
+                return null;
+            }
+
+            if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.DoNotUse
+                || (IsIOSSupportEnabled &&
+                IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.DoNotUse))
+            {
+                return new HelpAttribute(
+                    "When using Cloud Anchors, an authentication strategy is required.",
+                    HelpAttribute.HelpMessageType.Error);
+            }
+
+            return new HelpAttribute(
+                string.Format(
+                    "When using Cloud Anchors, {0} on Android{1}.",
+                    AndroidAuthenticationStrategySetting ==
+                        AndroidAuthenticationStrategy.Keyless ?
+                        "add authentication dependencies" : "inject API Key to the manifest",
+                    IsIOSSupportEnabled ?
+                        ", and import CloudAnchors CocoaPod on iOS" : string.Empty),
+                HelpAttribute.HelpMessageType.None);
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="GeospatialEnabled"/>.
+        /// </summary>
+        /// <returns>Help info for <see cref="GeospatialEnabled"/>.</returns>
+        public HelpAttribute GetGeospatialHelpInfo()
+        {
+            if (!GeospatialEnabled)
+            {
+                return null;
+            }
+
+            if (AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.DoNotUse ||
+                (IOSAuthenticationStrategySetting == IOSAuthenticationStrategy.DoNotUse &&
+                IsIOSSupportEnabled))
+            {
+                return new HelpAttribute(
+                    "When using the Geospatial API, an authentication strategy is required.",
+                    HelpAttribute.HelpMessageType.Error);
+            }
+            else
+            {
+                return new HelpAttribute(
+                    string.Format(
+                        "When using the Geospatial API, add {0}location dependencies on Android{1}. " +
+                        "Note: precise location permission is required at runtime, " +
+                        "otherwise, enabling the Geospatial API may fail with a permission not "+
+                        "granted error.",
+                        AndroidAuthenticationStrategySetting ==
+                            AndroidAuthenticationStrategy.Keyless ?
+                            "authentication and " : string.Empty,
+                        IsIOSSupportEnabled ?
+                            ", and import Geospatial CocoaPod on iOS" : string.Empty),
+                    HelpAttribute.HelpMessageType.None);
             }
         }
     }
