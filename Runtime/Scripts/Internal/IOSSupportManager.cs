@@ -123,7 +123,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
 
             _cameraManager = cameraManager;
-            _cameraManager.frameReceived += OnFrameUpdate;
+            if (_cameraManager != null)
+            {
+                _cameraManager.frameReceived += OnFrameUpdate;
+            }
         }
 
         public void ResetARCoreSession()

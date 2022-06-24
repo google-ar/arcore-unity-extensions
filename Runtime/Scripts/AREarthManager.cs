@@ -34,7 +34,7 @@ namespace Google.XR.ARCoreExtensions
     /// <see cref="AREarthManager.IsGeospatialModeSupported"/> to find whether the current device
     /// supports enabling this mode.
     ///
-    /// <c><see cref="AREarthManager.CameraGeospatialPose/></c> should only be used when
+    /// <c><see cref="AREarthManager.CameraGeospatialPose"/></c> should only be used when
     /// <c><see cref="AREarthManager.EarthTrackingState"/></c> is <c>Tracking</c>, and otherwise
     /// should not be used. If the <c>EarthTrackingState</c> does not become <c>Tracking</c>,
     /// then <c><see cref="AREarthManager.EarthState"/></c> may contain more information on this

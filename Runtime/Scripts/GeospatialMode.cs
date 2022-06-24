@@ -74,7 +74,7 @@ namespace Google.XR.ARCoreExtensions
         /// will be <see cref="UnityEngine.XR.ARSubsystems.TrackingState"/>.<c>None</c>.
         ///
         /// For more information, see documentation on <a
-        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/developer-guide">the
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/developer-guide-android">the
         /// Geospatial API on Google Developers</a>.
         ///
         /// This mode is not compatible with the

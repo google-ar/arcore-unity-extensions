@@ -52,6 +52,12 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                    _anchorHandle == IntPtr.Zero)
+                {
+                    return null;
+                }
+
                 return AnchorApi.GetCloudAnchorId(
                     ARCoreExtensions._instance.currentARCoreSessionHandle,
                     _anchorHandle);
@@ -65,6 +71,12 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                    _anchorHandle == IntPtr.Zero)
+                {
+                    return CloudAnchorState.None;
+                }
+
                 return AnchorApi.GetCloudAnchorState(
                     ARCoreExtensions._instance.currentARCoreSessionHandle,
                     _anchorHandle).ToCloudAnchorState();
@@ -100,6 +112,12 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                    _anchorHandle == IntPtr.Zero)
+                {
+                    return TrackingState.None;
+                }
+
                 return AnchorApi.GetTrackingState(
                     ARCoreExtensions._instance.currentARCoreSessionHandle,
                     _anchorHandle).ToTrackingState();
@@ -122,6 +140,12 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void Update()
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                _anchorHandle == IntPtr.Zero)
+            {
+                return;
+            }
+
             // Get the current Pose.
             ApiPose apiPose = AnchorApi.GetAnchorPose(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
@@ -140,7 +164,8 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public void OnDestroy()
         {
-            if (_anchorHandle != IntPtr.Zero)
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero &&
+                _anchorHandle != IntPtr.Zero)
             {
                 AnchorApi.Detach(
                     ARCoreExtensions._instance.currentARCoreSessionHandle,

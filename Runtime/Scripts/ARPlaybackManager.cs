@@ -40,6 +40,11 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+                {
+                    return PlaybackStatus.None;
+                }
+
                 return SessionApi.GetPlaybackStatus(
                     ARCoreExtensions._instance.currentARCoreSessionHandle);
             }

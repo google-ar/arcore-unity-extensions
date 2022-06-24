@@ -91,7 +91,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             UnityEditor.BuildTarget buildTarget)
         {
             string optionFeaturesSettings =
-                "Edit > Project Settings > XR > ARCore Extensions > Optional Features";
+                "Edit > Project Settings > XR Plug-in Management > ARCore Extensions > " +
+                "Optional Features";
             if (sessionConfig.GeospatialMode != GeospatialMode.Disabled &&
                 !settings.GeospatialEnabled)
             {
@@ -150,7 +151,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             return string.Format(
                 "{0} feature is checked in ARCore Extensions Project Settings, but " +
                 "it is not used by any Scenes in Build.\nTo turn off {0}, uncheck it in " +
-                "Edit > Project Settings > XR > ARCore Extensions > Optional Features > {0}.",
+                "Edit > Project Settings > XR Plug-in Management > ARCore Extensions > " +
+                "Optional Features > {0}.",
                 featureName);
         }
 

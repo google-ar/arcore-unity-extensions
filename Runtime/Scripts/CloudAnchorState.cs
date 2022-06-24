@@ -50,7 +50,8 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// The app cannot communicate with the ARCore Cloud because of an invalid authentication.
-        /// Check Project Settings > XR > ARCore Extensions for a valid authentication strategy.
+        /// Check Project Settings > XR Plug-in Management > ARCore Extensions for a valid
+        /// authentication strategy.
         /// </summary>
         ErrorNotAuthorized,
 

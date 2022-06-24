@@ -39,6 +39,11 @@ namespace Google.XR.ARCoreExtensions
         {
             get
             {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+                {
+                    return RecordingStatus.None;
+                }
+
                 return SessionApi.GetRecordingStatus(
                     ARCoreExtensions._instance.currentARCoreSessionHandle);
             }
@@ -52,6 +57,11 @@ namespace Google.XR.ARCoreExtensions
         /// cref="ARCoreRecordingConfig"/>.<c>AutoStopOnPause</c> is enabled), recording may
         /// continue. During this time the camera feed will be recorded as a black screen, but
         /// sensor data will continue to be captured.
+        ///
+        /// Session recordings may contain sensitive information. See <a
+        /// href="https://developers.google.com/ar/develop/recording-and-playback#what%E2%80%99s_in_a_recording">documentation
+        /// on Recording and Playback</a> to learn which data is saved in a recording.
+        ///
         /// </summary>
         /// <param name="config"><see cref="ARCoreRecordingConfig"/> containing the path to save the
         /// dataset along with other recording options.</param>
@@ -81,6 +91,11 @@ namespace Google.XR.ARCoreExtensions
         /// an error.</returns>
         public RecordingResult StopRecording()
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return RecordingResult.SessionNotReady;
+            }
+
             return SessionApi.StopRecording(ARCoreExtensions._instance.currentARCoreSessionHandle);
         }
 

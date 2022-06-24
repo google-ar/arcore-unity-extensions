@@ -376,7 +376,18 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             // Check earth state.
             var earthState = EarthManager.EarthState;
-            if (earthState != EarthState.Enabled)
+            if (earthState == EarthState.ErrorInternal)
+            {
+                // Geo Module setup may take longer than configuration prepare time and returns
+                // ErrorInternal state in this case.
+                // Give extra time to automatically recover from error state.
+                string internalErrorMessage =
+                    "Geospatial sample encountered an EarthState error: " + earthState;
+                Debug.LogWarning(internalErrorMessage);
+                SnackBarText.text = internalErrorMessage;
+                return;
+            }
+            else if (earthState != EarthState.Enabled)
             {
                 ReturnWithReason(
                     "Geospatial sample encountered an EarthState error: " + earthState);

@@ -84,6 +84,13 @@ namespace Google.XR.ARCoreExtensions
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                anchor == null || anchor.nativePtr == IntPtr.Zero ||
+                anchor.AnchorHandle() == IntPtr.Zero)
+            {
+                return null;
+            }
+
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.HostCloudAnchor(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
@@ -122,6 +129,13 @@ namespace Google.XR.ARCoreExtensions
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                anchor == null || anchor.nativePtr == IntPtr.Zero ||
+                anchor.AnchorHandle() == IntPtr.Zero)
+            {
+                return null;
+            }
+
             if (ttlDays <= 0 || ttlDays > 365)
             {
                 Debug.LogErrorFormat("Failed to host a Cloud Anchor with invalid TTL {0}. " +
@@ -167,12 +181,17 @@ namespace Google.XR.ARCoreExtensions
         {
             // Only iOS needs AuthToken for Cloud Anchor persistence.
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return;
+            }
+
             if (!string.IsNullOrEmpty(RuntimeConfig.Instance.IOSCloudServicesApiKey))
             {
                 Debug.LogError(
                     "Cannot set token in applications built using the 'API Key' " +
                     "authentication strategy. To use it, check Edit > Project Settings " +
-                    "> XR > ARCore Extensions > iOS Support Enabled and " +
+                    "> XR Plug-in Management > ARCore Extensions > iOS Support Enabled and " +
                     "set iOS Authentication Strategy to Authentication Token.");
                 return;
             }
@@ -275,6 +294,12 @@ namespace Google.XR.ARCoreExtensions
         public static ARCloudAnchor ResolveCloudAnchorId(
             this ARAnchorManager anchorManager, string cloudAnchorId)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                string.IsNullOrEmpty(cloudAnchorId))
+            {
+                return null;
+            }
+
             // Create the underlying ARCore Cloud Anchor.
             IntPtr cloudAnchorHandle = SessionApi.ResolveCloudAnchor(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
@@ -352,6 +377,11 @@ namespace Google.XR.ARCoreExtensions
         public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
             this ARAnchorManager anchorManager, Pose pose)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return FeatureMapQuality.Insufficient;
+            }
+
             return SessionApi.EstimateFeatureMapQualityForHosting(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, pose);
         }
@@ -403,6 +433,11 @@ namespace Google.XR.ARCoreExtensions
             this ARAnchorManager anchorManager, double latitude, double longitude,
             double altitude, Quaternion eunRotation)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return null;
+            }
+
             IntPtr earthHandle = SessionApi.AcquireEarth(
                 ARCoreExtensions._instance.currentARCoreSessionHandle);
             if (earthHandle == IntPtr.Zero)

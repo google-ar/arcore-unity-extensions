@@ -28,6 +28,6 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// The current ARCore Extensions package version.
         /// </summary>
-        public static readonly string Version = "1.31.0";
+        public static readonly string Version = "1.32.0";
     }
 }

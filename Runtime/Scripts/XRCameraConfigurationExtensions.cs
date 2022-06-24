@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
     using UnityEngine.XR.ARSubsystems;
@@ -38,6 +39,12 @@ namespace Google.XR.ARCoreExtensions
         public static CameraConfigFacingDirection GetFacingDirection(
             this XRCameraConfiguration cameraConfig)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                cameraConfig.nativeConfigurationHandle == IntPtr.Zero)
+            {
+                return CameraConfigFacingDirection.Back;
+            }
+
             return CameraConfigApi.GetFacingDirection(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
@@ -51,6 +58,12 @@ namespace Google.XR.ARCoreExtensions
         /// <returns>Returns the GPU texture dimensions.</returns>
         public static Vector2Int GetTextureDimensions(this XRCameraConfiguration cameraConfig)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                cameraConfig.nativeConfigurationHandle == IntPtr.Zero)
+            {
+                return Vector2Int.zero;
+            }
+
             return CameraConfigApi.GetTextureDimensions(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
@@ -64,6 +77,12 @@ namespace Google.XR.ARCoreExtensions
         /// <returns>Returns the range from minimal target FPS to maximal target FPS.</returns>
         public static Vector2Int GetFPSRange(this XRCameraConfiguration cameraConfig)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                cameraConfig.nativeConfigurationHandle == IntPtr.Zero)
+            {
+                return Vector2Int.zero;
+            }
+
             return CameraConfigApi.GetFPSRange(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
@@ -82,6 +101,12 @@ namespace Google.XR.ARCoreExtensions
         public static CameraConfigDepthSensorUsage GetDepthSensorUsage(
             this XRCameraConfiguration cameraConfig)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                cameraConfig.nativeConfigurationHandle == IntPtr.Zero)
+            {
+                return CameraConfigDepthSensorUsage.DoNotUse;
+            }
+
             return CameraConfigApi.GetDepthSensorUsage(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);
@@ -95,6 +120,12 @@ namespace Google.XR.ARCoreExtensions
         public static CameraConfigStereoCameraUsage GetStereoCameraUsage(
             this XRCameraConfiguration cameraConfig)
         {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                cameraConfig.nativeConfigurationHandle == IntPtr.Zero)
+            {
+                return CameraConfigStereoCameraUsage.DoNotUse;
+            }
+
             return CameraConfigApi.GetStereoCameraUsage(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 cameraConfig.nativeConfigurationHandle);

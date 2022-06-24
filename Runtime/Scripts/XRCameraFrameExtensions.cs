@@ -52,6 +52,10 @@ namespace Google.XR.ARCoreExtensions
             // |----------------|            |----------------|
             // (0, 0)      (1, 0)            (0, 1)      (1, 1)
             IntPtr sessionHandle = ARCoreExtensions._instance.currentARCoreSessionHandle;
+            if (sessionHandle == IntPtr.Zero)
+            {
+                return Matrix4x4.identity;
+            }
 
             // X-Axis (1, 0) in Unity view maps to (1, 1) on Android screen.
             Vector2 affineBasisX = new Vector2(1.0f, 1.0f);
