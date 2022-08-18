@@ -27,8 +27,9 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// The <c>ARCloudAnchor</c> is an ARCore Extensions object that provides a similar service
-    /// to AR Foundation's <c>ARAnchor</c> as an anchor for game objects in your scene.
+    /// The <c>ARCloudAnchor</c> is an ARCore Extensions object that provides a
+    /// similar service to AR Foundation's <c><see cref="ARAnchor"/></c> as an anchor for game
+    /// objects in your scene.
     /// It is backed by an ARCore Cloud Anchor to synchronize pose data across multiple devices.
     /// </summary>
     [SuppressMessage("UnityRules.UnityStyleRules", "US1109:PublicPropertiesMustBeUpperCamelCase",
@@ -41,7 +42,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the Cloud Anchor Id associated with this Cloud Anchor. For newly
         /// created points the Id will be an empty string until the Cloud Anchor is
-        /// in the <c><see cref="CloudAnchorState"/></c>.<c>Success</c> state. This Id is
+        /// in the <c><see cref="CloudAnchorState.Success"/></c> state. This Id is
         /// provided on the device hosting the Cloud Anchor, and is used to resolve
         /// a corresponding Cloud Anchor on other devices.
         /// See <c><see cref="ARAnchorManagerExtensions.ResolveCloudAnchorId(
@@ -158,9 +159,9 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// When the game object containing the <see cref="ARCloudAnchor"/> component is destroyed,
-        /// the underlying native Cloud Anchor object will be detached and the resource will
-        /// be released.
+        /// When the game object containing the <c><see cref="ARCloudAnchor"/></c> component is
+        /// destroyed, the underlying native Cloud Anchor object will be detached and the resource
+        /// will be released.
         /// </summary>
         public void OnDestroy()
         {

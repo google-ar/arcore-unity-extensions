@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="ApiTerrainAnchorState.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
+namespace Google.XR.ARCoreExtensions.Internal
 {
-    /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
-    /// </summary>
-    public class VersionInfo
+    // Internal states for Terrain Anchors.
+    internal enum ApiTerrainAnchorState
     {
-        /// <summary>
-        /// The current ARCore Extensions package version.
-        /// </summary>
-        public static readonly string Version = "1.33.0";
+        None = 0,
+        TaskInProgress = 1,
+        Success = 2,
+        ErrorInternal = -1,
+        ErrorNotAuthorized = -2,
+        ErrorUnsupportedLocation = -3,
     }
 }

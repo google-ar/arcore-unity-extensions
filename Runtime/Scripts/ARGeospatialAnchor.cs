@@ -28,7 +28,7 @@ namespace Google.XR.ARCoreExtensions
 
     /// <summary>
     /// The <c>ARGeospatialAnchor</c> is an ARCore Extensions object that provides a
-    /// similar service to AR Foundation's <c>ARAnchor</c> as an anchor for game
+    /// similar service to AR Foundation's <c><see cref="ARAnchor"/></c> as an anchor for game
     /// objects in your scene.
     /// It is created at the specified geodetic location and orientation relative
     /// to the Earth.
@@ -78,6 +78,25 @@ namespace Google.XR.ARCoreExtensions
                 return AnchorApi.GetTrackingState(
                     ARCoreExtensions._instance.currentARCoreSessionHandle,
                     _anchorHandle).ToTrackingState();
+            }
+        }
+
+        /// <summary>
+        /// Gets the <c>TerrainAnchorState</c> associated with this Terrain Anchor.
+        /// </summary>
+        public TerrainAnchorState terrainAnchorState
+        {
+            get
+            {
+                if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                    _anchorHandle == IntPtr.Zero)
+                {
+                    return TerrainAnchorState.None;
+                }
+
+                return AnchorApi.GetTerrainAnchorState(
+                    ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    _anchorHandle).ToTerrainAnchorState();
             }
         }
 

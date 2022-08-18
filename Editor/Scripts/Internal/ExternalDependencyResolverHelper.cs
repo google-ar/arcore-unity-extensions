@@ -23,6 +23,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Reflection;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEngine;
@@ -41,6 +42,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         /// Filename of Android Resolver plugin.
         /// </summary>
         public static string JarResolverName = "Google.JarResolver";
+
+        /// <summary>
+        /// Filename of VersionHandlerImpl plugin.
+        /// </summary>
+        public static string VersionHandlerImplName = "Google.VersionHandlerImpl";
 
         /// <summary>
         /// Filename where External Dependency Resolver stores state.
@@ -145,6 +151,41 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (!pluginImporter.GetCompatibleWithEditor())
             {
                 pluginImporter.SetCompatibleWithEditor(true);
+            }
+        }
+
+        /// <summary>
+        /// Enable or disable analytics reporting in External Dependency Manager.
+        /// </summary>
+        /// <param name="enable">Whether to enable analytics reporting.</param>
+        public static void EnableAnalyticsReporting(bool enable)
+        {
+            EnableDependencyResolver(VersionHandlerImplName);
+            Type editorMeasurement = Google.VersionHandler.FindClass(
+                VersionHandlerImplName, "Google.EditorMeasurement");
+            if (editorMeasurement == null)
+            {
+                Debug.LogError(
+                    "ARCoreExtensions: Cannot find EditorMeasurement class in this project. " +
+                    "Please ensure External Dependency Manager exists and is enabled.");
+                return;
+            }
+
+            var field = editorMeasurement.GetField(
+                "GloballyEnabled", BindingFlags.NonPublic | BindingFlags.Static);
+            if (field == null)
+            {
+                Debug.LogWarning("ARCoreExtensions: Cannot find GloballyEnabled field.");
+                return;
+            }
+
+            bool result = (bool)field.GetValue(null);
+            if (result != enable)
+            {
+                Debug.LogFormat(
+                    "{0} Analytics Reporting in External Dependency Manager.",
+                    enable ? "Enabling" : "Disabling");
+                field.SetValue(null, enable);
             }
         }
 

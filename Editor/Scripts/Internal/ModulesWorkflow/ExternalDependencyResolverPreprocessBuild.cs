@@ -49,6 +49,22 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
 
         /// <summary>
+        /// Callback before build starts, but after PreprocessBuild.
+        /// </summary>
+        [PostProcessScene(0)]
+        public static void OnPostProcessScene()
+        {
+#if UNITY_2022_1_OR_NEWER
+
+            // To avoid network connection errors in Editor on Unity 2022.1+,
+            // disable analytics reporting in External Dependency Manager.
+            // After disabled, this option will be hidden from
+            // Assets > External Dependency Manager > Version Handler > Settings.
+            ExternalDependencyResolverHelper.EnableAnalyticsReporting(false);
+#endif
+        }
+
+        /// <summary>
         /// Callback after the build is done.
         /// </summary>
         /// <param name="target">Build target platform.</param>

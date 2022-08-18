@@ -48,8 +48,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 if (editorScene.enabled)
                 {
                     Scene scene = SceneManager.GetSceneByPath(editorScene.path);
+                    bool removeFromEditor = false;
                     if (!scene.isLoaded)
                     {
+                        removeFromEditor = true;
                         scene = EditorSceneManager.OpenScene(
                             editorScene.path, OpenSceneMode.Additive);
                     }
@@ -70,6 +72,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
                             break;
                         }
+                    }
+
+                    if (removeFromEditor)
+                    {
+                        // Unload scenes from the Editor after iterated all game objects
+                        // if it's not loaded at build time.
+                        EditorSceneManager.CloseScene(scene, true);
                     }
                 }
             }

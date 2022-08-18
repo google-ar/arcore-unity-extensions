@@ -31,7 +31,8 @@ namespace Google.XR.ARCoreExtensions
         OK,
 
         /// <summary>
-        /// The call to <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>
+        /// The call to <c><see
+        /// cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/></c>
         /// failed because ARCore is currently attempting to resume or pause the session.
         ///
         /// Try calling it again in the next frame. Note:
@@ -43,9 +44,10 @@ namespace Google.XR.ARCoreExtensions
         SessionNotReady,
 
         /// <summary>
-        /// When using <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>, this
-        /// means the <see cref="ARCoreRecordingConfig"/> was null or invalid.
-        /// When using <see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/>,
+        /// When using <c><see
+        /// cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/></c>, this
+        /// means the <c><see cref="ARCoreRecordingConfig"/></c> was null or invalid.
+        /// When using <c><see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/></c>,
         /// this means the track id or payload given are null or invalid.
         /// </summary>
         ErrorInvalidArgument,
@@ -56,13 +58,14 @@ namespace Google.XR.ARCoreExtensions
         ErrorRecordingFailed,
 
         /// <summary>
-        /// When using <see cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/>, this
+        /// When using <c><see
+        /// cref="ARRecordingManager.StartRecording(ARCoreRecordingConfig)"/></c>, this
         /// means a recording is already in progress.
-        /// When using <see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/>, this means
-        /// either <see cref="RecordingStatus"/> is not currently <c>RecordingStatus.OK</c> or the
-        /// system is currently under excess load for images to be produced. The system should not
-        /// be under such excess load for more than a few frames and an app should try to record the
-        /// data again during the next frame.
+        /// When using <c><see cref="ARRecordingManager.RecordTrackData(Guid, byte[])"/></c>, this
+        /// means either <c><see cref="RecordingStatus"/></c> is not currently
+        /// <c><see cref="RecordingStatus.OK"/></c> or the system is currently under excess load for
+        /// images to be produced. The system should not be under such excess load for more than a
+        /// few frames and an app should try to record the data again during the next frame.
         /// </summary>
         ErrorIllegalState,
     }

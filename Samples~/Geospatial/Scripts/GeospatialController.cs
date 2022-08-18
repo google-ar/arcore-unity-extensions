@@ -20,7 +20,9 @@
 namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
     using UnityEngine.UI;
     using UnityEngine.XR.ARFoundation;
@@ -66,6 +68,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public GameObject GeospatialPrefab;
 
         /// <summary>
+        /// A 3D object that present an Geospatial Terrain Anchor.
+        /// </summary>
+        public GameObject TerrainPrefab;
+
+        /// <summary>
         /// UI element showing privacy prompt.
         /// </summary>
         public GameObject PrivacyPromptCanvas;
@@ -84,6 +91,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// UI element for adding a new anchor at current location.
         /// </summary>
         public Button SetAnchorButton;
+
+        /// <summary>
+        /// UI element that handles setting terrain anchors.
+        /// </summary>
+        public Button TerrainButton;
 
         /// <summary>
         /// UI element to display information at runtime.
@@ -111,6 +123,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private const string _localizingMessage = "Localizing your device to set anchor.";
 
         /// <summary>
+        /// Help message shows while initializing Geospatial functionalities.
+        /// </summary>
+        private const string _localizationInitializingMessage =
+            "Initializing Geospatial functionalities.";
+
+        /// <summary>
         /// Help message shows when <see cref="AREarthManager.EarthTrackingState"/> is not tracking
         /// or the pose accuracies are beyond thresholds.
         /// </summary>
@@ -128,6 +146,13 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// Help message shows when location success.
         /// </summary>
         private const string _localizationSuccessMessage = "Localization completed.";
+
+        /// <summary>
+        /// Help message shows when resolving takes too long.
+        /// </summary>
+        private const string _resolvingTimeoutMessage =
+            "Still resolving the terrain anchor.\n" +
+            "Please make sure you're in an area that has VPS coverage.";
 
         /// <summary>
         /// The timeout period waiting for localization to be completed.
@@ -221,7 +246,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             var pose = EarthManager.CameraGeospatialPose;
             GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                 pose.Latitude, pose.Longitude, pose.Altitude, pose.Heading);
-            if (PlaceGeospatialAnchor(history))
+            if (PlaceGeospatialAnchor(history) != null)
             {
                 _historyCollection.Collection.Add(history);
                 SnackBarText.text = $"{_anchorObjects.Count} Anchor(s) Set!";
@@ -229,6 +254,29 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             else
             {
                 SnackBarText.text = "Failed to set an anchor!";
+            }
+
+            ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
+            SaveGeospatialAnchorHistory();
+        }
+
+        /// <summary>
+        /// Callback handling "Set Terrain Anchor" button click event in AR View.
+        /// </summary>
+        public void OnSetTerrainAnchorClicked()
+        {
+            var pose = EarthManager.CameraGeospatialPose;
+            GeospatialAnchorHistory history = new GeospatialAnchorHistory(
+                pose.Latitude, pose.Longitude, pose.Altitude, pose.Heading);
+            var anchor = PlaceGeospatialAnchor(history, true);
+            if (anchor != null)
+            {
+                _historyCollection.Collection.Add(history);
+                StartCoroutine(CheckTerrainAnchorState(anchor));
+            }
+            else
+            {
+                SnackBarText.text = "Failed to set a terrain anchor!";
             }
 
             ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
@@ -278,8 +326,10 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             _enablingGeospatial = false;
             InfoPanel.SetActive(false);
             SetAnchorButton.gameObject.SetActive(false);
+            TerrainButton.gameObject.SetActive(false);
             ClearAllButton.gameObject.SetActive(false);
             DebugText.gameObject.SetActive(Debug.isDebugBuild && EarthManager != null);
+            TerrainButton.onClick.AddListener(OnSetTerrainAnchorClicked);
 
             _localizationPassedTime = 0f;
             _isLocalizing = true;
@@ -376,21 +426,17 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             // Check earth state.
             var earthState = EarthManager.EarthState;
-            if (earthState == EarthState.ErrorInternal)
+            if (earthState == EarthState.ErrorEarthNotReady)
             {
-                // Geo Module setup may take longer than configuration prepare time and returns
-                // ErrorInternal state in this case.
-                // Give extra time to automatically recover from error state.
-                string internalErrorMessage =
-                    "Geospatial sample encountered an EarthState error: " + earthState;
-                Debug.LogWarning(internalErrorMessage);
-                SnackBarText.text = internalErrorMessage;
+                SnackBarText.text = _localizationInitializingMessage;
                 return;
             }
             else if (earthState != EarthState.Enabled)
             {
-                ReturnWithReason(
-                    "Geospatial sample encountered an EarthState error: " + earthState);
+                string errorMessage =
+                    "Geospatial sample encountered an EarthState error: " + earthState;
+                Debug.LogWarning(errorMessage);
+                SnackBarText.text = errorMessage;
                 return;
             }
 
@@ -414,6 +460,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     _isLocalizing = true;
                     _localizationPassedTime = 0f;
                     SetAnchorButton.gameObject.SetActive(false);
+                    TerrainButton.gameObject.SetActive(false);
                     ClearAllButton.gameObject.SetActive(false);
                     foreach (var go in _anchorObjects)
                     {
@@ -438,10 +485,20 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 _isLocalizing = false;
                 _localizationPassedTime = 0f;
                 SetAnchorButton.gameObject.SetActive(true);
+                TerrainButton.gameObject.SetActive(true);
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
                 SnackBarText.text = _localizationSuccessMessage;
                 foreach (var go in _anchorObjects)
                 {
+                    var terrainState = go.GetComponent<ARGeospatialAnchor>().terrainAnchorState;
+                    if (terrainState != TerrainAnchorState.None &&
+                        terrainState != TerrainAnchorState.Success)
+                    {
+                        // Skip terrain anchors that are still waiting for resolving
+                        // or failed on resolving.
+                        continue;
+                    }
+
                     go.SetActive(true);
                 }
 
@@ -473,20 +530,63 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
         }
 
-        private bool PlaceGeospatialAnchor(GeospatialAnchorHistory history)
+        IEnumerator CheckTerrainAnchorState(ARGeospatialAnchor anchor)
+        {
+            if (anchor == null || _anchorObjects == null)
+            {
+                yield break;
+            }
+
+            int retry = 0;
+            while (anchor.terrainAnchorState == TerrainAnchorState.TaskInProgress)
+            {
+                if (_anchorObjects.Count == 0 || !_anchorObjects.Contains(anchor.gameObject))
+                {
+                    Debug.LogFormat(
+                        "{0} has been removed, exist terrain anchor state check.",
+                        anchor.trackableId);
+                    yield break;
+                }
+
+                if (retry == 100 && _anchorObjects.Last().Equals(anchor.gameObject))
+                {
+                    SnackBarText.text = _resolvingTimeoutMessage;
+                }
+
+                yield return new WaitForSeconds(0.1f);
+                retry = Math.Min(retry + 1, 100);
+            }
+
+            anchor.gameObject.SetActive(
+                !_isLocalizing && anchor.terrainAnchorState == TerrainAnchorState.Success);
+            if (_anchorObjects.Last().Equals(anchor.gameObject))
+            {
+                SnackBarText.text = $"Terrain Anchor State: {anchor.terrainAnchorState}";
+            }
+
+            yield break;
+        }
+
+        private ARGeospatialAnchor PlaceGeospatialAnchor(
+            GeospatialAnchorHistory history, bool terrain = false)
         {
             Quaternion quaternion =
                 Quaternion.AngleAxis(180f - (float)history.Heading, Vector3.up);
-            var anchor = AnchorManager.AddAnchor(
-                history.Latitude, history.Longitude, history.Altitude, quaternion);
+            var anchor = terrain ?
+                AnchorManager.ResolveAnchorOnTerrain(
+                    history.Latitude, history.Longitude, 0, quaternion) :
+                AnchorManager.AddAnchor(
+                    history.Latitude, history.Longitude, history.Altitude, quaternion);
             if (anchor != null)
             {
-                GameObject anchorGO = Instantiate(GeospatialPrefab, anchor.transform);
-                _anchorObjects.Add(anchorGO);
-                return true;
+                GameObject anchorGO = terrain ?
+                    Instantiate(TerrainPrefab, anchor.transform) :
+                    Instantiate(GeospatialPrefab, anchor.transform);
+                anchor.gameObject.SetActive(!terrain);
+                _anchorObjects.Add(anchor.gameObject);
             }
 
-            return false;
+            return anchor;
         }
 
         private void ResolveHistory()
@@ -615,6 +715,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             SetAnchorButton.gameObject.SetActive(false);
+            TerrainButton.gameObject.SetActive(false);
             ClearAllButton.gameObject.SetActive(false);
             InfoPanel.SetActive(false);
 

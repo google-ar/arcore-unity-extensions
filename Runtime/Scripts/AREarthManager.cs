@@ -29,21 +29,22 @@ namespace Google.XR.ARCoreExtensions
     /// Provides localization in Earth-relative coordinates.
     ///
     /// <c><see cref="ARCoreExtensionsConfig.GeospatialMode"/></c> must be
-    /// <see cref="GeospatialMode"/>.<c>Enabled</c> in order to make use of the Geospatial API.
-    /// Not all devices support <see cref="GeospatialMode"/>.<c>Enabled</c>, use
-    /// <see cref="AREarthManager.IsGeospatialModeSupported"/> to find whether the current device
-    /// supports enabling this mode.
+    /// <c><see cref="GeospatialMode.Enabled"/></c> in order to make use of the Geospatial API.
+    /// Not all devices support <c><see cref="GeospatialMode.Enabled"/></c>, use
+    /// <c><see cref="AREarthManager.IsGeospatialModeSupported"/></c> to find whether the current
+    /// device supports enabling this mode.
     ///
     /// <c><see cref="AREarthManager.CameraGeospatialPose"/></c> should only be used when
-    /// <c><see cref="AREarthManager.EarthTrackingState"/></c> is <c>Tracking</c>, and otherwise
-    /// should not be used. If the <c>EarthTrackingState</c> does not become <c>Tracking</c>,
-    /// then <c><see cref="AREarthManager.EarthState"/></c> may contain more information on this
-    /// failure.
+    /// <c><see cref="AREarthManager.EarthTrackingState"/></c> is
+    /// <c><see cref="TrackingState.Tracking"/></c>, and otherwise
+    /// should not be used. If the <c><see cref="EarthTrackingState"/></c> does not become
+    /// <c>Tracking</c>, then <c><see cref="AREarthManager.EarthState"/></c> may contain more
+    /// information on this failure.
     /// </summary>
     public class AREarthManager : MonoBehaviour
     {
         /// <summary>
-        /// Gets the <see cref="Google.XR.ARCoreExtensions.EarthState"/> for the latest frame.
+        /// Gets the <c><see cref="EarthState"/></c> for the latest frame.
         /// </summary>
         public EarthState EarthState
         {
@@ -51,7 +52,7 @@ namespace Google.XR.ARCoreExtensions
             {
                 if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
                 {
-                    return EarthState.ErrorInternal;
+                    return EarthState.ErrorSessionNotReady;
                 }
 
                 if (ARCoreExtensions._instance.ARCoreExtensionsConfig == null ||
@@ -91,7 +92,7 @@ namespace Google.XR.ARCoreExtensions
         /// closely approximates the orientation of the display.
         ///
         /// Note: This pose is only valid when
-        /// <c><see cref="EarthTrackingState"/></c> is <c>TrackingState.Tracking</c>;
+        /// <c><see cref="EarthTrackingState"/></c> is <c><see cref="TrackingState.Tracking"/></c>;
         /// otherwise, it should not be used.
         /// </summary>
         public GeospatialPose CameraGeospatialPose
@@ -119,8 +120,8 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="mode">The desired geospatial mode.</param>
         /// <returns>
         /// Indicates whether the given mode is supported on this device.
-        /// It will return <c>FeatureSupported.Unknown</c> if the session is still under
-        /// initialization.
+        /// It will return <c><see cref="FeatureSupported.Unknown"/></c> if the session is still
+        /// under initialization.
         /// </returns>
         public FeatureSupported IsGeospatialModeSupported(GeospatialMode mode)
         {

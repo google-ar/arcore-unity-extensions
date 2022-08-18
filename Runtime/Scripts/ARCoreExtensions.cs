@@ -41,17 +41,17 @@ namespace Google.XR.ARCoreExtensions
     public class ARCoreExtensions : MonoBehaviour
     {
         /// <summary>
-        /// AR Foundation <c>ARSession</c> used by the scene.
+        /// AR Foundation <c><see cref="ARSession"/></c> used by the scene.
         /// </summary>
         public ARSession Session;
 
         /// <summary>
-        /// AR Foundation <c>ARSessionOrigin</c> used by the scene.
+        /// AR Foundation <c><see cref="ARSessionOrigin"/></c> used by the scene.
         /// </summary>
         public ARSessionOrigin SessionOrigin;
 
         /// <summary>
-        /// AR Foundation <c>ARCameraManager</c> used in the ARSessionOrigin.
+        /// AR Foundation <c><see cref="ARCameraManager"/></c> used in the ARSessionOrigin.
         /// </summary>
         public ARCameraManager CameraManager;
 

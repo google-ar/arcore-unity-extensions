@@ -31,7 +31,7 @@ namespace Google.XR.ARCoreExtensions
         OK,
 
         /// <summary>
-        /// The call to <see cref="ARPlaybackManager.SetPlaybackDataset(string)"/>
+        /// The call to <c><see cref="ARPlaybackManager.SetPlaybackDataset(string)"/></c>
         /// failed because ARCore is currently attempting to resume or pause the session.
         ///
         /// Try calling it again in the next frame. Note:

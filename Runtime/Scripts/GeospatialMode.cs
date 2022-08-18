@@ -22,29 +22,31 @@ namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
     /// Describes the desired behavior of ARCore Geospatial API features and capabilities. Not all
-    /// devices support all modes. Use <see
-    /// cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/> to find whether the
+    /// devices support all modes. Use <c><see
+    /// cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to find whether the
     /// current device supports a particular <c><see cref="GeospatialMode"/></c>.
-    /// The default value is <c>Disabled</c>.
+    /// The default value is <c><see cref="GeospatialMode.Disabled"/></c>.
     ///
-    /// Use <see cref="ARCoreExtensionsConfig.GeospatialMode"/> to set the desired mode.
+    /// Use <c><see cref="ARCoreExtensionsConfig.GeospatialMode"/></c> to set the desired mode.
     /// </summary>
     public enum GeospatialMode
     {
         /// <summary>
         /// The Geospatial API is disabled. When a configuration with <c>Disabled</c> becomes active
         /// on the AR session, current anchors created from
-        /// <see cref="ARAnchorManagerExtensions.AddAnchor(
+        /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(
         /// UnityEngine.XR.ARFoundation.ARAnchorManager, double, double, double,
-        /// UnityEngine.Quaternion)"/> will stop updating and have their
-        /// <see cref="UnityEngine.XR.ARSubsystems.TrackingState"/> set to <c>None</c>.
+        /// UnityEngine.Quaternion)"/></c> will stop updating and have their
+        /// <c><see cref="UnityEngine.XR.ARSubsystems.TrackingState"/></c> set to 
+        /// <c><see
+        /// cref="UnityEngine.XR.ARSubsystems.TrackingState.None"/></c>.
         ///
         /// ARCore Extensions will not request location permissions.
         /// </summary>
         Disabled = 0,
 
         /// <summary>
-        /// The Geospatial API is enabled, and <see cref="AREarthManager"/> can be used.
+        /// The Geospatial API is enabled, and <c><see cref="AREarthManager"/></c> can be used.
         ///
         /// Using this mode requires your app do the following:
         /// <list type="bullet">
@@ -69,21 +71,23 @@ namespace Google.XR.ARCoreExtensions
         /// </item>
         /// </list>
         ///
-        /// Location is tracked only while <see cref="ARSession"/> is enabled.
-        /// While it is disabled, <see cref="AREarthManager.EarthTrackingState"/>
-        /// will be <see cref="UnityEngine.XR.ARSubsystems.TrackingState"/>.<c>None</c>.
+        /// Location is tracked only while <c><see cref="ARSession"/></c> is enabled.
+        /// While it is disabled, <c><see cref="AREarthManager.EarthTrackingState"/></c>
+        /// will be <c><see
+        /// cref="UnityEngine.XR.ARSubsystems.TrackingState.None"/></c>.
         ///
         /// For more information, see documentation on <a
         /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/developer-guide-android">the
         /// Geospatial API on Google Developers</a>.
         ///
         /// This mode is not compatible with the
-        /// <see cref="UnityEngine.XR.ARFoundation.CameraFacingDirection"/>.<c>User</c>
-        /// (selfie) camera; use the <c>World</c> camera instead.
+        /// <c><see cref="CameraFacingDirection.User"/></c>
+        /// (selfie) camera; use the <c><see cref="CameraFacingDirection.World"/></c> camera
+        /// instead.
         ///
         /// Not all devices support this mode, use
-        /// <see cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/> to check if the
-        /// current device and selected camera support enabling this mode.
+        /// <c><see cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to check
+        /// if the current device and selected camera support enabling this mode.
         /// </summary>
         Enabled = 2,
     }

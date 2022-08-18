@@ -1,6 +1,6 @@
 <dependencies>
     <iosPods>
-        <iosPod name="ARCore/GARSession" version="~> 1.32.0" minTargetSdk="11.0">
+        <iosPod name="ARCore/GARSession" version="~> 1.33.0" minTargetSdk="11.0">
         </iosPod>
     </iosPods>
 </dependencies>

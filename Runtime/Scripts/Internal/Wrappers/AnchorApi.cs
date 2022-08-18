@@ -29,8 +29,14 @@ namespace Google.XR.ARCoreExtensions.Internal
 #else
     using CloudAnchorImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
 #endif
+#if GEOSPATIAL_IOS_SUPPORT
+    using GeospatialImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using GeospatialImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
 #else // UNITY_ANDROID
     using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+    using GeospatialImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class AnchorApi
@@ -87,6 +93,20 @@ namespace Google.XR.ARCoreExtensions.Internal
             return apiTrackingState;
         }
 
+        public static ApiTerrainAnchorState GetTerrainAnchorState(
+            IntPtr sessionHandle,
+            IntPtr anchorHandle)
+        {
+            ApiTerrainAnchorState terrainAnchorState = ApiTerrainAnchorState.None;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArAnchor_getTerrainAnchorState(
+                sessionHandle,
+                anchorHandle,
+                ref terrainAnchorState);
+#endif
+            return terrainAnchorState;
+        }
+
         public static void Detach(
             IntPtr sessionHandle,
             IntPtr anchorHandle)
@@ -113,6 +133,12 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr sessionHandle,
                 IntPtr anchorHandle,
                 ref ApiCloudAnchorState cloudAnchorState);
+
+            [GeospatialImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArAnchor_getTerrainAnchorState(
+                IntPtr sessionHandle,
+                IntPtr anchorHandle,
+                ref ApiTerrainAnchorState terrainAnchorState);
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArString_release(IntPtr stringHandle);

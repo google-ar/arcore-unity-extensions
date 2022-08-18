@@ -34,7 +34,10 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the current state of the recorder.
         /// </summary>
-        /// <returns>The current <see cref="RecordingStatus"/>.</returns>
+        /// <returns>
+        /// The current <c><see
+        /// cref="Google.XR.ARCoreExtensions.RecordingStatus">RecordingStatus</see></c>.
+        /// </returns>
         public RecordingStatus RecordingStatus
         {
             get
@@ -50,11 +53,11 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Starts a new recording, using the provided <see cref="ARCoreRecordingConfig"/> to define
-        /// the location to save the dataset and other options. If a recording is already in
-        /// progress this call will fail. Check <see cref="RecordingStatus"/> before making this
-        /// call. When an ARCore session is paused (unless <see
-        /// cref="ARCoreRecordingConfig"/>.<c>AutoStopOnPause</c> is enabled), recording may
+        /// Starts a new recording, using the provided <c><see cref="ARCoreRecordingConfig"/></c> to
+        /// define the location to save the dataset and other options. If a recording is already in
+        /// progress this call will fail. Check <c><see cref="RecordingStatus"/></c> before making
+        /// this call. When an ARCore session is paused (unless <c><see
+        /// cref="ARCoreRecordingConfig.AutoStopOnPause"/></c> is enabled), recording may
         /// continue. During this time the camera feed will be recorded as a black screen, but
         /// sensor data will continue to be captured.
         ///
@@ -63,11 +66,11 @@ namespace Google.XR.ARCoreExtensions
         /// on Recording and Playback</a> to learn which data is saved in a recording.
         ///
         /// </summary>
-        /// <param name="config"><see cref="ARCoreRecordingConfig"/> containing the path to save the
-        /// dataset along with other recording options.</param>
-        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the recording is started (or will
-        /// start on the next Session resume.) Or a <see cref="RecordingResult"/> if there was an
-        /// error.
+        /// <param name="config"><c><see cref="ARCoreRecordingConfig"/></c> containing the path to
+        /// save the dataset along with other recording options.</param>
+        /// <returns><c><see cref="RecordingResult.OK"/></c> if the recording is started (or will
+        /// start on the next Session resume.) Or a <c><see cref="RecordingResult"/></c> if there
+        /// was an error.
         /// </returns>
         public RecordingResult StartRecording(ARCoreRecordingConfig config)
         {
@@ -84,10 +87,10 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Stops the current recording. If there is no recording in progress, this method will
-        /// return <see cref="RecordingResult"/>.<c>OK</c>.
+        /// return <c><see cref="RecordingResult.OK"/></c>.
         /// </summary>
-        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the recording was stopped
-        /// successfully, or <see cref="RecordingResult"/>.<c>ErrorRecordingFailed</c> if there was
+        /// <returns><c><see cref="RecordingResult.OK"/></c> if the recording was stopped
+        /// successfully, or <c><see cref="RecordingResult.ErrorRecordingFailed"/></c> if there was
         /// an error.</returns>
         public RecordingResult StopRecording()
         {
@@ -117,10 +120,10 @@ namespace Google.XR.ARCoreExtensions
         /// may affect app performance.
         /// </summary>
         /// <param name="trackId">The unique ID of the track being recorded to. This will be
-        /// the <see cref="TrackData.Id"/> used to configure the track.</param>
+        /// the <c><see cref="TrackData.Id"/></c> used to configure the track.</param>
         /// <param name="data">The data being recorded at current time.</param>
-        /// <returns><see cref="RecordingResult"/>.<c>OK</c> if the data was recorded successfully,
-        /// or a different <see cref="RecordingResult"/> if there was an error.
+        /// <returns><c><see cref="RecordingResult.OK"/></c> if the data was recorded successfully,
+        /// or a different <c><see cref="RecordingResult"/></c> if there was an error.
         /// </returns>
         public RecordingResult RecordTrackData(Guid trackId, byte[] data)
         {

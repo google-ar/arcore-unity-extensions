@@ -35,7 +35,8 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the current state of the playback.
         /// </summary>
-        /// <returns>The current <see cref="PlaybackStatus"/>.</returns>
+        /// <returns>The current <c><see
+        /// cref="Google.XR.ARCoreExtensions.PlaybackStatus">PlaybackStatus</see></c>.</returns>
         public PlaybackStatus PlaybackStatus
         {
             get
@@ -72,19 +73,19 @@ namespace Google.XR.ARCoreExtensions
         /// different in subsequent playback sessions.
         /// </item>
         /// <item>
-        /// Once playback has started pausing the session (by disabling the ARSession) will
-        /// suspend processing of all camera image frames and any other recorded sensor data in
-        /// the dataset. Camera image frames and sensor frame data that is discarded in this way
-        /// will not be reprocessed when the session is again resumed (by re-enabling the
-        /// ARSession). AR tracking for the session will generally suffer due to the gap in
-        /// processed data.
+        /// Once playback has started pausing the session (by disabling the
+        /// <c><see cref="ARSession"/></c>) will suspend processing of all camera image frames and
+        /// any other recorded sensor data in the dataset. Camera image frames and sensor frame data
+        /// that is discarded in this way will not be reprocessed when the session is again resumed
+        /// (by re-enabling the <c><see cref="ARSession"/></c>). AR tracking for the session will
+        /// generally suffer due to the gap in processed data.
         /// </item>
         /// </list>
         /// </summary>
         /// <param name="datasetFilepath"> The filepath of the MP4 dataset. Null if
         /// stopping the playback and resuming a live feed.</param>
-        /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback filepath was
-        /// set without issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the
+        /// <returns><c><see cref="PlaybackResult.Success"/></c> if playback filepath was
+        /// set without issue. Otherwise, the <c><see cref="PlaybackResult"/></c> will indicate the
         /// error.</returns>
         /// @deprecated Please use SetPlaybackDatasetUri(Uri) instead.
         [Obsolete("This method has been deprecated. "
@@ -113,8 +114,9 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         /// <param name="datasetUri"> The uri of the MP4 dataset. Null if stopping the playback and
         /// resuming a live feed.</param>
-        /// <returns><see cref="PlaybackResult"/>.<c>Success</c> if playback uri was set without
-        /// issue. Otherwise, the <see cref="PlaybackResult"/> will indicate the error.</returns>
+        /// <returns><c><see cref="PlaybackResult.Success"/></c> if playback uri was set without
+        /// issue. Otherwise, the <c><see cref="PlaybackResult"/></c> will indicate the error.
+        /// </returns>
         public PlaybackResult SetPlaybackDatasetUri(Uri datasetUri)
         {
             if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero &&
@@ -140,7 +142,8 @@ namespace Google.XR.ARCoreExtensions
         /// One can differentiate by examining <c><see cref="TrackData.FrameTimestamp"/></c>.
         /// </summary>
         /// <param name="trackId">The ID of the track being queried.</param>
-        /// <returns>Returns a list of <see cref="TrackData"/>. Will be empty if none are available.
+        /// <returns>Returns a list of <c><see cref="TrackData"/></c>. Will be empty if none are
+        /// available.
         /// </returns>
         public List<TrackData> GetUpdatedTrackData(Guid trackId)
         {

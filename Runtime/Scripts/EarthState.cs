@@ -23,7 +23,9 @@ namespace Google.XR.ARCoreExtensions
     /// <summary>
     /// Describes the current state of Earth localization. When
     /// <c><see cref="AREarthManager.EarthTrackingState"/></c> does not become
-    /// <c>TrackingState.Tracking</c>, <c>EarthState</c> may contain the cause of this failure.
+    /// <c><see
+    /// cref="UnityEngine.XR.ARSubsystems.TrackingState.Tracking"/></see></c>,
+    /// <c><see cref="EarthState"/></c> may contain the cause of this failure.
     /// </summary>
     public enum EarthState
     {
@@ -44,7 +46,10 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Earth localization has been disabled on this session.
         /// All <c><see cref="ARGeospatialAnchor"/></c> created during this session will have
-        /// <c>TrackingState</c> set to <c>None</c> and should be destroyed.
+        /// <c><see cref="UnityEngine.XR.ARSubsystems.XRCpuImage"/></c> set to
+        /// <c><see
+        /// cref="UnityEngine.XR.ARSubsystems.TrackingState.None"/></c> and
+        /// should be destroyed.
         /// </summary>
         ErrorGeospatialModeDisabled = -2,
 
@@ -82,5 +87,20 @@ namespace Google.XR.ARCoreExtensions
         /// The package is older than the supported version.
         /// </summary>
         ErrorPackageTooOld = -5,
+
+        /// <summary>
+        /// Failed to acquire Earth.
+        /// This is returned when the current session is initializing Geospatial functionalities.
+        /// This state should not be active for more than a few frames.
+        /// </summary>
+        ErrorEarthNotReady = -100,
+
+        /// <summary>
+        /// Failed to find a valid ARCore session.
+        /// This is returned when the session is not active or not fully initialized,
+        /// see <c><see cref="UnityEngine.XR.ARFoundation.ARSession.state"/></c>
+        /// for details on the state of the session.
+        /// </summary>
+        ErrorSessionNotReady = -101,
     }
 }

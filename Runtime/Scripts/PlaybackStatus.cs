@@ -44,7 +44,7 @@ namespace Google.XR.ARCoreExtensions
         /// Playback has finished successfully. The session is waiting on the final
         /// frame of the dataset. To resume a live camera feed or play another
         /// dataset, pause the session, call
-        /// <see cref="ARPlaybackManager"/>.<c>SetPlaybackDataset()</c>, and resume the
+        /// <c><see cref="ARPlaybackManager.SetPlaybackDataset(string)"/></c>, and resume the
         /// session.
         /// </summary>
         FinishedSuccess,

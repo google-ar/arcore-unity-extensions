@@ -224,5 +224,26 @@ namespace Google.XR.ARCoreExtensions.Internal
             apiQuaternion.Qw = glWorldQuaternion.w;
             return apiQuaternion;
         }
+
+        public static TerrainAnchorState ToTerrainAnchorState(this ApiTerrainAnchorState state)
+        {
+            switch (state)
+            {
+                case ApiTerrainAnchorState.None:
+                    return TerrainAnchorState.None;
+                case ApiTerrainAnchorState.TaskInProgress:
+                    return TerrainAnchorState.TaskInProgress;
+                case ApiTerrainAnchorState.Success:
+                    return TerrainAnchorState.Success;
+                case ApiTerrainAnchorState.ErrorInternal:
+                    return TerrainAnchorState.ErrorInternal;
+                case ApiTerrainAnchorState.ErrorNotAuthorized:
+                    return TerrainAnchorState.ErrorNotAuthorized;
+                case ApiTerrainAnchorState.ErrorUnsupportedLocation:
+                    return TerrainAnchorState.ErrorUnsupportedLocation;
+                default:
+                    return TerrainAnchorState.None;
+            }
+        }
     }
 }

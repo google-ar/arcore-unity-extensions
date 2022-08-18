@@ -38,7 +38,7 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the Cloud Reference Id associated with this cloud reference point. For newly
         /// created points the Id will be an empty string until the cloud reference point is
-        /// in the <c><see cref="CloudReferenceState"/></c>.<c>Success</c> state.
+        /// in the <c><see cref="CloudReferenceState.Success"/></c> state.
         /// Deprecated version of <c><see cref="ARCloudAnchor.cloudAnchorId"/></c>.
         /// </summary>
         public string cloudReferenceId
@@ -50,7 +50,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Gets the <c><see cref="CloudReferenceState"/></c> associated with cloud reference point.
+        /// Gets the <c>CloudReferenceState</c> associated with cloud reference point.
         /// Deprecated version of <c><see cref="ARCloudAnchor.cloudAnchorState"/></c>.
         /// </summary>
         public CloudReferenceState cloudReferenceState

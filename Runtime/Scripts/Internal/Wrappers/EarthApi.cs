@@ -40,7 +40,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr earthHandle = SessionApi.AcquireEarth(sessionHandle);
             if (earthHandle == IntPtr.Zero)
             {
-                return earthState;
+                return EarthState.ErrorEarthNotReady;
             }
 
             ExternApi.ArEarth_getEarthState(sessionHandle, earthHandle, ref earthState);
@@ -102,6 +102,24 @@ namespace Google.XR.ARCoreExtensions.Internal
             return anchorHandle;
         }
 
+        public static IntPtr ResolveAnchorOnTerrain(IntPtr sessionHandle, IntPtr earthHandle,
+            double latitude, double longitude, double altitudeAboveTerrain, Quaternion eunRotation)
+        {
+            IntPtr anchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ApiQuaternion apiQuaternion = eunRotation.ToApiQuaternion();
+            ApiArStatus status = ExternApi.ArEarth_resolveAndAcquireNewAnchorOnTerrain(
+                sessionHandle, earthHandle, latitude, longitude, altitudeAboveTerrain,
+                ref apiQuaternion, ref anchorHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to add Geospatial Terrain Anchor, status '{0}'",
+                    status);
+            }
+#endif
+            return anchorHandle;
+        }
+
         private struct ExternApi
         {
             [EarthImport(ApiConstants.ARCoreNativeApi)]
@@ -123,6 +141,12 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern ApiArStatus ArEarth_acquireNewAnchor(
                 IntPtr session, IntPtr earth, double latitude, double longitude,
                 double altitude, ref ApiQuaternion eus_quaternion_4, ref IntPtr out_anchor);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArEarth_resolveAndAcquireNewAnchorOnTerrain(
+                IntPtr session, IntPtr earth, double latitude, double longitude,
+                double altitudeAboveTerrain, ref ApiQuaternion eus_quaternion_4,
+                ref IntPtr out_anchor);
         }
   }
 }
