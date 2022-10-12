@@ -64,6 +64,10 @@ namespace Google.XR.ARCoreExtensions.Internal
                 sessionHandle, geospatialPoseHandle, ref pose.HorizontalAccuracy);
             ExternApi.ArGeospatialPose_getVerticalAccuracy(
                 sessionHandle, geospatialPoseHandle, ref pose.VerticalAccuracy);
+            ApiQuaternion apiQuaternion = new ApiQuaternion();
+            ExternApi.ArGeospatialPose_getEastUpSouthQuaternion(
+                sessionHandle, geospatialPoseHandle, ref apiQuaternion);
+            pose.EunRotation = apiQuaternion.ToUnityQuaternion();
 
 #endif
         }
@@ -103,7 +107,12 @@ namespace Google.XR.ARCoreExtensions.Internal
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArGeospatialPose_getHeadingAccuracy(
                 IntPtr sessionHandle, IntPtr geospatialPoseHandle,
-                 ref double outHeadingAccuracyDegrees);
+                ref double outHeadingAccuracyDegrees);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArGeospatialPose_getEastUpSouthQuaternion(
+                IntPtr sessionHandle, IntPtr geospatialPoseHandle,
+                ref ApiQuaternion eus_orientation_quaternion_4);
         }
     }
 }

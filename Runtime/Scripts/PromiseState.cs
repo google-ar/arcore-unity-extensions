@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="ApiConstants.cs" company="Google LLC">
+// <copyright file="PromiseState.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,27 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.Internal
+namespace Google.XR.ARCoreExtensions
 {
-    internal static class ApiConstants
+    /// <summary>
+    /// Describes state of an async operation.
+    /// </summary>
+    public enum PromiseState
     {
-#if UNITY_ANDROID
-        public const string ARCoreNativeApi = "arcore_sdk_c";
-        public const string ARPrestoApi = "arpresto_api";
-#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
-        public const string ARCoreNativeApi = "__Internal";
-        public const string ARPrestoApi = "NOT_AVAILABLE";
-#else
-        public const string ARCoreNativeApi = "NOT_AVAILABLE";
-        public const string ARPrestoApi = "NOT_AVAILABLE";
-#endif
+        /// <summary>
+        /// The operation is still pending. It may still be possible to cancel the operation. The
+        /// result of the operation isn't available yet.
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// The operation has been cancelled.
+        /// </summary>
+        Cancelled = 1,
+
+        /// <summary>
+        /// The operation is completed and the result is available.
+        /// </summary>
+        Done = 2,
     }
 }

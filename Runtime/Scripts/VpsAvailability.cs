@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="TerrainAnchorState.cs" company="Google LLC">
+// <copyright file="VpsAvailability.cs" company="Google LLC">
 //
 // Copyright 2022 Google LLC
 //
@@ -21,43 +21,47 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Describes the current terrain anchor state of a <c><see cref="ARGeospatialAnchor"/></c>.
+    /// Describes the result of checking VPS availability at specific location.
     /// </summary>
-    public enum TerrainAnchorState
+    public enum VpsAvailability
     {
         /// <summary>
-        /// Not a Terrain Anchor or is not ready to use.
+        /// The request to the remote service is not yet completed, so the availability is not yet
+        /// known, or the AR Subsystem is not ready yet.
         /// </summary>
-        None = 0,
+        Unknown = 0,
 
         /// <summary>
-        /// A resolving task is in progress for this Terrain Anchor.
-        /// Once the task completes in the background, the Terrain Anchor will get
-        /// a new state after the next update.
+        /// VPS is available at the requested location.
         /// </summary>
-        TaskInProgress = 1,
+        Available = 1,
 
         /// <summary>
-        /// A resolving task for this Terrain Anchor has completed successfully.
+        /// VPS is not available at the requested location.
         /// </summary>
-        Success = 2,
+        Unavailable = 2,
 
         /// <summary>
-        /// A resolving task for this Terrain Anchor has completed with an
-        /// internal error. The app should not attempt to recover from this error.
+        /// An internal error occurred while determining availability.
         /// </summary>
         ErrorInternal = -1,
 
         /// <summary>
-        /// The app cannot communicate with the ARCore Cloud because of an invalid authentication.
-        /// Check Project Settings > XR Plug-in Management > ARCore Extensions for a valid
-        /// authentication strategy.
+        /// The external service could not be reached due to a network connection error.
         /// </summary>
-        ErrorNotAuthorized = -2,
+        ErrorNetworkConnection = -2,
 
         /// <summary>
-        /// There is no terrain info at this location, such as the center of the ocean.
+        /// An authorization error occurred when communicating with the Google Cloud
+        /// ARCore API. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/enable">Enable
+        /// the Geospatial API</a> for troubleshooting steps.
         /// </summary>
-        ErrorUnsupportedLocation = -3,
+        ErrorNotAuthorized = -3,
+
+        /// <summary>
+        /// Too many requests were sent.
+        /// </summary>
+        ErrorResourceExhausted = -4,
     }
 }

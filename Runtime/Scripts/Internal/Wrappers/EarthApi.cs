@@ -120,6 +120,61 @@ namespace Google.XR.ARCoreExtensions.Internal
             return anchorHandle;
         }
 
+        public static void Convert(IntPtr sessionHandle, Pose pose,
+            ref GeospatialPose geospatialPose)
+        {
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            IntPtr earthHandle = SessionApi.AcquireEarth(sessionHandle);
+            if (earthHandle == IntPtr.Zero)
+            {
+                return;
+            }
+
+            IntPtr poseHandle = PoseApi.Create(sessionHandle, pose);
+            IntPtr geospatialPoseHandle = GeospatialPoseApi.Create(sessionHandle);
+            ApiArStatus status = ExternApi.ArEarth_getGeospatialPose(
+                sessionHandle, earthHandle, poseHandle, geospatialPoseHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to convert Pose to GeospatialPose, status '{0}'",
+                    status);
+            }
+
+            GeospatialPoseApi.GetGeospatialPose(
+                sessionHandle, geospatialPoseHandle, ref geospatialPose);
+            GeospatialPoseApi.Destroy(geospatialPoseHandle);
+            PoseApi.Destroy(poseHandle);
+            ExternApi.ArTrackable_release(earthHandle);
+#endif
+        }
+
+        public static void Convert(IntPtr sessionHandle, GeospatialPose geospatialPose,
+            ref ApiPose apiPose)
+        {
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            IntPtr earthHandle = SessionApi.AcquireEarth(sessionHandle);
+            if (earthHandle == IntPtr.Zero)
+            {
+                return;
+            }
+
+            IntPtr poseHandle = PoseApi.Create(sessionHandle);
+            ApiQuaternion apiQuaternion = geospatialPose.EunRotation.ToApiQuaternion();
+            ApiArStatus status = ExternApi.ArEarth_getPose(
+                sessionHandle, earthHandle, geospatialPose.Latitude, geospatialPose.Longitude,
+                geospatialPose.Altitude, ref apiQuaternion, poseHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to convert GeospatialPose to Pose, status '{0}'",
+                    status);
+            }
+
+            apiPose = PoseApi.ExtractPoseValue(sessionHandle, poseHandle);
+            PoseApi.Destroy(poseHandle);
+            ExternApi.ArTrackable_release(earthHandle);
+#endif
+        }
+
         private struct ExternApi
         {
             [EarthImport(ApiConstants.ARCoreNativeApi)]
@@ -147,6 +202,16 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr session, IntPtr earth, double latitude, double longitude,
                 double altitudeAboveTerrain, ref ApiQuaternion eus_quaternion_4,
                 ref IntPtr out_anchor);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArEarth_getGeospatialPose(
+                IntPtr session, IntPtr earth, IntPtr poseHandle,
+                IntPtr outGeospatialPoseHandle);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArEarth_getPose(
+                IntPtr session, IntPtr earth, double latitude, double longitude, double altitude,
+                ref ApiQuaternion eus_quaternion_4, IntPtr outPoseHandle);
         }
   }
 }

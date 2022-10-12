@@ -21,13 +21,38 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Describes the desired behavior of ARCore Geospatial API features and capabilities. Not all
-    /// devices support all modes. Use <c><see
-    /// cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to find whether the
-    /// current device supports a particular <c><see cref="GeospatialMode"/></c>.
-    /// The default value is <c><see cref="GeospatialMode.Disabled"/></c>.
+    /// Describes the desired behavior of the ARCore Geospatial API. The Geospatial API uses a
+    /// combination of Google's Visual Positioning Service (VPS) and GPS to determine the geospatial
+    /// pose.
     ///
-    /// Use <c><see cref="ARCoreExtensionsConfig.GeospatialMode"/></c> to set the desired mode.
+    /// The Geospatial API is able to provide the best user experience when it is able to generate
+    /// high accuracy poses. However, the Geospatial API can be used anywhere, as long as the device
+    /// is able to determine its location, even if the available location information has low
+    /// accuracy.
+    ///
+    /// <list type="bullet">
+    /// <item>
+    /// In areas with VPS coverage, the Geospatial API is able to generate high accuracy poses.
+    /// This can work even where GPS accuracy is low, such as dense urban environments. Under
+    /// typical conditions, VPS can be expected to provide positional accuracy typically better
+    /// than 5 meters and often around 1 meter, and a rotational accuracy of better than 5 degrees.
+    /// Use <c><see cref="AREarthManager.CheckVpsAvailability(double, double)"/></c> to determine if
+    /// a given location has VPS coverage.
+    /// </item>
+    /// <item>
+    /// In outdoor environments with few or no overhead obstructions, GPS may be sufficient to
+    /// generate high accuracy poses. GPS accuracy may be low in dense urban environments and
+    /// indoors.
+    /// </item>
+    /// </list>
+    ///
+    /// A small number of ARCore supported devices do not support the Geospatial API. Use
+    /// <c><see cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to determine
+    /// if the current device is supported. Affected devices are also indicated on the <a
+    /// href="https://developers.google.com/ar/devices">ARCore supported devices page</a>.
+    ///
+    /// The default value is <c><see cref="GeospatialMode.Disabled"/></c>. Use
+    /// <c><see cref="ARCoreExtensionsConfig.GeospatialMode"/></c> to set the desired mode.
     /// </summary>
     public enum GeospatialMode
     {
@@ -37,7 +62,7 @@ namespace Google.XR.ARCoreExtensions
         /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(
         /// UnityEngine.XR.ARFoundation.ARAnchorManager, double, double, double,
         /// UnityEngine.Quaternion)"/></c> will stop updating and have their
-        /// <c><see cref="UnityEngine.XR.ARSubsystems.TrackingState"/></c> set to 
+        /// <c><see cref="UnityEngine.XR.ARSubsystems.TrackingState"/></c> set to
         /// <c><see
         /// cref="UnityEngine.XR.ARSubsystems.TrackingState.None"/></c>.
         ///

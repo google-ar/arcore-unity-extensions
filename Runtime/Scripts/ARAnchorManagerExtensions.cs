@@ -492,7 +492,7 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// This creates a new <c><see cref="ARGeospatialAnchor"/></c> and schedules a task to
         /// resolve the anchor's pose using the given parameters. You may resolve multiple anchors
-        /// at a time, but a session cannot be tracking more than 40 Terrain Anchors at
+        /// at a time, but a session cannot be tracking more than 100 Terrain Anchors at
         /// time.
         ///
         /// The returned Terrain Anchor will have its <c><see

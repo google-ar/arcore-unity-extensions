@@ -36,8 +36,10 @@ namespace Google.XR.ARCoreExtensions
     /// meters above sea level.
     /// </item>
     /// <item>
-    /// Heading is specified in degrees clockwise from north. See
-    /// <c><see cref="GeospatialPose.Heading"/></c> for more information.
+    /// Orientation can be obtained from <c>EunRotation</c> defined in the east-up-north coordinate
+    /// frame where X+ points east, Y+ points up away from gravity, and Z+ points north. Poses
+    /// obtained from <c><see cref="AREarthManager.CameraGeospatialPose"/></c> may use
+    /// <c><see cref="Heading"/></c> to obtain a heading defined in degrees clockwise from north.
     /// </item>
     /// <item>
     /// Accuracy of the latitude, longitude, altitude, and heading are available as numeric
@@ -47,7 +49,8 @@ namespace Google.XR.ARCoreExtensions
     /// </list>
     ///
     /// A GeospatialPose can be retrieved from
-    /// <c><see cref="AREarthManager.CameraGeospatialPose"/></c>.
+    /// <c><see cref="AREarthManager.CameraGeospatialPose"/></c> and from converting a
+    /// <c><see cref="Pose"/></c> using <c><see cref="AREarthManager.Convert"/></c>.
     /// </summary>
     public struct GeospatialPose
     {
@@ -85,6 +88,11 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// Note: Heading is currently only supported in the device's default orientation mode,
         /// which is portrait mode for most supported devices.
+        ///
+        /// This is valid for a GeospatialPose retrieved from <c><see
+        /// cref="AREarthManager.CameraGeospatialPose"/></c>, and returns 0 for all other
+        /// GeospatialPose objects. See <c><see cref="EunRotation"/></c> instead for a
+        /// rotation in 3D space.
         /// </summary>
         public double Heading;
 
@@ -127,5 +135,12 @@ namespace Google.XR.ARCoreExtensions
         /// there is a 68% chance that the true altitude is within 20 meters of 100 meters.
         /// </summary>
         public double VerticalAccuracy;
+
+        /// <summary>
+        /// The rotation of the target with respect to the east-up-north coordinate frame where X+
+        /// points east, Y+ points up away from gravity, and Z+ points north. A rotation around the
+        /// Y+ axis creates a rotation counterclockwise from north.
+        /// </summary>
+        public Quaternion EunRotation;
     }
 }

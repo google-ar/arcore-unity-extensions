@@ -24,7 +24,7 @@ namespace Google.XR.ARCoreExtensions
     /// Describes the current state of Earth localization. When
     /// <c><see cref="AREarthManager.EarthTrackingState"/></c> does not become
     /// <c><see
-    /// cref="UnityEngine.XR.ARSubsystems.TrackingState.Tracking"/></see></c>,
+    /// cref="UnityEngine.XR.ARSubsystems.TrackingState.Tracking"/></c>,
     /// <c><see cref="EarthState"/></c> may contain the cause of this failure.
     /// </summary>
     public enum EarthState

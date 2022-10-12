@@ -23,6 +23,8 @@ namespace Google.XR.ARCoreExtensions
     using System;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
+
+    using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
@@ -111,6 +113,47 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
+        /// Gets the availability of the Visual Positioning System (VPS) at a specified horizontal
+        /// position. The availability of VPS in a given location helps to improve the quality of
+        /// Geospatial localization and tracking accuracy.
+        ///
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
+        /// function returns a <c><see cref="VpsAvailabilityPromise"/></c> which can be used to
+        /// obtain the task's result. Its initial <c><see cref="PromiseState"/></c> will be set to
+        /// <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
+        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and
+        /// <c><see cref="VpsAvailabilityPromise.Result"/></c> can be used to obtain the operation's
+        /// result.
+        ///
+        /// Your app must be properly set up to communicate with the Google Cloud ARCore API in
+        /// order to obtain a result from this call. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">Check
+        /// VPS Availability</a> for more details on required permissions, setup steps, and usage
+        /// examples.
+        ///
+        /// </summary>
+        /// <param name="latitude">The latitude in degrees.</param>
+        /// <param name="longitude">The longitude in degrees.</param>
+        /// <returns>Returns a <c><see cref="VpsAvailabilityPromise"/></c> used in a <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>. It updates
+        /// its results in frame update events. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">Check
+        /// VPS Availability</a> for a usage example.</returns>
+        public static VpsAvailabilityPromise CheckVpsAvailability(double latitude,
+            double longitude)
+        {
+            if (ARSession.state != ARSessionState.Ready &&
+                ARSession.state != ARSessionState.SessionInitializing &&
+                ARSession.state != ARSessionState.SessionTracking)
+            {
+                // ARCore is not available, return default value.
+                return new VpsAvailabilityPromise();
+            }
+
+            return new VpsAvailabilityPromise(latitude, longitude);
+        }
+
+        /// <summary>
         /// Checks whether the provided <c><see cref="GeospatialMode"/></c> is supported on this
         /// device. The current list of supported devices is documented on the <a
         /// href="https://developers.google.com/ar/devices">ARCore supported devices</a>
@@ -132,6 +175,54 @@ namespace Google.XR.ARCoreExtensions
 
             return SessionApi.IsGeospatialModeSupported(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, mode);
+        }
+
+        /// <summary>
+        /// Gets the <c><see cref="GeospatialPose"/></c> from a local pose relative to camera,
+        /// relative to the last frame. The rotation quaternion of <c><see
+        /// cref="GeospatialPose"/></c> is a rotation with respect to an East-Up-North coordinate
+        /// frame. An identity quaternion will have the anchor oriented such that X+ points to the
+        /// east, Y+ points up away from the center of the earth, and Z+ points to the north.
+        ///
+        /// <c><see cref="EarthTrackingState"/></c> must be in the <c><see
+        /// cref="TrackingState.Tracking"/></c> state for this to return a valid pose.
+        /// The <c>Heading</c> property will be zero for a <c><see cref="GeospatialPose"/></c>
+        /// returned by this method.
+        /// </summary>
+        /// <param name="pose">The pose to be converted.</param>
+        /// <returns>A <c><see cref="GeospatialPose"/></c>.</returns>
+        public GeospatialPose Convert(Pose pose)
+        {
+            var geospatialPose = new GeospatialPose();
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero)
+            {
+                EarthApi.Convert(ARCoreExtensions._instance.currentARCoreSessionHandle, pose,
+                                 ref geospatialPose);
+            }
+
+            return geospatialPose;
+        }
+
+        /// <summary>
+        /// Gets the local pose relative to camera from the <c><see cref="GeospatialPose"/></c>.
+        /// <c><see cref="AREarthManager.EarthTrackingState"/></c> must be in the <c><see
+        /// cref="TrackingState.Tracking"/></c> state for this to return a valid pose.
+        /// </summary>
+        /// <param name="geospatialPose">
+        /// A <c><see cref="GeospatialPose"/></c> with valid <c>Latitude</c>, <c>Longitude</c>,
+        /// <c>Altitude</c> and <c>EunRotation</c>.
+        /// </param>
+        /// <returns>A <c><see cref="Pose"/></c>.</returns>
+        public Pose Convert(GeospatialPose geospatialPose)
+        {
+            ApiPose apiPose = new ApiPose();
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle != IntPtr.Zero)
+            {
+                EarthApi.Convert(ARCoreExtensions._instance.currentARCoreSessionHandle,
+                    geospatialPose, ref apiPose);
+            }
+
+            return apiPose.ToUnityPose();
         }
     }
 }

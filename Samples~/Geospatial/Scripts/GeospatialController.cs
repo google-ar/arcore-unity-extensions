@@ -24,6 +24,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
+    using UnityEngine.Android;
+    using UnityEngine.EventSystems;
     using UnityEngine.UI;
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
@@ -49,6 +51,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// The ARAnchorManager used in the sample.
         /// </summary>
         public ARAnchorManager AnchorManager;
+
+        /// <summary>
+        /// The ARRaycastManager used in the sample.
+        /// </summary>
+        public ARRaycastManager RaycastManager;
 
         /// <summary>
         /// The AREarthManager used in the sample.
@@ -78,6 +85,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public GameObject PrivacyPromptCanvas;
 
         /// <summary>
+        /// UI element showing VPS availability notification.
+        /// </summary>
+        public GameObject VPSCheckCanvas;
+
+        /// <summary>
         /// UI element containing all AR view contents.
         /// </summary>
         public GameObject ARViewCanvas;
@@ -93,9 +105,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public Button SetAnchorButton;
 
         /// <summary>
-        /// UI element that handles setting terrain anchors.
+        /// UI element that enables terrain anchors.
         /// </summary>
-        public Button TerrainButton;
+        public Toggle TerrainToggle;
 
         /// <summary>
         /// UI element to display information at runtime.
@@ -192,15 +204,19 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// </summary>
         private const double _horizontalAccuracyThreshold = 20;
 
+        private bool _waitingForLocationService = false;
         private bool _isInARView = false;
         private bool _isReturning = false;
         private bool _isLocalizing = false;
         private bool _enablingGeospatial = false;
         private bool _shouldResolvingHistory = false;
+        private bool _usingTerrainAnchor = false;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
         private GeospatialAnchorHistoryCollection _historyCollection = null;
         private List<GameObject> _anchorObjects = new List<GameObject>();
+        private IEnumerator _startLocationService = null;
+        private IEnumerator _asyncCheck = null;
 
         /// <summary>
         /// Callback handling "Get Started" button click event in Privacy Prompt.
@@ -239,6 +255,14 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         }
 
         /// <summary>
+        /// Callback handling "Continue" button click event in AR View.
+        /// </summary>
+        public void OnContinueClicked()
+        {
+            VPSCheckCanvas.SetActive(false);
+        }
+
+        /// <summary>
         /// Callback handling "Set Anchor" button click event in AR View.
         /// </summary>
         public void OnSetAnchorClicked()
@@ -246,14 +270,10 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             var pose = EarthManager.CameraGeospatialPose;
             GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                 pose.Latitude, pose.Longitude, pose.Altitude, pose.Heading);
-            if (PlaceGeospatialAnchor(history) != null)
+            var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+            if (anchor != null)
             {
                 _historyCollection.Collection.Add(history);
-                SnackBarText.text = $"{_anchorObjects.Count} Anchor(s) Set!";
-            }
-            else
-            {
-                SnackBarText.text = "Failed to set an anchor!";
             }
 
             ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
@@ -261,26 +281,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         }
 
         /// <summary>
-        /// Callback handling "Set Terrain Anchor" button click event in AR View.
+        /// Callback handling "Terrain" toggle event in AR View.
         /// </summary>
-        public void OnSetTerrainAnchorClicked()
+        /// <param name="enabled">Whether to enable terrain anchors.</param>
+        public void OnTerrainToggled(bool enabled)
         {
-            var pose = EarthManager.CameraGeospatialPose;
-            GeospatialAnchorHistory history = new GeospatialAnchorHistory(
-                pose.Latitude, pose.Longitude, pose.Altitude, pose.Heading);
-            var anchor = PlaceGeospatialAnchor(history, true);
-            if (anchor != null)
-            {
-                _historyCollection.Collection.Add(history);
-                StartCoroutine(CheckTerrainAnchorState(anchor));
-            }
-            else
-            {
-                SnackBarText.text = "Failed to set a terrain anchor!";
-            }
-
-            ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
-            SaveGeospatialAnchorHistory();
+            _usingTerrainAnchor = enabled;
         }
 
         /// <summary>
@@ -320,27 +326,26 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// </summary>
         public void OnEnable()
         {
-            SwitchToARView(PlayerPrefs.HasKey(_hasDisplayedPrivacyPromptKey));
+            _startLocationService = StartLocationService();
+            StartCoroutine(_startLocationService);
 
             _isReturning = false;
             _enablingGeospatial = false;
             InfoPanel.SetActive(false);
             SetAnchorButton.gameObject.SetActive(false);
-            TerrainButton.gameObject.SetActive(false);
+            TerrainToggle.gameObject.SetActive(false);
             ClearAllButton.gameObject.SetActive(false);
             DebugText.gameObject.SetActive(Debug.isDebugBuild && EarthManager != null);
-            TerrainButton.onClick.AddListener(OnSetTerrainAnchorClicked);
+            TerrainToggle.onValueChanged.AddListener(OnTerrainToggled);
 
             _localizationPassedTime = 0f;
             _isLocalizing = true;
             SnackBarText.text = _localizingMessage;
 
-#if UNITY_IOS
-            Debug.Log("Start location services.");
-            Input.location.Start();
-#endif
             LoadGeospatialAnchorHistory();
             _shouldResolvingHistory = _historyCollection.Collection.Count > 0;
+
+            SwitchToARView(PlayerPrefs.HasKey(_hasDisplayedPrivacyPromptKey));
         }
 
         /// <summary>
@@ -348,10 +353,13 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// </summary>
         public void OnDisable()
         {
-#if UNITY_IOS
+            StopCoroutine(_asyncCheck);
+            _asyncCheck = null;
+            StopCoroutine(_startLocationService);
+            _startLocationService = null;
             Debug.Log("Stop location services.");
             Input.location.Stop();
-#endif
+
             foreach (var anchor in _anchorObjects)
             {
                 Destroy(anchor);
@@ -441,12 +449,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             // Check earth localization.
-#if UNITY_IOS
             bool isSessionReady = ARSession.state == ARSessionState.SessionTracking &&
                 Input.location.status == LocationServiceStatus.Running;
-#else
-            bool isSessionReady = ARSession.state == ARSessionState.SessionTracking;
-#endif
             var earthTrackingState = EarthManager.EarthTrackingState;
             var pose = earthTrackingState == TrackingState.Tracking ?
                 EarthManager.CameraGeospatialPose : new GeospatialPose();
@@ -460,7 +464,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     _isLocalizing = true;
                     _localizationPassedTime = 0f;
                     SetAnchorButton.gameObject.SetActive(false);
-                    TerrainButton.gameObject.SetActive(false);
+                    TerrainToggle.gameObject.SetActive(false);
                     ClearAllButton.gameObject.SetActive(false);
                     foreach (var go in _anchorObjects)
                     {
@@ -485,7 +489,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 _isLocalizing = false;
                 _localizationPassedTime = 0f;
                 SetAnchorButton.gameObject.SetActive(true);
-                TerrainButton.gameObject.SetActive(true);
+                TerrainToggle.gameObject.SetActive(true);
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
                 SnackBarText.text = _localizationSuccessMessage;
                 foreach (var go in _anchorObjects)
@@ -503,6 +507,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 }
 
                 ResolveHistory();
+            }
+            else if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began
+                && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+            {
+                // Set anchor on screen tap.
+                PlaceAnchorByScreenTap(Input.GetTouch(0).position);
             }
 
             InfoPanel.SetActive(true);
@@ -530,7 +540,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
         }
 
-        IEnumerator CheckTerrainAnchorState(ARGeospatialAnchor anchor)
+        private IEnumerator CheckTerrainAnchorState(ARGeospatialAnchor anchor)
         {
             if (anchor == null || _anchorObjects == null)
             {
@@ -567,6 +577,29 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             yield break;
         }
 
+        private void PlaceAnchorByScreenTap(Vector2 position)
+        {
+            List<ARRaycastHit> hitResults = new List<ARRaycastHit>();
+            RaycastManager.Raycast(
+                position, hitResults, TrackableType.Planes | TrackableType.FeaturePoint);
+            if (hitResults.Count > 0)
+            {
+                GeospatialPose geospatialPose = EarthManager.Convert(hitResults[0].pose);
+                GeospatialAnchorHistory history = new GeospatialAnchorHistory(
+                    geospatialPose.Latitude, geospatialPose.Longitude, geospatialPose.Altitude,
+                    geospatialPose.Heading);
+
+                var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+                if (anchor != null)
+                {
+                    _historyCollection.Collection.Add(history);
+                }
+
+                ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
+                SaveGeospatialAnchorHistory();
+            }
+        }
+
         private ARGeospatialAnchor PlaceGeospatialAnchor(
             GeospatialAnchorHistory history, bool terrain = false)
         {
@@ -584,6 +617,20 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     Instantiate(GeospatialPrefab, anchor.transform);
                 anchor.gameObject.SetActive(!terrain);
                 _anchorObjects.Add(anchor.gameObject);
+
+                if (terrain)
+                {
+                    StartCoroutine(CheckTerrainAnchorState(anchor));
+                }
+                else
+                {
+                    SnackBarText.text = $"{_anchorObjects.Count} Anchor(s) Set!";
+                }
+            }
+            else
+            {
+                SnackBarText.text = string.Format(
+                    "Failed to set {0}!", terrain ? "a terrain anchor" : "an anchor");
             }
 
             return anchor;
@@ -654,6 +701,111 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             ARCoreExtensions.gameObject.SetActive(enable);
             ARViewCanvas.SetActive(enable);
             PrivacyPromptCanvas.SetActive(!enable);
+            VPSCheckCanvas.SetActive(false);
+            if (enable && _asyncCheck == null)
+            {
+                _asyncCheck = AvailabilityCheck();
+                StartCoroutine(_asyncCheck);
+            }
+        }
+
+        private IEnumerator AvailabilityCheck()
+        {
+            if (ARSession.state == ARSessionState.None)
+            {
+                yield return ARSession.CheckAvailability();
+            }
+
+            // Waiting for ARSessionState.CheckingAvailability.
+            yield return null;
+
+            if (ARSession.state == ARSessionState.NeedsInstall)
+            {
+                yield return ARSession.Install();
+            }
+
+            // Waiting for ARSessionState.Installing.
+            yield return null;
+
+#if UNITY_ANDROID
+            if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
+            {
+                Debug.Log("Requesting camera permission.");
+                Permission.RequestUserPermission(Permission.Camera);
+                yield return new WaitForSeconds(3.0f);
+            }
+
+            if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
+            {
+                // User has denied the request.
+                Debug.LogWarning(
+                    "Failed to get camera permission. VPS availability check is not available.");
+                yield break;
+            }
+#endif
+
+            while (_waitingForLocationService)
+            {
+                yield return null;
+            }
+
+            if (Input.location.status != LocationServiceStatus.Running)
+            {
+                Debug.LogWarning(
+                    "Location service is not running. VPS availability check is not available.");
+                yield break;
+            }
+
+            // Update event is executed before coroutines so it checks the latest error states.
+            if (_isReturning)
+            {
+                yield break;
+            }
+
+            var location = Input.location.lastData;
+            var vpsAvailabilityPromise =
+                AREarthManager.CheckVpsAvailability(location.latitude, location.longitude);
+            yield return vpsAvailabilityPromise;
+
+            Debug.LogFormat("VPS Availability at ({0}, {1}): {2}",
+                location.latitude, location.longitude, vpsAvailabilityPromise.Result);
+            VPSCheckCanvas.SetActive(vpsAvailabilityPromise.Result != VpsAvailability.Available);
+        }
+
+        private IEnumerator StartLocationService()
+        {
+            _waitingForLocationService = true;
+#if UNITY_ANDROID
+            if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+            {
+                Debug.Log("Requesting fine location permission.");
+                Permission.RequestUserPermission(Permission.FineLocation);
+                yield return new WaitForSeconds(3.0f);
+            }
+#endif
+
+            if (!Input.location.isEnabledByUser)
+            {
+                Debug.Log("Location service is disabled by User.");
+                _waitingForLocationService = false;
+                yield break;
+            }
+
+            Debug.Log("Start location service.");
+            Input.location.Start();
+
+            while (Input.location.status == LocationServiceStatus.Initializing)
+            {
+                yield return null;
+            }
+
+            _waitingForLocationService = false;
+            if (Input.location.status != LocationServiceStatus.Running)
+            {
+                Debug.LogWarningFormat(
+                    "Location service ends with {0} status.", Input.location.status);
+                Input.location.Stop();
+            }
         }
 
         private void LifecycleUpdate()
@@ -690,14 +842,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     "Please start the app again.",
                     ARSession.state);
             }
-#if UNITY_IOS
             else if (Input.location.status == LocationServiceStatus.Failed)
             {
                 returningReason =
                     "Geospatial sample failed to start location service.\n" +
                     "Please start the app again and grant precise location permission.";
             }
-#endif
             else if (SessionOrigin == null || Session == null || ARCoreExtensions == null)
             {
                 returningReason = string.Format(
@@ -715,7 +865,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             SetAnchorButton.gameObject.SetActive(false);
-            TerrainButton.gameObject.SetActive(false);
+            TerrainToggle.gameObject.SetActive(false);
             ClearAllButton.gameObject.SetActive(false);
             InfoPanel.SetActive(false);
 

@@ -45,6 +45,8 @@ namespace Google.XR.ARCoreExtensions.Internal
 
     internal class SessionApi
     {
+        private static string _latestAuthToken = string.Empty;
+
         public static IntPtr HostCloudAnchor(IntPtr sessionHandle, IntPtr anchorHandle)
         {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
@@ -78,8 +80,21 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         public static void SetAuthToken(IntPtr sessionHandle, string authToken)
         {
+            _latestAuthToken = authToken;
 #if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
             ExternApi.ArSession_setAuthToken(sessionHandle, authToken);
+#endif
+        }
+
+        public static void SetAuthToken(IntPtr sessionHandle)
+        {
+            if (string.IsNullOrEmpty(_latestAuthToken))
+            {
+                return;
+            }
+
+#if UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            ExternApi.ArSession_setAuthToken(sessionHandle, _latestAuthToken);
 #endif
         }
 

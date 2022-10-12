@@ -44,8 +44,8 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// To limit distribution of your app to only devices that have a
         /// front-facing camera, use <a
-        /// href="https://developer.android.com/guide/topics/manifest/uses-feature-element
-        /// #camera-hw-features."uses-feature</a> with <c>android.hardware.camera</c>.
+        /// href="https://developer.android.com/guide/topics/manifest/uses-feature-element#camera-hw-features">uses-feature</a>
+        /// with <c>android.hardware.camera</c>.
         /// </summary>
         Front = 1,
     }
