@@ -56,7 +56,13 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public double Heading;
 
         /// <summary>
-        /// Construct an Geospatial Anchor history.
+        /// Rotation of the creation pose as a quaternion, used to calculate the original
+        /// orientation.
+        /// </summary>
+        public Quaternion EunRotation;
+
+        /// <summary>
+        /// Construct a Geospatial Anchor history.
         /// </summary>
         /// <param name="time">The time this Geospatial Anchor was created.</param>
         /// <param name="latitude">
@@ -65,21 +71,23 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// Longitude of the creation pose in degrees.</param>
         /// <param name="altitude">
         /// Altitude of the creation pose in meters above the WGS84 ellipsoid.</param>
-        /// <param name="heading">
-        /// Heading of the creation pose in degrees, used to calculate the original orientation.
+        /// <param name="eunRotation">
+        /// Rotation of the creation pose as a quaternion, used to calculate the original
+        /// orientation.
         /// </param>
-        public GeospatialAnchorHistory(
-            DateTime time, double latitude, double longitude, double altitude, double heading)
+        public GeospatialAnchorHistory(DateTime time, double latitude, double longitude,
+            double altitude, Quaternion eunRotation)
         {
             SerializedTime = time.ToString();
             Latitude = latitude;
             Longitude = longitude;
             Altitude = altitude;
-            Heading = heading;
+            Heading = 0.0f;
+            EunRotation = eunRotation;
         }
 
         /// <summary>
-        /// Construct an Geospatial Anchor history.
+        /// Construct a Geospatial Anchor history.
         /// </summary>
         /// <param name="latitude">
         /// Latitude of the creation pose in degrees.</param>
@@ -87,12 +95,13 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// Longitude of the creation pose in degrees.</param>
         /// <param name="altitude">
         /// Altitude of the creation pose in meters above the WGS84 ellipsoid.</param>
-        /// <param name="heading">
-        /// Heading of the creation pose in degrees, used to calculate the original orientation.
+        /// <param name="eunRotation">
+        /// Rotation of the creation pose as a quaternion, used to calculate the original
+        /// orientation.
         /// </param>
         public GeospatialAnchorHistory(
-            double latitude, double longitude, double altitude, double heading) :
-            this(DateTime.Now, latitude, longitude, altitude, heading)
+            double latitude, double longitude, double altitude, Quaternion eunRotation) :
+            this(DateTime.Now, latitude, longitude, altitude, eunRotation)
         {
         }
 

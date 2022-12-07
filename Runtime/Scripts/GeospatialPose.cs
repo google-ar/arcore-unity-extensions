@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
     using UnityEngine;
 
     /// <summary>
@@ -36,10 +37,8 @@ namespace Google.XR.ARCoreExtensions
     /// meters above sea level.
     /// </item>
     /// <item>
-    /// Orientation can be obtained from <c>EunRotation</c> defined in the east-up-north coordinate
-    /// frame where X+ points east, Y+ points up away from gravity, and Z+ points north. Poses
-    /// obtained from <c><see cref="AREarthManager.CameraGeospatialPose"/></c> may use
-    /// <c><see cref="Heading"/></c> to obtain a heading defined in degrees clockwise from north.
+    /// Orientation is defined in the east-up-north coordinate frame where X+ points east, Y+ points
+    /// up away from gravity, and Z+ points north.
     /// </item>
     /// <item>
     /// Accuracy of the latitude, longitude, altitude, and heading are available as numeric
@@ -76,6 +75,10 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Heading of the pose in degrees.
         ///
+        /// This is valid for a <c>GeospatialPose</c> retrieved from <c><see
+        /// cref="AREarthManager.CameraGeospatialPose"/></c>. and return 0 for all other
+        /// <c>GeospatialPose</c> objects.
+        ///
         /// Heading is specified in degrees clockwise from true north and approximates the
         /// direction the device is facing. The value returned when facing north is 0°, when
         /// facing east is 90°, when facing south is +/-180°, and when facing west is -90°.
@@ -89,15 +92,22 @@ namespace Google.XR.ARCoreExtensions
         /// Note: Heading is currently only supported in the device's default orientation mode,
         /// which is portrait mode for most supported devices.
         ///
-        /// This is valid for a GeospatialPose retrieved from <c><see
-        /// cref="AREarthManager.CameraGeospatialPose"/></c>, and returns 0 for all other
-        /// GeospatialPose objects. See <c><see cref="EunRotation"/></c> instead for a
-        /// rotation in 3D space.
+        /// @deprecated This function has been deprecated in favor of
+        /// <c><see cref="EunRotation"/></c>, which provides orientation values in 3D space. To
+        /// determine a value analogous to the heading value, calculate the yaw, pitch, and roll
+        /// values from <c><see cref="EunRotation"/></c>. When the device is pointing downwards,
+        /// i.e. perpendicular to the ground, heading is analoguous to roll, and when the device is
+        /// upright in the device's default orientation mode, heading is analogous to yaw.
+        [Obsolete("This field has been deprecated. Please use EunRotation instead.")]
         /// </summary>
         public double Heading;
 
         /// <summary>
         /// Estimated heading accuracy in degrees.
+        ///
+        /// This is valid for a GeospatialPose retrieved from <c><see
+        /// cref="AREarthManager.CameraGeospatialPose"/></c>. and return 0 for all other
+        /// GeospatialPose objects.
         ///
         /// We define heading accuracy as the radius of the 68th percentile confidence level around
         /// <c>Heading</c>. In other words, there is a 68% probability that the true heading is
@@ -105,6 +115,12 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// For example, if the estimated heading is 60°, and the heading accuracy is 10°, then
         /// there is a 68% probability of the true heading being between 50° and 70°.
+        ///
+        /// @deprecated This function has deprecated in favor of
+        /// <c><see cref="OrientationYawAccuracy"/></c> which provides the accuracy analogous to the
+        /// heading accuracy when the device is held upright in the default orientation mode.
+        [Obsolete(
+            "This field has been deprecated. Please use OrientationYawAccuracy instead.")]
         /// </summary>
         public double HeadingAccuracy;
 
@@ -142,5 +158,21 @@ namespace Google.XR.ARCoreExtensions
         /// Y+ axis creates a rotation counterclockwise from north.
         /// </summary>
         public Quaternion EunRotation;
+
+        /// <summary>
+        /// Gets the pose's estimated orientation yaw angle accuracy. Yaw rotation is the angle
+        /// between the pose's compass direction and north, and can be determined from
+        /// <c><see cref="EunRotation"/></c>.
+        ///
+        /// We define orientation yaw accuracy as the estimated radius of the 68th percentile
+        /// confidence level around yaw angles from <c><see cref="EunRotation"/></c>. In other
+        /// words, there is a 68% probability that the true yaw angle is within
+        /// <c>OrientationYawAccuracy</c> degrees of this pose's rotation. Larger values indicate
+        /// lower accuracy.
+        ///
+        /// For example, if the estimated yaw angle is 60°, and the yaw accuracy is 10°, then there
+        /// is a 68% probability of the true yaw angle being between 50° and 70°.
+        /// </summary>
+        public double OrientationYawAccuracy;
     }
 }

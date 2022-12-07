@@ -82,7 +82,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Gets the <c>TerrainAnchorState</c> associated with this Terrain Anchor.
+        /// Gets the <c>TerrainAnchorState</c> associated with this Terrain anchor.
         /// </summary>
         public TerrainAnchorState terrainAnchorState
         {

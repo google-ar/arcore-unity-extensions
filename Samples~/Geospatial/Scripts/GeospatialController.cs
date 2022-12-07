@@ -22,17 +22,23 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using UnityEngine;
-    using UnityEngine.Android;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
 
+#if UNITY_ANDROID
+    using UnityEngine.Android;
+#endif
+
     /// <summary>
     /// Controller for Geospatial sample.
     /// </summary>
+    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:ParameterMustNotSpanMultipleLines",
+        Justification = "Bypass source check.")]
     public class GeospatialController : MonoBehaviour
     {
         [Header("AR Components")]
@@ -75,7 +81,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public GameObject GeospatialPrefab;
 
         /// <summary>
-        /// A 3D object that present an Geospatial Terrain Anchor.
+        /// A 3D object that presents an Geospatial Terrain anchor.
         /// </summary>
         public GameObject TerrainPrefab;
 
@@ -194,6 +200,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private const int _storageLimit = 5;
 
         /// <summary>
+        /// Accuracy threshold for orientation yaw accuracy in degrees that can be treated as
+        /// localization completed.
+        /// </summary>
+        private const double _orientationYawAccuracyThreshold = 25;
+
+        /// <summary>
         /// Accuracy threshold for heading degree that can be treated as localization completed.
         /// </summary>
         private const double _headingAccuracyThreshold = 25;
@@ -268,15 +280,22 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         public void OnSetAnchorClicked()
         {
             var pose = EarthManager.CameraGeospatialPose;
+            Quaternion eunRotation = pose.EunRotation;
+#if UNITY_IOS
+            // Update the quaternion from landscape orientation to portrait orientation.
+            Quaternion quaternion = Quaternion.Euler(Vector3.forward * 90);
+            eunRotation = eunRotation * quaternion;
+#endif
             GeospatialAnchorHistory history = new GeospatialAnchorHistory(
-                pose.Latitude, pose.Longitude, pose.Altitude, pose.Heading);
+                pose.Latitude, pose.Longitude, pose.Altitude, eunRotation);
+
             var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
             if (anchor != null)
             {
                 _historyCollection.Collection.Add(history);
             }
 
-            ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
+            ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
             SaveGeospatialAnchorHistory();
         }
 
@@ -455,7 +474,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             var pose = earthTrackingState == TrackingState.Tracking ?
                 EarthManager.CameraGeospatialPose : new GeospatialPose();
             if (!isSessionReady || earthTrackingState != TrackingState.Tracking ||
-                pose.HeadingAccuracy > _headingAccuracyThreshold ||
+                pose.OrientationYawAccuracy > _orientationYawAccuracyThreshold ||
                 pose.HorizontalAccuracy > _horizontalAccuracyThreshold)
             {
                 // Lost localization during the session.
@@ -523,16 +542,16 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 "Horizontal Accuracy: {3}m{0}" +
                 "Altitude: {4}m{0}" +
                 "Vertical Accuracy: {5}m{0}" +
-                "Heading: {6}°{0}" +
-                "Heading Accuracy: {7}°",
+                "Eun Rotation: {6}{0}" +
+                "Orientation Yaw Accuracy: {7}°",
                 Environment.NewLine,
                 pose.Latitude.ToString("F6"),
                 pose.Longitude.ToString("F6"),
                 pose.HorizontalAccuracy.ToString("F6"),
                 pose.Altitude.ToString("F2"),
                 pose.VerticalAccuracy.ToString("F2"),
-                pose.Heading.ToString("F1"),
-                pose.HeadingAccuracy.ToString("F1"));
+                pose.EunRotation.ToString("F1"),
+                pose.OrientationYawAccuracy.ToString("F1"));
             }
             else
             {
@@ -571,7 +590,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 !_isLocalizing && anchor.terrainAnchorState == TerrainAnchorState.Success);
             if (_anchorObjects.Last().Equals(anchor.gameObject))
             {
-                SnackBarText.text = $"Terrain Anchor State: {anchor.terrainAnchorState}";
+                SnackBarText.text = $"Terrain anchor state: {anchor.terrainAnchorState}";
             }
 
             yield break;
@@ -587,15 +606,14 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 GeospatialPose geospatialPose = EarthManager.Convert(hitResults[0].pose);
                 GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                     geospatialPose.Latitude, geospatialPose.Longitude, geospatialPose.Altitude,
-                    geospatialPose.Heading);
-
+                    geospatialPose.EunRotation);
                 var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
                 if (anchor != null)
                 {
                     _historyCollection.Collection.Add(history);
                 }
 
-                ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
+                ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
                 SaveGeospatialAnchorHistory();
             }
         }
@@ -603,13 +621,19 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private ARGeospatialAnchor PlaceGeospatialAnchor(
             GeospatialAnchorHistory history, bool terrain = false)
         {
-            Quaternion quaternion =
-                Quaternion.AngleAxis(180f - (float)history.Heading, Vector3.up);
+            Quaternion eunRotation = history.EunRotation;
+            if (eunRotation == Quaternion.identity)
+            {
+                // This history is from a previous app version and EunRotation was not used.
+                eunRotation =
+                    Quaternion.AngleAxis(180f - (float)history.Heading, Vector3.up);
+            }
+
             var anchor = terrain ?
                 AnchorManager.ResolveAnchorOnTerrain(
-                    history.Latitude, history.Longitude, 0, quaternion) :
+                    history.Latitude, history.Longitude, 0, eunRotation) :
                 AnchorManager.AddAnchor(
-                    history.Latitude, history.Longitude, history.Altitude, quaternion);
+                    history.Latitude, history.Longitude, history.Altitude, eunRotation);
             if (anchor != null)
             {
                 GameObject anchorGO = terrain ?
@@ -649,7 +673,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 PlaceGeospatialAnchor(history);
             }
 
-            ClearAllButton.gameObject.SetActive(_historyCollection.Collection.Count > 0);
+            ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
             SnackBarText.text = string.Format("{0} anchor(s) set from history.",
                 _anchorObjects.Count);
         }
@@ -903,8 +927,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 $"  HorizontalAcc: {pose.HorizontalAccuracy:F6}\n" +
                 $"  ALT: {pose.Altitude:F2}\n" +
                 $"  VerticalAcc: {pose.VerticalAccuracy:F2}\n" +
-                $"  Heading: {pose.Heading:F2}\n" +
-                $"  HeadingAcc: {pose.HeadingAccuracy:F2}";
+                $". EunRotation: {pose.EunRotation:F2}\n" +
+                $"  OrientationYawAcc: {pose.OrientationYawAccuracy:F2}";
         }
     }
 }

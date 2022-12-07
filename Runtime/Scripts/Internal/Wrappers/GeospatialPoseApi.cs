@@ -56,10 +56,12 @@ namespace Google.XR.ARCoreExtensions.Internal
                 sessionHandle, geospatialPoseHandle, ref pose.Latitude, ref pose.Longitude);
             ExternApi.ArGeospatialPose_getAltitude(
                 sessionHandle, geospatialPoseHandle, ref pose.Altitude);
+#pragma warning disable 618 // Obsolete field Heading, HeadingAccuracy.
             ExternApi.ArGeospatialPose_getHeading(sessionHandle, geospatialPoseHandle,
                                                   ref pose.Heading);
             ExternApi.ArGeospatialPose_getHeadingAccuracy(
                 sessionHandle, geospatialPoseHandle, ref pose.HeadingAccuracy);
+#pragma warning restore 618
             ExternApi.ArGeospatialPose_getHorizontalAccuracy(
                 sessionHandle, geospatialPoseHandle, ref pose.HorizontalAccuracy);
             ExternApi.ArGeospatialPose_getVerticalAccuracy(
@@ -68,7 +70,8 @@ namespace Google.XR.ARCoreExtensions.Internal
             ExternApi.ArGeospatialPose_getEastUpSouthQuaternion(
                 sessionHandle, geospatialPoseHandle, ref apiQuaternion);
             pose.EunRotation = apiQuaternion.ToUnityQuaternion();
-
+            ExternApi.ArGeospatialPose_getOrientationYawAccuracy(
+                sessionHandle, geospatialPoseHandle, ref pose.OrientationYawAccuracy);
 #endif
         }
 
@@ -113,6 +116,11 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern void ArGeospatialPose_getEastUpSouthQuaternion(
                 IntPtr sessionHandle, IntPtr geospatialPoseHandle,
                 ref ApiQuaternion eus_orientation_quaternion_4);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArGeospatialPose_getOrientationYawAccuracy(
+                IntPtr sessionHandle, IntPtr geospatialPoseHandle,
+                ref double outOrientationYawAccuracyDegrees);
         }
     }
 }

@@ -26,24 +26,24 @@ namespace Google.XR.ARCoreExtensions
     public enum TerrainAnchorState
     {
         /// <summary>
-        /// Not a Terrain Anchor or is not ready to use.
+        /// Not a Terrain anchor or is not ready to use.
         /// </summary>
         None = 0,
 
         /// <summary>
-        /// A resolving task is in progress for this Terrain Anchor.
-        /// Once the task completes in the background, the Terrain Anchor will get
+        /// A resolving task is in progress for this Terrain anchor.
+        /// Once the task completes in the background, the Terrain anchor will get
         /// a new state after the next update.
         /// </summary>
         TaskInProgress = 1,
 
         /// <summary>
-        /// A resolving task for this Terrain Anchor has completed successfully.
+        /// A resolving task for this Terrain anchor has completed successfully.
         /// </summary>
         Success = 2,
 
         /// <summary>
-        /// A resolving task for this Terrain Anchor has completed with an
+        /// A resolving task for this Terrain anchor has completed with an
         /// internal error. The app should not attempt to recover from this error.
         /// </summary>
         ErrorInternal = -1,

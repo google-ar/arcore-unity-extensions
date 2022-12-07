@@ -221,8 +221,11 @@ namespace Google.XR.ARCoreExtensions
         /// basis to host a new cloud reference point.</param>
         /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
         /// otherwise <c>null</c>.</returns>
-        /// @deprecated Please use HostCloudAnchor(ARAnchor) instead.
-        [Obsolete("This method has been deprecated. Please use HostCloudAnchor(ARAnchor) instead.")]
+        ///
+        /// @deprecated Use
+        /// <c><see cref="ARAnchorManagerExtensions.HostCloudAnchor(this ARAnchorManager, ARAnchor)"/></c>
+        /// instead.
+        [Obsolete("This method has been deprecated. Use HostCloudAnchor(ARAnchor) instead.")]
         public static ARCloudReferencePoint AddCloudReferencePoint(
             this ARAnchorManager referencePointManager, ARAnchor referencePoint)
         {
@@ -252,6 +255,8 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Creates a new local Cloud Anchor from the provided Id.
+        /// A session can be resolving up to 40 Cloud Anchors at a given time.
+        /// If resolving fails, the anchor will be automatically removed from the session.
         /// <example>
         /// The sample code below illustrates how to resolve a Cloud Anchor.
         /// <pre>
@@ -398,23 +403,18 @@ namespace Google.XR.ARCoreExtensions
         /// the WGS84 ellipsoid.
         /// To create an anchor using an altitude
         /// relative to the Earth's terrain instead of altitude above the WGS84
-        /// ellipsoid, use <c><see cref="ResolveAnchorOnTerrain(ARAnchorManager, double, double,
-        /// double, Quaternion)"/></c>.
+        /// ellipsoid, use <c><see 
+        /// cref="ARAnchorManagerExtensions.ResolveAnchorOnTerrain(this ARAnchorManager, double,
+        /// double, double, Quaternion)"/></c>.
         ///
         /// Creating anchors near the north pole or south pole is not supported. If
         /// the latitude is within 0.1 degrees of the north pole or south pole (90
         /// degrees or -90 degrees), this function will return <c>null</c>.
         ///
-        /// The rotation provided by <paramref name="eunRotation"/> is a rotation
+        /// The rotation provided by <c><paramref name="eunRotation"/></c> is a rotation
         /// with respect to an east-up-north coordinate frame. An identity rotation
         /// will have the anchor oriented such that X+ points to the east, Y+ points up
         /// away from the center of the earth, and Z+ points to the north.
-        ///
-        /// To create a quaternion that represents a clockwise angle theta from
-        /// north around the +Y anchor frame axis, use the following formula:
-        /// <code>
-        /// Quaternion.AngleAxis(180f - theta, Vector3.up);
-        /// </code>
         ///
         /// An anchor's tracking state will be <c><see cref="TrackingState.None"/></c> while
         /// <c><see cref="AREarthManager.EarthTrackingState"/></c> is
@@ -480,8 +480,9 @@ namespace Google.XR.ARCoreExtensions
         /// Creates a <c><see cref="ARGeospatialAnchor"/></c> at a specified horizontal position and
         /// altitude relative to the horizontal position's terrain. Terrain means the ground or
         /// ground floor inside a building with VPS coverage. If the altitude relative to the WGS84
-        /// ellipsoid is known, use <c><see cref="ARAnchorManagerExtensions.AddAnchor(
-        /// ARAnchorManager, double, double, double, Quaternion)"/></c> instead.
+        /// ellipsoid is known, use
+        /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(this ARAnchorManager, double, double, double, Quaternion)"/></c>
+        /// instead.
         ///
         /// The specified <c><paramref name="altitudeAboveTerrain"/></c> is interpreted to be
         /// relative to the Earth's terrain (or floor) at the specified latitude/longitude
@@ -492,10 +493,10 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// This creates a new <c><see cref="ARGeospatialAnchor"/></c> and schedules a task to
         /// resolve the anchor's pose using the given parameters. You may resolve multiple anchors
-        /// at a time, but a session cannot be tracking more than 100 Terrain Anchors at
+        /// at a time, but a session cannot be tracking more than 100 Terrain anchors at
         /// time.
         ///
-        /// The returned Terrain Anchor will have its <c><see
+        /// The returned Terrain anchor will have its <c><see
         /// cref="ARGeospatialAnchor.terrainAnchorState"/></c> set to
         /// <c><see cref="TerrainAnchorState.TaskInProgress"/></c>, and its
         /// <c><see cref="ARGeospatialAnchor.trackingState"/></c> set to
@@ -505,7 +506,7 @@ namespace Google.XR.ARCoreExtensions
         /// <c><see cref="ARGeospatialAnchor.terrainAnchorState"/></c> will detail error
         /// information.
         ///
-        /// Creating a Terrain Anchor requires <c><see cref="AREarthManager.EarthState"/></c> to be
+        /// Creating a Terrain anchor requires <c><see cref="AREarthManager.EarthState"/></c> to be
         /// <c><see cref="EarthState.Enabled"/></c>,
         /// and <c><see cref="AREarthManager.EarthTrackingState"/></c> to be <c>Tracking</c>.
         /// If it is not, then this function returns <c>null</c>. This call also requires a working
@@ -519,16 +520,10 @@ namespace Google.XR.ARCoreExtensions
         /// If the latitude is within 0.1 degrees of the north pole or south pole (90
         /// degrees or -90 degrees), this function will return <c>null</c>.
         ///
-        /// The rotation provided by <paramref name="eunRotation"/> is a rotation
+        /// The rotation provided by <c><paramref name="eunRotation"/></c> is a rotation
         /// with respect to an east-up-north coordinate frame. An identity rotation
         /// will have the anchor oriented such that X+ points to the east, Y+ points up
         /// away from the center of the earth, and Z+ points to the north.
-        ///
-        /// To create a quaternion that represents a clockwise angle theta from
-        /// north around the +Y anchor frame axis, use the following formula:
-        /// <code>
-        /// Quaternion.AngleAxis(180f - theta, Vector3.up);
-        /// </code>
         ///
         /// An anchor's tracking state will be <c><see cref="TrackingState.None"/></c> while
         /// <c><see cref="AREarthManager.EarthTrackingState"/></c> is
@@ -575,7 +570,7 @@ namespace Google.XR.ARCoreExtensions
                 return null;
             }
 
-            // Create the GameObject that is the Geospatial Terrain Anchor.
+            // Create the GameObject that is the Geospatial Terrain anchor.
             ARGeospatialAnchor anchor =
                 new GameObject(_terrainAnchorName).AddComponent<ARGeospatialAnchor>();
             if (anchor)
@@ -583,7 +578,7 @@ namespace Google.XR.ARCoreExtensions
                 anchor.SetAnchorHandle(anchorHandle);
             }
 
-            // Parent the new Geospatial Terrain Anchor to the session origin.
+            // Parent the new Geospatial Terrain anchor to the session origin.
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
             return anchor;

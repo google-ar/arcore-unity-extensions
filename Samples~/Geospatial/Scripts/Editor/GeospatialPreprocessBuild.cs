@@ -73,6 +73,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
             // update application icon.
             if (report.summary.platform == BuildTarget.Android)
             {
+#if UNITY_ANDROID
                 Texture2D background = AssetDatabase.LoadAssetAtPath<Texture2D>(
                     AssetDatabase.GUIDToAssetPath(_iconBackgroundGuid));
                 Texture2D foreground = AssetDatabase.LoadAssetAtPath<Texture2D>(
@@ -98,9 +99,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
 
                 PlayerSettings.SetPlatformIcons(BuildTargetGroup.Android,
                     UnityEditor.Android.AndroidPlatformIconKind.Adaptive, platformIcons);
+#endif // UNITY_ANDROID
             }
             else if (report.summary.platform == BuildTarget.iOS)
             {
+#if UNITY_IOS
                 Texture2D icon = AssetDatabase.LoadAssetAtPath<Texture2D>(
                     AssetDatabase.GUIDToAssetPath(_iconGuid));
                 PlatformIcon[] platformIcons =
@@ -122,6 +125,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
 
                 PlayerSettings.SetPlatformIcons(BuildTargetGroup.iOS,
                     UnityEditor.iOS.iOSPlatformIconKind.Application, platformIcons);
+#endif // UNITY_IOS
             }
         }
     }

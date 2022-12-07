@@ -20,7 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
-    // Internal states for Terrain Anchors.
+    // Internal states for Terrain anchors.
     internal enum ApiTerrainAnchorState
     {
         None = 0,

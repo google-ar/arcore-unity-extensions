@@ -113,7 +113,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 ref apiQuaternion, ref anchorHandle);
             if (status != ApiArStatus.Success)
             {
-                Debug.LogErrorFormat("Failed to add Geospatial Terrain Anchor, status '{0}'",
+                Debug.LogErrorFormat("Failed to add Geospatial Terrain anchor, status '{0}'",
                     status);
             }
 #endif

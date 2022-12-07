@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
+#if UNITY_ANDROID
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
@@ -92,4 +93,5 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             File.WriteAllText(manifestPath, manifestDoc.ToString());
         }
     }
+#endif // UNITY_ANDROID
 }

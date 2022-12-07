@@ -22,7 +22,7 @@ namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
     /// Describes the desired behavior of the ARCore Geospatial API. The Geospatial API uses a
-    /// combination of Google's Visual Positioning Service (VPS) and GPS to determine the geospatial
+    /// combination of Google's Visual Positioning System (VPS) and GPS to determine the geospatial
     /// pose.
     ///
     /// The Geospatial API is able to provide the best user experience when it is able to generate
