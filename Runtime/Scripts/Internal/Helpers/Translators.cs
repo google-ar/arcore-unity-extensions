@@ -121,6 +121,11 @@ namespace Google.XR.ARCoreExtensions.Internal
             return new Pose(position, rotation);
         }
 
+        public static Vector3 ToUnityVector(this Vector3 apiVector)
+        {
+            return _unityWorldToGLWorld.MultiplyVector(apiVector);
+        }
+
         public static RecordingStatus ToRecordingStatus(this ApiRecordingStatus apiStatus)
         {
             switch (apiStatus)

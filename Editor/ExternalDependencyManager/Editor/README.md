@@ -26,7 +26,7 @@ This causes the following problems:
      Unity project can be complex and a burden on a Unity plugin maintainer.
    * The process of resolving conflicting dependencies on platform specific
      libraries is pushed to the developer attempting to use a Unity plugin.
-     The developer trying to use you plugin is very likely to give up when
+     The developer trying to use your plugin is very likely to give up when
      faced with Android or iOS specific build errors.
    * The process of resolving conflicting Unity plugins (due to shared Unity
      plugin components) is pushed to the developer attempting to use your Unity
@@ -454,7 +454,7 @@ In order to modify the generated Podfile you can create a script like this:
 ```
 using System.IO;
 public class PostProcessIOS : MonoBehaviour {
-[PostProcessBuildAttribute(45)]//must be between 40 and 50 to ensure that it's not overridden by Podfile generation (40) and that it's added before "pod install" (50)
+[PostProcessBuildAttribute(45)]//must be between 40 and 50 to ensure that it's not overriden by Podfile generation (40) and that it's added before "pod install" (50)
 private static void PostProcessBuild_iOS(BuildTarget target, string buildPath)
 {
     if (target == BuildTarget.iOS)

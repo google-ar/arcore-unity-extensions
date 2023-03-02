@@ -1,0 +1,18 @@
+{
+    "name": "GeospatialEditorRuntimeAssemblyAsset",
+    "rootNamespace": "",
+    "references": [
+        "GUID:63cab5ddbd23cf34ca160a9b3d74438d",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:d8e0c8e48fa6efc46b2c9709d0296ae1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

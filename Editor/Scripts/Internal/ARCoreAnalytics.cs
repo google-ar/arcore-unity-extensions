@@ -128,6 +128,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 if (_webRequest.isDone == true)
                 {
+                    _webRequest.Dispose();
                     _webRequest = null;
                 }
             }
