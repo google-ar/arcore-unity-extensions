@@ -195,8 +195,8 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// <returns>The camera pose of the current frame.</returns>
         public Pose GetCameraPose()
         {
-            return new Pose(Controller.MainCamera.transform.position,
-                Controller.MainCamera.transform.rotation);
+            return new Pose(Controller.MainCamera.transform.localPosition,
+                Controller.MainCamera.transform.localRotation);
         }
 
         /// <summary>

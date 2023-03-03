@@ -371,7 +371,8 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Estimates the quality of the visual feature points seen by ARCore in the
-        /// preceding few seconds and visible from the provided camera <paramref name="pose"/>.
+        /// preceding few seconds and visible from the provided camera <paramref name="pose"/>
+        /// relative to the session origin.
         /// Cloud Anchors hosted using higher feature map quality will generally result
         /// in easier and more accurately resolved <c><see cref="ARCloudAnchor"/></c> poses.
         /// If feature map quality cannot be estimated for the given <paramref name="pose"/>,
