@@ -18,9 +18,26 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+// The InternalsVisibleTo below lets the GeospatialCreator Runtime's .asmdef access the internals
+// of Google.XR.ARCoreExtensions.asmdef
+//
+// This is to work around Geospatial Creator's dependency on Unity.Mathematics and CesiumRuntime,
+// without forcing all ARCore to also depend on them.
+//
+// This works around the following errors
+//
+// - For the InternalsVisibleTo to must have the using systems modules name space
+// Assembly and module attributes must precede all other elements defined in a file except using
+// clauses and extern alias declarations.
+//
+// - The type or namespace name 'InternalsVisibleToAttribute'
+// could not be found (are you missing a using directive or an assembly reference?)
+using System;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Google.XR.ARCoreExtensions.GeospatialCreator")]
 namespace Google.XR.ARCoreExtensions
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
@@ -318,7 +335,72 @@ namespace Google.XR.ARCoreExtensions
                     "Choose 'World' camera in ARCameraManager instead.",
                     ARCoreExtensionsConfig.GeospatialMode);
             }
+#if UNITY_IOS
+            if (ARCoreExtensionsConfig != null &&
+                ARCoreExtensionsConfig.SemanticMode == SemanticMode.Enabled)
+            {
+                Debug.LogWarnFormat(
+                    "Semantic Mode {0} is currently incompatible with iOS devices. " +
+                    "Enabling this for the iOS target platform will have no effect.",
+                    ARCoreExtensionsConfig.SemanticMode);
+            }
+#else // UNITY_IOS
+            if (ARCoreExtensionsConfig != null &&
+                CameraManager.requestedFacingDirection != CameraFacingDirection.World &&
+                ARCoreExtensionsConfig.SemanticMode == SemanticMode.Enabled)
+            {
+                Debug.LogErrorFormat(
+                    "Semantic Mode {0} is incompatible with user-facing (selfie) camera. " +
+                    "Choose 'World' camera in ARCameraManager instead.",
+                    ARCoreExtensionsConfig.SemanticMode);
+            }
+#endif // UNITY_IOS
         }
+
+#endif // UNITY_ANDROID
+        /// <summary>
+        /// Attempts to get the current frame.
+        /// </summary>
+        /// <param name="frame"> The resulting <c><see cref="XRCameraFrame"/></c>.</param>
+        /// <returns><c>true</c> if successful, otherwise <c>false</c>.</returns>
+        internal static bool TryGetLatestFrame(out XRCameraFrame frame)
+        {
+            if (_instance == null || _instance.CameraManager == null)
+            {
+                Debug.LogWarning(
+                    "Missing ARCoreExtensions instance or CameraManager, " +
+                    "current XRCameraFrame is not available.");
+                frame = new XRCameraFrame();
+                return false;
+            }
+
+            var cameraParams = new XRCameraParams
+            {
+                zNear = _instance.CameraManager.GetComponent<Camera>().nearClipPlane,
+                zFar = _instance.CameraManager.GetComponent<Camera>().farClipPlane,
+                screenWidth = Screen.width,
+                screenHeight = Screen.height,
+                screenOrientation = Screen.orientation
+            };
+
+            if (!_instance.CameraManager.subsystem.TryGetLatestFrame(
+                    cameraParams, out frame))
+            {
+                Debug.LogWarning(
+                    "The current XRCameraFrame is not available, try again later.");
+                return false;
+            }
+
+            if (frame.timestampNs == 0 || frame.FrameHandle() == IntPtr.Zero)
+            {
+                Debug.LogWarning(
+                    "The current XRCameraFrame is not ready, try again later.");
+                return false;
+            }
+
+            return true;
+        }
+#if UNITY_ANDROID
 
         private void RequestPermission()
         {

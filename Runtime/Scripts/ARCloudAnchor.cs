@@ -49,6 +49,14 @@ namespace Google.XR.ARCoreExtensions
         /// UnityEngine.XR.ARFoundation.ARAnchorManager, string)"/></c>
         /// for more information.
         /// </summary>
+        /// @deprecated When hosting an anchor using an async method, get the Cloud Anchor ID from
+        /// the <c><see cref="HostCloudAnchorResult"/></c> object. This will always return the
+        /// empty string or null, except for anchors created by deprecated methods.
+        [Obsolete(
+            "This property has been deprecated. When hosting an anchor using an async " +
+            "method, get the Cloud Anchor ID from the HostCloudAnchorResult object. This will " +
+            "always return the empty string or null, except for anchors created by deprecated " +
+            "methods.")]
         public string cloudAnchorId
         {
             get
@@ -68,6 +76,15 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the <c><see cref="CloudAnchorState"/></c> associated with this Cloud Anchor.
         /// </summary>
+        /// @deprecated When hosting or resolving an anchor using an async method, get the result
+        /// status from the <c><see cref="HostCloudAnchorResult"/></c> or <c><see
+        /// cref="ResolveCloudAnchorResult"/></c> object. This will always return
+        /// <c>CloudAnchorState.None</c>, except for anchors created by deprecated methods.
+        [Obsolete(
+            "This property has been deprecated. When hosting or resolving an anchor using " +
+            "an async method, get the result status from the HostCloudAnchorResult or " +
+            "ResolveCloudAnchorResult object. This will always return CloudAnchorState.None, " +
+            "except for anchors created by deprecated methods.")]
         public CloudAnchorState cloudAnchorState
         {
             get

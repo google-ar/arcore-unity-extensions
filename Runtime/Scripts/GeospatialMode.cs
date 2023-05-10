@@ -36,8 +36,8 @@ namespace Google.XR.ARCoreExtensions
     /// This can work even where GPS accuracy is low, such as dense urban environments. Under
     /// typical conditions, VPS can be expected to provide positional accuracy typically better
     /// than 5 meters and often around 1 meter, and a rotational accuracy of better than 5 degrees.
-    /// Use <c><see cref="AREarthManager.CheckVpsAvailability(double, double)"/></c> to determine if
-    /// a given location has VPS coverage.
+    /// Use <c><see cref="AREarthManager.CheckVpsAvailabilityAsync(double, double)"/></c> to
+    /// determine if a given location has VPS coverage.
     /// </item>
     /// <item>
     /// In outdoor environments with few or no overhead obstructions, GPS may be sufficient to
@@ -50,6 +50,12 @@ namespace Google.XR.ARCoreExtensions
     /// <c><see cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to determine
     /// if the current device is supported. Affected devices are also indicated on the <a
     /// href="https://developers.google.com/ar/devices">ARCore supported devices page</a>.
+    ///
+    /// When the Geospatial API and the Depth API are enabled, output images
+    /// from the Depth API will include terrain and building geometry when in a
+    /// location with VPS coverage. See the <a
+    /// href="https://developers.google.com/ar/develop/unity-arf/depth/geospatial-depth">Geospatial
+    /// Depth Developer Guide</a> for more information.
     ///
     /// The default value is <c><see cref="GeospatialMode.Disabled"/></c>. Use
     /// <c><see cref="ARCoreExtensionsConfig.GeospatialMode"/></c> to set the desired mode.
@@ -113,6 +119,12 @@ namespace Google.XR.ARCoreExtensions
         /// Not all devices support this mode, use
         /// <c><see cref="AREarthManager.IsGeospatialModeSupported(GeospatialMode)"/></c> to check
         /// if the current device and selected camera support enabling this mode.
+        ///
+        /// When the Geospatial API and the Depth API are enabled, output images
+        /// from the Depth API will include terrain and building geometry when in a
+        /// location with VPS coverage. See the <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/depth/geospatial-depth">Geospatial
+        /// Depth Developer Guide</a> for more information.
         /// </summary>
         Enabled = 2,
     }

@@ -24,7 +24,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
     internal static class SceneUtils
     {
-        [MenuItem("GameObject/XR/ARCore Extensions", false, 10)]
+        [MenuItem("GameObject/XR/ARCore Extensions", false, 9)]
         private static void CreateARCoreExtensions()
         {
             ObjectFactory.CreateGameObject("ARCore Extensions", typeof(ARCoreExtensions));

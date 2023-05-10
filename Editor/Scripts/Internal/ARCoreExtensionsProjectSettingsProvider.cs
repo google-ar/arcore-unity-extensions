@@ -26,9 +26,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
     internal class ARCoreExtensionsProjectSettingsProvider : SettingsProvider
     {
-        public ARCoreExtensionsProjectSettingsProvider(
-            string path,
-            SettingsScope scope)
+        public ARCoreExtensionsProjectSettingsProvider(string path, SettingsScope scope)
             : base(path, scope)
         {
         }
@@ -36,9 +34,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         [SettingsProvider]
         public static SettingsProvider CreateARCoreExtensionsProjectSettingsProvider()
         {
-            var provider =
-                new ARCoreExtensionsProjectSettingsProvider(
-                    "Project/XR Plug-in Management/ARCore Extensions", SettingsScope.Project);
+            var provider = new ARCoreExtensionsProjectSettingsProvider(
+                "Project/XR Plug-in Management/ARCore Extensions",
+                SettingsScope.Project);
 
             // Automatically extract all keywords from public static GUI content.
             provider.keywords =
@@ -55,6 +53,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 IOSSupportHelper.UpdateIOSScriptingDefineSymbols(
                     ARCoreExtensionsProjectSettings.Instance);
+
+                GeospatialEditorHelper.OnToggle(
+                    ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled);
                 ARCoreExtensionsProjectSettings.Instance.Save();
             }
         }

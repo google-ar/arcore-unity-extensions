@@ -20,13 +20,15 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
+
     /// <summary>
-    /// Describes the current state of a <c><see cref="ARCloudAnchor"/></c>.
+    /// Result status of a Cloud Anchor hosting or resolving operation.
     /// </summary>
     public enum CloudAnchorState
     {
         /// <summary>
-        /// The Cloud Anchor is not ready to use.
+        /// Not a valid value for a Cloud Anchor hosting or resolving operation.
         /// </summary>
         None,
 
@@ -35,6 +37,9 @@ namespace Google.XR.ARCoreExtensions
         /// Once the task completes in the background, the Cloud Anchor will get
         /// a new state after the next update.
         /// </summary>
+        /// @deprecated Not returned by async methods - replaced by <c>PromiseState.Pending</c>.
+        [Obsolete("This enum value has been deprecated. " +
+            "Not returned by async methods - replaced by PromiseState.Pending.")]
         TaskInProgress,
 
         /// <summary>
@@ -49,7 +54,7 @@ namespace Google.XR.ARCoreExtensions
         ErrorInternal,
 
         /// <summary>
-        /// The app cannot communicate with the ARCore Cloud because of an invalid authentication.
+        /// The app cannot communicate with the ARCore API because of an invalid authentication.
         /// Check Project Settings > XR Plug-in Management > ARCore Extensions for a valid
         /// authentication strategy.
         /// </summary>
@@ -57,8 +62,8 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// The application has exhausted the request quota alloted to the given API key. The
-        /// developer should request additional quota for the ARCore Cloud for their API key
-        /// from the Google Developers Console.
+        /// developer should request additional quota for the ARCore API for their API key
+        /// from the Google Cloud Developers Console.
         /// </summary>
         ErrorResourceExhausted,
 
@@ -70,8 +75,7 @@ namespace Google.XR.ARCoreExtensions
         ErrorHostingDatasetProcessingFailed,
 
         /// <summary>
-        /// Resolving failed because the ARCore Cloud Anchor service could not find the provided
-        /// Cloud Anchor Id.
+        /// Resolving failed because the ARCore API could not find the provided Cloud Anchor Id.
         /// </summary>
         ErrorResolvingCloudIdNotFound,
 
@@ -90,12 +94,11 @@ namespace Google.XR.ARCoreExtensions
         ErrorResolvingPackageTooNew,
 
         /// <summary>
-        /// The ARCore Cloud Anchor service was unreachable. This can happen because of a
-        /// number of reasons. The device may be in airplane mode or does not have a working
-        /// internet connection. The request sent to the server could have timed out with
-        /// no response, there could be a bad network connection, DNS unavailability, firewall
-        /// issues, or anything that could affect the device's ability to connect to the
-        /// ARCore Cloud Anchor service.
+        /// The ARCore API was unreachable. This can happen because of a number of reasons. The
+        /// device may be in airplane mode or does not have a working internet connection. The
+        /// request sent to the server could have timed out with no response, there could be a bad
+        /// network connection, DNS unavailability, firewall issues, or anything that could affect
+        /// the device's ability to connect to the ARCore API.
         /// </summary>
         ErrorHostingServiceUnavailable,
     }

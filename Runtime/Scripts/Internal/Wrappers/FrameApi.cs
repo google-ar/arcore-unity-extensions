@@ -55,6 +55,70 @@ namespace Google.XR.ARCoreExtensions.Internal
             return uvOut;
         }
 
+        public static IntPtr AcquireSemanticImage(IntPtr sessionHandle, IntPtr frameHandle)
+        {
+            IntPtr semanticImageHandle = IntPtr.Zero;
+#if UNITY_ANDROID
+            // Get the current semantic image.
+            ApiArStatus status = ExternApi.ArFrame_acquireSemanticImage(
+                sessionHandle, frameHandle, ref semanticImageHandle);
+
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "ARCore Extensions: failed to acquire semantic image with status {0}",
+                    status.ToString());
+                return IntPtr.Zero;
+            }
+#endif
+
+            return semanticImageHandle;
+        }
+
+        public static IntPtr AcquireSemanticConfidenceImage(
+            IntPtr sessionHandle, IntPtr frameHandle)
+        {
+            IntPtr confidenceImageHandle = IntPtr.Zero;
+#if UNITY_ANDROID
+            // Get the current confidence depth image.
+            ApiArStatus status = ExternApi.ArFrame_acquireSemanticConfidenceImage(
+                sessionHandle, frameHandle, ref confidenceImageHandle);
+
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "ARCore Extensions: failed to acquire semantic confidence image with" +
+                    " status {0}",
+                    status.ToString());
+                return IntPtr.Zero;
+            }
+#endif
+
+            return confidenceImageHandle;
+        }
+
+        public static float GetSemanticLabelFraction(
+            IntPtr sessionHandle, IntPtr frameHandle, ApiSemanticLabel queryLabel)
+        {
+            float fraction = 0.0f;
+#if UNITY_ANDROID
+            // Get semantic label fraction from current semantic label.
+            ApiArStatus status = ExternApi.ArFrame_getSemanticLabelFraction(
+                sessionHandle, frameHandle, queryLabel, ref fraction);
+
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "ARCore Extensions: failed to get semantic label fraction with" +
+                    " status {0}",
+                    status.ToString());
+                return 0.0f;
+            }
+#endif
+
+            return fraction;
+        }
+
         public static RecordingResult RecordTrackData(
             IntPtr sessionHandle, IntPtr frameHandle, Guid trackId, byte[] data)
         {
@@ -128,6 +192,19 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern void ArFrame_transformCoordinates2d(IntPtr session, IntPtr frame,
                 ApiCoordinates2dType inputType, int numVertices, ref Vector2 uvsIn,
                 ApiCoordinates2dType outputType, ref Vector2 uvsOut);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_acquireSemanticImage(
+                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_acquireSemanticConfidenceImage(
+                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_getSemanticLabelFraction(
+                IntPtr sessionHandle, IntPtr frameHandle, ApiSemanticLabel queryLabel,
+                ref float fraction);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArFrame_recordTrackData(

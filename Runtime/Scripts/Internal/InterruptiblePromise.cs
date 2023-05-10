@@ -46,6 +46,14 @@ namespace Google.XR.ARCoreExtensions.Internal
         protected IntPtr _future;
 
         /// <summary>
+        /// Releases the underlying native handle.
+        /// </summary>
+        ~InterruptiblePromise()
+        {
+            FutureApi.Release(_future);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the coroutine instruction should keep waiting.
         /// </summary>
         /// <value><c>true</c> if the state is not <c><see cref="PromiseState.Pending"/></c>,
@@ -61,9 +69,22 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Gets the operation status.
+        /// Gets the <c><see cref="PromiseState"/></c> associated with this promise. Used to
+        /// determine if the promise is still waiting for the result.
         /// </summary>
-        public abstract PromiseState State { get; }
+        public PromiseState State
+        {
+            get
+            {
+                var sessionHandle = GetSessionHandle();
+                if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
+                {
+                    _state = FutureApi.GetState(sessionHandle, _future);
+                }
+
+                return _state;
+            }
+        }
 
         /// <summary>
         /// Gets the result, if the operation is done.
@@ -73,7 +94,10 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <summary>
         /// Cancels execution of this promise if it's still pending.
         /// </summary>
-        public abstract void Cancel();
+        public void Cancel()
+        {
+            FutureApi.Cancel(GetSessionHandle(), _future);
+        }
 
         /// <summary>
         /// Gets the underlying native handle.

@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
+    using System.Collections;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
     using UnityEngine;
@@ -177,14 +178,36 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         private ARAnchor _anchor = null;
 
         /// <summary>
-        /// A list of Cloud Anchors that have been created but are not yet ready to use.
+        /// The promise for the async hosting operation, if any.
         /// </summary>
-        private List<ARCloudAnchor> _pendingCloudAnchors = new List<ARCloudAnchor>();
+        private HostCloudAnchorPromise _hostPromise = null;
 
         /// <summary>
-        /// A list for caching all Cloud Anchors.
+        /// The result of the hosting operation, if any.
         /// </summary>
-        private List<ARCloudAnchor> _cachedCloudAnchors = new List<ARCloudAnchor>();
+        private HostCloudAnchorResult _hostResult = null;
+
+        /// <summary>
+        /// The coroutine for the hosting operation, if any.
+        /// </summary>
+        private IEnumerator _hostCoroutine = null;
+
+        /// <summary>
+        /// The promises for the async resolving operations, if any.
+        /// </summary>
+        private List<ResolveCloudAnchorPromise> _resolvePromises =
+            new List<ResolveCloudAnchorPromise>();
+
+        /// <summary>
+        /// The results of the resolving operations, if any.
+        /// </summary>
+        private List<ResolveCloudAnchorResult> _resolveResults =
+            new List<ResolveCloudAnchorResult>();
+
+        /// <summary>
+        /// The coroutines of the resolving operations, if any.
+        /// </summary>
+        private List<IEnumerator> _resolveCoroutines = new List<IEnumerator>();
 
         private Color _activeColor;
         private AndroidJavaClass _versionInfo;
@@ -251,8 +274,12 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             _isReturning = false;
             _anchor = null;
             _qualityIndicator = null;
-            _pendingCloudAnchors.Clear();
-            _cachedCloudAnchors.Clear();
+            _hostPromise = null;
+            _hostResult = null;
+            _hostCoroutine = null;
+            _resolvePromises.Clear();
+            _resolveResults.Clear();
+            _resolveCoroutines.Clear();
 
             InstructionBar.SetActive(true);
             NamePanel.SetActive(false);
@@ -290,25 +317,44 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 _anchor = null;
             }
 
-            if (_pendingCloudAnchors.Count > 0)
+            if (_hostCoroutine != null)
             {
-                foreach (var anchor in _pendingCloudAnchors)
-                {
-                    Destroy(anchor.gameObject);
-                }
-
-                _pendingCloudAnchors.Clear();
+                StopCoroutine(_hostCoroutine);
             }
 
-            if (_cachedCloudAnchors.Count > 0)
-            {
-                foreach (var anchor in _cachedCloudAnchors)
-                {
-                    Destroy(anchor.gameObject);
-                }
+            _hostCoroutine = null;
 
-                _cachedCloudAnchors.Clear();
+            if (_hostPromise != null)
+            {
+                _hostPromise.Cancel();
+                _hostPromise = null;
             }
+
+            _hostResult = null;
+
+            foreach (var coroutine in _resolveCoroutines)
+            {
+                StopCoroutine(coroutine);
+            }
+
+            _resolveCoroutines.Clear();
+
+            foreach (var promise in _resolvePromises)
+            {
+                promise.Cancel();
+            }
+
+            _resolvePromises.Clear();
+
+            foreach (var result in _resolveResults)
+            {
+                if (result.Anchor != null)
+                {
+                    Destroy(result.Anchor.gameObject);
+                }
+            }
+
+            _resolveResults.Clear();
 
             UpdatePlaneVisibility(false);
         }
@@ -370,8 +416,6 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
                 HostingCloudAnchor();
             }
-
-            UpdatePendingCloudAnchors();
         }
 
         private void PerformHitTest(Vector2 touchPos)
@@ -433,7 +477,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             }
 
             // There is a pending or finished hosting task.
-            if (_cachedCloudAnchors.Count > 0 || _pendingCloudAnchors.Count > 0)
+            if (_hostPromise != null || _hostResult != null)
             {
                 return;
             }
@@ -483,15 +527,36 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
             // Creating a Cloud Anchor with lifetime = 1 day.
             // This is configurable up to 365 days when keyless authentication is used.
-            ARCloudAnchor cloudAnchor = Controller.AnchorManager.HostCloudAnchor(_anchor, 1);
-            if (cloudAnchor == null)
+            var promise = Controller.AnchorManager.HostCloudAnchorAsync(_anchor, 1);
+            if (promise.State == PromiseState.Done)
             {
-                Debug.LogFormat("Failed to create a Cloud Anchor.");
+                Debug.LogFormat("Failed to host a Cloud Anchor.");
                 OnAnchorHostedFinished(false);
             }
             else
             {
-                _pendingCloudAnchors.Add(cloudAnchor);
+                _hostPromise = promise;
+                _hostCoroutine = HostAnchor();
+                StartCoroutine(_hostCoroutine);
+            }
+        }
+
+        private IEnumerator HostAnchor()
+        {
+            yield return _hostPromise;
+            _hostResult = _hostPromise.Result;
+            _hostPromise = null;
+
+            if (_hostResult.CloudAnchorState == CloudAnchorState.Success)
+            {
+                int count = Controller.LoadCloudAnchorHistory().Collection.Count;
+                _hostedCloudAnchor =
+                    new CloudAnchorHistory("CloudAnchor" + count, _hostResult.CloudAnchorId);
+                OnAnchorHostedFinished(true, _hostResult.CloudAnchorId);
+            }
+            else
+            {
+                OnAnchorHostedFinished(false, _hostResult.CloudAnchorState.ToString());
             }
         }
 
@@ -504,7 +569,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             }
 
             // There are pending or finished resolving tasks.
-            if (_pendingCloudAnchors.Count > 0 || _cachedCloudAnchors.Count > 0)
+            if (_resolvePromises.Count > 0 || _resolveResults.Count > 0)
             {
                 return;
             }
@@ -520,71 +585,39 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 string.Join(",", new List<string>(Controller.ResolvingSet).ToArray()));
             foreach (string cloudId in Controller.ResolvingSet)
             {
-                ARCloudAnchor cloudAnchor =
-                    Controller.AnchorManager.ResolveCloudAnchorId(cloudId);
-                if (cloudAnchor == null)
+                var promise = Controller.AnchorManager.ResolveCloudAnchorAsync(cloudId);
+                if (promise.State == PromiseState.Done)
                 {
                     Debug.LogFormat("Faild to resolve Cloud Anchor " + cloudId);
                     OnAnchorResolvedFinished(false, cloudId);
                 }
                 else
                 {
-                    _pendingCloudAnchors.Add(cloudAnchor);
+                    _resolvePromises.Add(promise);
+                    var coroutine = ResolveAnchor(cloudId, promise);
+                    StartCoroutine(coroutine);
                 }
             }
 
             Controller.ResolvingSet.Clear();
         }
 
-        private void UpdatePendingCloudAnchors()
+        private IEnumerator ResolveAnchor(string cloudId, ResolveCloudAnchorPromise promise)
         {
-            foreach (var cloudAnchor in _pendingCloudAnchors)
+            yield return promise;
+            var result = promise.Result;
+            _resolvePromises.Remove(promise);
+            _resolveResults.Add(result);
+
+            if (result.CloudAnchorState == CloudAnchorState.Success)
             {
-                if (cloudAnchor.cloudAnchorState == CloudAnchorState.Success)
-                {
-                    if (Controller.Mode == PersistentCloudAnchorsController.ApplicationMode.Hosting)
-                    {
-                        Debug.LogFormat("Succeed to host the Cloud Anchor: {0}.",
-                            cloudAnchor.cloudAnchorId);
-                        int count = Controller.LoadCloudAnchorHistory().Collection.Count;
-                        _hostedCloudAnchor = new CloudAnchorHistory("CloudAnchor" + count,
-                            cloudAnchor.cloudAnchorId);
-                        OnAnchorHostedFinished(true, cloudAnchor.cloudAnchorId);
-                    }
-                    else if (Controller.Mode ==
-                        PersistentCloudAnchorsController.ApplicationMode.Resolving)
-                    {
-                        Debug.LogFormat("Succeed to resolve the Cloud Anchor: {0}",
-                            cloudAnchor.cloudAnchorId);
-                        OnAnchorResolvedFinished(true, cloudAnchor.cloudAnchorId);
-                        Instantiate(CloudAnchorPrefab, cloudAnchor.transform);
-                    }
-
-                    _cachedCloudAnchors.Add(cloudAnchor);
-                }
-                else if (cloudAnchor.cloudAnchorState != CloudAnchorState.TaskInProgress)
-                {
-                    if (Controller.Mode == PersistentCloudAnchorsController.ApplicationMode.Hosting)
-                    {
-                        Debug.LogFormat("Failed to host the Cloud Anchor with error {0}.",
-                            cloudAnchor.cloudAnchorState);
-                        OnAnchorHostedFinished(false, cloudAnchor.cloudAnchorState.ToString());
-                    }
-                    else if (Controller.Mode ==
-                        PersistentCloudAnchorsController.ApplicationMode.Resolving)
-                    {
-                        Debug.LogFormat("Failed to resolve the Cloud Anchor {0} with error {1}.",
-                            cloudAnchor.cloudAnchorId, cloudAnchor.cloudAnchorState);
-                        OnAnchorResolvedFinished(false, cloudAnchor.cloudAnchorId,
-                            cloudAnchor.cloudAnchorState.ToString());
-                    }
-
-                    _cachedCloudAnchors.Add(cloudAnchor);
-                }
+                OnAnchorResolvedFinished(true, cloudId);
+                Instantiate(CloudAnchorPrefab, result.Anchor.transform);
             }
-
-            _pendingCloudAnchors.RemoveAll(
-                x => x.cloudAnchorState != CloudAnchorState.TaskInProgress);
+            else
+            {
+                OnAnchorResolvedFinished(false, cloudId, result.CloudAnchorState.ToString());
+            }
         }
 
         private void OnAnchorHostedFinished(bool success, string response = null)

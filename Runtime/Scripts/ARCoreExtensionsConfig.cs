@@ -42,6 +42,15 @@ namespace Google.XR.ARCoreExtensions
         [FormerlySerializedAs("EnableCloudAnchors")]
         public CloudAnchorMode CloudAnchorMode = CloudAnchorMode.Disabled;
 
+        [Header("Semantics")]
+
+        /// <summary>
+        /// Choose which semantic mode to use in the session.
+        /// </summary>
+        [Tooltip("Choose which semantic mode to use in the session.")]
+        [DynamicHelp("GetSemanticModeHelpInfo")]
+        public SemanticMode SemanticMode = SemanticMode.Disabled;
+
         [Header("Geospatial")]
 
         /// <summary>
@@ -51,6 +60,29 @@ namespace Google.XR.ARCoreExtensions
             "features. To enable Geospatial Mode, ensure Geospatial is selected in ARCore " +
             "Extensions Project Settings > Optional Features.")]
         public GeospatialMode GeospatialMode = GeospatialMode.Disabled;
+
+        [Header("StreetscapeGeometry")]
+
+        /// <summary>
+        /// Describes the desired behavior of the Geospatial Streetscape Geometry API.
+        /// The Streetscape Geometry API provides polygon meshes of terrain, buildings,
+        /// and other structures in a radius surrounding the device. See the <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/streetscape-geometry">Streetscape
+        /// Geometry Developer Guide</a> for additional information.
+        ///
+        /// When Streetscape Geometry is enabled, <c><see cref="ARStreetscapeGeometryManager"/></c>
+        /// can be used.
+        ///
+        /// The Streetscape Geometry API requires both
+        /// <c><see cref="StreetscapeGeometryMode"/></c> to be set to
+        /// <c><see cref="StreetscapeGeometryMode.Enabled"/></c> and
+        /// <c><see cref="GeospatialMode"/></c> to be set to
+        /// <c><see cref="GeospatialMode.Enabled"/></c>.
+        /// </summary>
+        [Tooltip(
+            "Choose StreetscapeGeometry mode, which allows the use of " +
+            "ARStreetscapeGeometryManager.")]
+        public StreetscapeGeometryMode StreetscapeGeometryMode = StreetscapeGeometryMode.Disabled;
 
         /// <summary>
         /// Gets or sets a value indicating whether the Cloud Anchors are enabled.
@@ -73,6 +105,24 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
+        /// Reflection function used by 'DynamicHelp' for property 'SemanticMode'.
+        /// </summary>
+        /// <returns>The help attribute of semantic mode information.</returns>
+        public HelpAttribute GetSemanticModeHelpInfo()
+        {
+            if (SemanticMode == SemanticMode.Enabled)
+            {
+                return new HelpAttribute(
+                    "Outdoor semantic segmentation features.",
+                    HelpAttribute.HelpMessageType.Info);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// ValueType check if two ARCoreExtensionsConfig objects are equal.
         /// </summary>
         /// <param name="other">The other ARCoreExtensionsConfig.</param>
@@ -82,7 +132,9 @@ namespace Google.XR.ARCoreExtensions
         {
             ARCoreExtensionsConfig otherConfig = other as ARCoreExtensionsConfig;
             if (otherConfig == null ||
+                SemanticMode != otherConfig.SemanticMode ||
                 GeospatialMode != otherConfig.GeospatialMode ||
+                StreetscapeGeometryMode != otherConfig.StreetscapeGeometryMode ||
                 CloudAnchorMode != otherConfig.CloudAnchorMode)
             {
                 return false;
@@ -107,7 +159,9 @@ namespace Google.XR.ARCoreExtensions
         public void CopyFrom(ARCoreExtensionsConfig otherConfig)
         {
             CloudAnchorMode = otherConfig.CloudAnchorMode;
+            SemanticMode = otherConfig.SemanticMode;
             GeospatialMode = otherConfig.GeospatialMode;
+            StreetscapeGeometryMode = otherConfig.StreetscapeGeometryMode;
         }
     }
 }

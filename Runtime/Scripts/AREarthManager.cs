@@ -139,7 +139,7 @@ namespace Google.XR.ARCoreExtensions
         /// its results in frame update events. See <a
         /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">Check
         /// VPS Availability</a> for a usage example.</returns>
-        public static VpsAvailabilityPromise CheckVpsAvailability(double latitude,
+        public static VpsAvailabilityPromise CheckVpsAvailabilityAsync(double latitude,
             double longitude)
         {
             if (ARSession.state != ARSessionState.Ready &&
@@ -150,7 +150,57 @@ namespace Google.XR.ARCoreExtensions
                 return new VpsAvailabilityPromise();
             }
 
-            return new VpsAvailabilityPromise(latitude, longitude);
+#if UNITY_ANDROID
+            ARPrestoApi.SetSessionRequired(true);
+#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
+            SessionApi.SetAuthToken(ARCoreExtensions._instance.currentARCoreSessionHandle);
+#endif
+            IntPtr sessionHandle = ARCoreExtensions._instance.currentARCoreSessionHandle;
+            IntPtr future =
+                (sessionHandle == IntPtr.Zero)
+                    ? IntPtr.Zero
+                    : FutureApi.CheckVpsAvailabilityAsync(sessionHandle, latitude, longitude);
+#if UNITY_ANDROID
+            ARPrestoApi.SetSessionRequired(false);
+#endif
+            return new VpsAvailabilityPromise(future);
+        }
+
+        /// <summary>
+        /// Gets the availability of the Visual Positioning System (VPS) at a specified horizontal
+        /// position. The availability of VPS in a given location helps to improve the quality of
+        /// Geospatial localization and tracking accuracy.
+        ///
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
+        /// function returns a <c><see cref="VpsAvailabilityPromise"/></c> which can be used to
+        /// obtain the task's result. Its initial <c><see cref="PromiseState"/></c> will be set to
+        /// <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
+        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and
+        /// <c><see cref="VpsAvailabilityPromise.Result"/></c> can be used to obtain the operation's
+        /// result.
+        ///
+        /// Your app must be properly set up to communicate with the Google Cloud ARCore API in
+        /// order to obtain a result from this call. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">Check
+        /// VPS Availability</a> for more details on required permissions, setup steps, and usage
+        /// examples.
+        ///
+        /// </summary>
+        /// <param name="latitude">The latitude in degrees.</param>
+        /// <param name="longitude">The longitude in degrees.</param>
+        /// <returns>Returns a <c><see cref="VpsAvailabilityPromise"/></c> used in a <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>. It updates
+        /// its results in frame update events. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">Check
+        /// VPS Availability</a> for a usage example.</returns>
+        ///
+        /// @deprecated Please use CheckVpsAvailabilityAsync(double, double) instead.
+        [Obsolete("This method has been deprecated. Please use " +
+            "CheckVpsAvailabilityAsync(double, double) instead.")]
+        public static VpsAvailabilityPromise CheckVpsAvailability(double latitude,
+            double longitude)
+        {
+            return CheckVpsAvailabilityAsync(latitude, longitude);
         }
 
         /// <summary>

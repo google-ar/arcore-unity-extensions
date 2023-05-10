@@ -20,6 +20,7 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
+    using System;
     using UnityEngine;
     using UnityEngine.XR.ARSubsystems;
 
@@ -31,20 +32,61 @@ namespace Google.XR.ARCoreExtensions.Internal
         private static readonly Matrix4x4 _unityWorldToGLWorldInverse
             = _unityWorldToGLWorld.inverse;
 
-        private static readonly Quaternion _unityWorldToGLWorldRotation
-            = Quaternion.LookRotation(
-                _unityWorldToGLWorld.GetColumn(2), _unityWorldToGLWorld.GetColumn(1));
+        public static ApiSemanticMode ToApiSemanticMode(this SemanticMode mode)
+        {
+            switch (mode)
+            {
+                case SemanticMode.Enabled:
+                    return ApiSemanticMode.Enabled;
+                case SemanticMode.Disabled:
+                default:
+                    return ApiSemanticMode.Disabled;
+            }
+        }
 
-        private static readonly Quaternion _glWorldToUnityWorldRotation
-            = Quaternion.Inverse(_unityWorldToGLWorldRotation);
+        public static ApiSemanticLabel ToApiSemanticLabel(this SemanticLabel label)
+        {
+            // StreetView12
+            switch (label)
+            {
+                case SemanticLabel.Sky:
+                    return ApiSemanticLabel.Sky;
+                case SemanticLabel.Building:
+                    return ApiSemanticLabel.Building;
+                case SemanticLabel.Tree:
+                    return ApiSemanticLabel.Tree;
+                case SemanticLabel.Road:
+                    return ApiSemanticLabel.Road;
+                case SemanticLabel.Sidewalk:
+                    return ApiSemanticLabel.Sidewalk;
+                case SemanticLabel.Terrain:
+                    return ApiSemanticLabel.Terrain;
+                case SemanticLabel.Structure:
+                    return ApiSemanticLabel.Structure;
+                case SemanticLabel.Object:
+                    return ApiSemanticLabel.Object;
+                case SemanticLabel.Vehicle:
+                    return ApiSemanticLabel.Vehicle;
+                case SemanticLabel.Person:
+                    return ApiSemanticLabel.Person;
+                case SemanticLabel.Water:
+                    return ApiSemanticLabel.Water;
+                case SemanticLabel.Unlabeled:
+                default:
+                    return ApiSemanticLabel.Unlabeled;
+            }
+        }
+
         public static CloudAnchorState ToCloudAnchorState(this ApiCloudAnchorState state)
         {
             switch (state)
             {
                 case ApiCloudAnchorState.None:
                     return CloudAnchorState.None;
+#pragma warning disable CS0618 // Handle obsoleted value CloudAnchorState.TaskInProgress
                 case ApiCloudAnchorState.TaskInProgress:
                     return CloudAnchorState.TaskInProgress;
+#pragma warning restore CS0618 // Handle obsoleted value CloudAnchorState.TaskInProgress
                 case ApiCloudAnchorState.Success:
                     return CloudAnchorState.Success;
                 case ApiCloudAnchorState.ErrorInternal:
@@ -212,22 +254,29 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
         }
 
-        public static Quaternion ToUnityQuaternion(this ApiQuaternion apiQuaternion)
+        public static Quaternion ToUnityQuaternion(this ApiQuaternion apiEusQuaternion)
         {
-            var glWorldQuaternion = new Quaternion(
-                apiQuaternion.Qx, apiQuaternion.Qy, apiQuaternion.Qz, apiQuaternion.Qw);
-            return _unityWorldToGLWorldRotation * glWorldQuaternion;
+            // change from EUS (OpenGl) to EUN (Unity)
+            // This mirror z axis which switches from right to left handed
+            // reverse the rotations direction of x and y
+            // z rotation are not effected
+            var unityEunQuaternion = new Quaternion(-apiEusQuaternion.Qx, -apiEusQuaternion.Qy,
+                                                    apiEusQuaternion.Qz, apiEusQuaternion.Qw);
+            return unityEunQuaternion;
         }
 
-        public static ApiQuaternion ToApiQuaternion(this Quaternion quaternion)
+        public static ApiQuaternion ToApiQuaternion(this Quaternion eunQuaternion)
         {
-            Quaternion glWorldQuaternion = _glWorldToUnityWorldRotation * quaternion;
-            var apiQuaternion = new ApiQuaternion();
-            apiQuaternion.Qx = glWorldQuaternion.x;
-            apiQuaternion.Qy = glWorldQuaternion.y;
-            apiQuaternion.Qz = glWorldQuaternion.z;
-            apiQuaternion.Qw = glWorldQuaternion.w;
-            return apiQuaternion;
+            // change from EUN (Unity) to EUS (OpenGl)
+            // This mirror z axis which switches from left to right handed
+            // reverse the rotations direction of x and y
+            // z rotation are not effected
+            var apiEusQuaternion = new ApiQuaternion();
+            apiEusQuaternion.Qx = -eunQuaternion.x;
+            apiEusQuaternion.Qy = -eunQuaternion.y;
+            apiEusQuaternion.Qz = eunQuaternion.z;
+            apiEusQuaternion.Qw = eunQuaternion.w;
+            return apiEusQuaternion;
         }
 
         public static TerrainAnchorState ToTerrainAnchorState(this ApiTerrainAnchorState state)
@@ -236,8 +285,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 case ApiTerrainAnchorState.None:
                     return TerrainAnchorState.None;
+#pragma warning disable CS0618 // Handle obsoleted value TerrainAnchorState.TaskInProgress
                 case ApiTerrainAnchorState.TaskInProgress:
                     return TerrainAnchorState.TaskInProgress;
+#pragma warning restore CS0618 // Handle obsoleted value TerrainAnchorState.TaskInProgress
                 case ApiTerrainAnchorState.Success:
                     return TerrainAnchorState.Success;
                 case ApiTerrainAnchorState.ErrorInternal:
@@ -248,6 +299,73 @@ namespace Google.XR.ARCoreExtensions.Internal
                     return TerrainAnchorState.ErrorUnsupportedLocation;
                 default:
                     return TerrainAnchorState.None;
+            }
+        }
+
+        public static TrackableId ToTrackableId(this IntPtr trackableHandle)
+        {
+            return new TrackableId(0, (ulong)trackableHandle);
+        }
+
+        public static IntPtr ToNativePtr(this TrackableId trackableId)
+        {
+            return (System.IntPtr)trackableId.subId2;
+        }
+
+        public static StreetscapeGeometryType ToStreetscapeGeometryType(
+            this ApiStreetscapeGeometryType type)
+        {
+            switch (type)
+            {
+                case ApiStreetscapeGeometryType.Terrain:
+                    return StreetscapeGeometryType.Terrain;
+                case ApiStreetscapeGeometryType.Building:
+                    return StreetscapeGeometryType.Building;
+                default:
+                    return StreetscapeGeometryType.Terrain;
+            }
+        }
+
+        public static ApiStreetscapeGeometryMode ToApiStreetscapeGeometryMode(
+            this StreetscapeGeometryMode mode)
+        {
+            switch (mode)
+            {
+                case StreetscapeGeometryMode.Enabled:
+                    return ApiStreetscapeGeometryMode.Enabled;
+                default:
+                    return ApiStreetscapeGeometryMode.Disabled;
+            }
+        }
+
+        public static StreetscapeGeometryQuality ToStreetscapeGeometryQuality(
+            this ApiStreetscapeGeometryQuality quality)
+        {
+            switch (quality)
+            {
+                case ApiStreetscapeGeometryQuality.BuildingLOD1:
+                    return StreetscapeGeometryQuality.BuildingLOD1;
+                case ApiStreetscapeGeometryQuality.BuildingLOD2:
+                    return StreetscapeGeometryQuality.BuildingLOD2;
+                default:
+                    return StreetscapeGeometryQuality.None;
+            }
+        }
+
+        public static RooftopAnchorState ToRooftopAnchorState(this ApiRooftopAnchorState state)
+        {
+            switch (state)
+            {
+                case ApiRooftopAnchorState.Success:
+                    return RooftopAnchorState.Success;
+                case ApiRooftopAnchorState.ErrorInternal:
+                    return RooftopAnchorState.ErrorInternal;
+                case ApiRooftopAnchorState.ErrorNotAuthorized:
+                    return RooftopAnchorState.ErrorNotAuthorized;
+                case ApiRooftopAnchorState.ErrorUnsupportedLocation:
+                    return RooftopAnchorState.ErrorUnsupportedLocation;
+                default:
+                    return RooftopAnchorState.None;
             }
         }
     }

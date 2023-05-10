@@ -130,6 +130,14 @@ namespace Google.XR.ARCoreExtensions.Internal
         [DynamicHelp("GetGeospatialHelpInfo")]
         public bool GeospatialEnabled;
 
+        /// <summary>
+        /// Indicates if ARCore Geospatial Editor features should be available in the Unity Editor.
+        /// When this is checked, the scripting symbol will be defined which enables the features.
+        /// </summary>
+        [DisplayName("Geospatial Creator")]
+        [DynamicHelp("GetGeospatialEditorHelpInfo")]
+        public bool GeospatialEditorEnabled;
+
         private const string _projectSettingsPath =
             "ProjectSettings/ARCoreExtensionsProjectSettings.json";
 
@@ -431,6 +439,30 @@ namespace Google.XR.ARCoreExtensions.Internal
                             ", and import Geospatial CocoaPod on iOS" : string.Empty),
                     HelpAttribute.HelpMessageType.None);
             }
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DynamicHelpAttribute"/> for property
+        /// <see cref="GeospatialEditorEnabled"/>.
+        /// </summary>
+        /// <returns>Help info for <see cref="GeospatialEnabled"/>.</returns>
+        public HelpAttribute GetGeospatialEditorHelpInfo()
+        {
+#if !UNITY_2021_3_OR_NEWER
+            if (GeospatialEditorEnabled)
+            {
+                return new HelpAttribute(
+                    "The Geospatial Creator requires Unity 2021.3 or later.",
+                    HelpAttribute.HelpMessageType.Error);
+            }
+#endif
+            if (GeospatialEditorEnabled && !GeospatialEnabled)
+            {
+                return new HelpAttribute(
+                    "The \"Geospatial\" optional feature must be enabled to use the Geospatial Creator.",
+                    HelpAttribute.HelpMessageType.Error);
+            }
+            return null;
         }
     }
 

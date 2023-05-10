@@ -78,6 +78,24 @@ namespace Google.XR.ARCoreExtensions.Internal
             return cloudAnchorHandle;
         }
 
+        public static IntPtr HostCloudAnchorAsync(
+            IntPtr sessionHandle, IntPtr anchorHandle, int ttlDays)
+        {
+            IntPtr futureHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            ApiArStatus status = ExternApi.ArSession_hostCloudAnchorAsync(
+                sessionHandle, anchorHandle, ttlDays, IntPtr.Zero, IntPtr.Zero,
+                ref futureHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "Failed to host a Cloud Anchor async with TTL {0}, status '{1}'", ttlDays,
+                    status);
+            }
+#endif
+            return futureHandle;
+        }
+
         public static void SetAuthToken(IntPtr sessionHandle, string authToken)
         {
             _latestAuthToken = authToken;
@@ -112,6 +130,21 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
 #endif
             return cloudAnchorHandle;
+        }
+
+        public static IntPtr ResolveCloudAnchorAsync(IntPtr sessionHandle, string cloudAnchorId)
+        {
+            IntPtr futureHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            ApiArStatus status = ExternApi.ArSession_resolveCloudAnchorAsync(
+                sessionHandle, cloudAnchorId, IntPtr.Zero, IntPtr.Zero, ref futureHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "Failed to resolve a new Cloud Anchor async, status '{0}'", status);
+            }
+#endif
+            return futureHandle;
         }
 
         public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
@@ -214,6 +247,28 @@ namespace Google.XR.ARCoreExtensions.Internal
             return earthHandle;
         }
 
+        public static IntPtr GetAllStreetscapeGeometryHandles(IntPtr sessionHandle)
+        {
+            IntPtr listHandle = TrackableListApi.Create(sessionHandle);
+            ExternApi.ArSession_getAllTrackables(
+                sessionHandle, ApiTrackableType.StreetscapeGeometry, listHandle);
+            return listHandle;
+        }
+
+        public static FeatureSupported IsSemanticModeSupported(
+            IntPtr sessionHandle, SemanticMode mode)
+        {
+            FeatureSupported supported = FeatureSupported.Unknown;
+#if UNITY_ANDROID
+            int isSupported = 0;
+            ExternApi.ArSession_isSemanticModeSupported(
+                sessionHandle, mode.ToApiSemanticMode(), ref isSupported);
+            supported = isSupported == 0 ?
+                FeatureSupported.Unsupported : FeatureSupported.Supported;
+#endif
+            return supported;
+        }
+
         private struct ExternApi
         {
             [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
@@ -236,6 +291,23 @@ namespace Google.XR.ARCoreExtensions.Internal
                 ref IntPtr cloudAnchorHandle);
 
             [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_hostCloudAnchorAsync(
+                IntPtr sessionHandle,
+                IntPtr anchorHandle,
+                int ttlDays,
+                IntPtr context,
+                IntPtr callback,
+                ref IntPtr futureHandle);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_resolveCloudAnchorAsync(
+                IntPtr sessionHandle,
+                string cloudAnchorId,
+                IntPtr context,
+                IntPtr callback,
+                ref IntPtr futureHandle);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_estimateFeatureMapQualityForHosting(
                 IntPtr sessionHandle,
                 IntPtr poseHandle,
@@ -248,6 +320,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArSession_acquireEarth(IntPtr sessionHandle,
                                                              ref IntPtr earthHandle);
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getAllTrackables(
+                IntPtr sessionHandle, ApiTrackableType filterType, IntPtr trackableList);
+
 #if UNITY_IOS
 #if ARCORE_EXTENSIONS_IOS_SUPPORT
             [IOSImport(ApiConstants.ARCoreNativeApi)]
@@ -284,6 +360,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_setPlaybackDatasetUri(
                 IntPtr sessionHandle, string encodedDatasetUri);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_isSemanticModeSupported(
+                IntPtr sessionHandle, ApiSemanticMode mode, ref int out_is_supported);
 #endif // UNITY_ANDROID
         }
     }

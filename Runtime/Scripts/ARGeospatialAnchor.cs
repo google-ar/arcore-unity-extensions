@@ -84,6 +84,11 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the <c>TerrainAnchorState</c> associated with this Terrain anchor.
         /// </summary>
+        /// @deprecated When resolving a Terrain anchor using an async method, get the result status
+        /// from the Promise object.
+        [Obsolete("This property has been deprecated. " +
+            "When resolving a Terrain anchor using an async method, get the result status from " +
+            "the Promise object.")]
         public TerrainAnchorState terrainAnchorState
         {
             get

@@ -27,7 +27,7 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARFoundation;
 
     /// <summary>
-    /// Extensions to AR Foundation's ARAnchorManager class.
+    /// Extensions to AR Foundation's <c><see cref="ARAnchorManager"/></c> class.
     /// </summary>
     public static class ARAnchorManagerExtensions
     {
@@ -36,52 +36,97 @@ namespace Google.XR.ARCoreExtensions
         private static readonly string _terrainAnchorName = "ARTerrainAnchor";
 
         /// <summary>
-        /// Creates a new Cloud Anchor using an existing local ARAnchor.
-        /// <example>
-        /// The sample code below illustrates how to host a Cloud Anchor.
-        /// <pre>
+        /// Creates an anchor at a specified horizontal position and altitude relative to the
+        /// horizontal position’s rooftop. See the <a
+        /// href="https://developers.google.com/ar/develop/geospatial/unity-arf/anchors#rooftop-anchors">Rooftop
+        /// anchors developer guide</a> for more information.
+        ///
+        /// The specified <c><paramref name="altitudeAboveRooftop"/></c> is interpreted to be
+        /// relative to the top of a building at the given horizontal location, rather than relative
+        /// to the WGS84 ellipsoid. If there is no building at the given location, then the altitude
+        /// is interpreted to be relative to the terrain instead. Specifying an altitude of 0 will
+        /// position the anchor directly on the rooftop whereas specifying a positive altitude will
+        /// position the anchor above the rooftop, against the direction of gravity.
+        ///
+        /// This schedules a task to resolve the anchor's pose using the given parameters. You may
+        /// resolve multiple anchors at a time, but a session cannot be tracking more than 100
+        /// Terrain and Rooftop Anchors at time.
+        ///
+        /// Creating a Rooftop anchor requires
+        /// <c><see cref="AREarthManager.EarthState"/></c> to be
+        /// <c><see cref="EarthState.Enabled"/></c>
+        /// and <c><see cref="AREarthManager.EarthTrackingState"/></c> to be
+        /// <c><see cref="TrackingState.Tracking"/></c> or
+        /// <c><see cref="TrackingState.Paused"/></c>. If it is not, then
+        /// <c><see cref="ResolveAnchorOnRooftopResult.Anchor"/></c> will be <c>null</c>. This call
+        /// also requires a working internet connection to communicate with the ARCore API on Google
+        /// Cloud. ARCore will continue to retry if it is unable to establish a connection to the
+        /// ARCore service.
+        ///
+        /// Latitude and longitude are defined by the
+        /// <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
+        /// specification</a>.
+        ///
+        /// The rotation provided by <c><paramref name="eunRotation"/></c> is a rotation with
+        /// respect to an east-up-north coordinate frame. An identity rotation will have the anchor
+        /// oriented such that X+ points to the east, Y+ points up away from the center of the
+        /// earth, and Z+ points to the north.
+        ///
+        /// To create a quaternion that represents a clockwise angle theta from north around the +Y
+        /// anchor frame axis, use the following formula:
         /// <code>
-        /// private ARCloudAnchor _cloudAnchor;
-        /// &nbsp;
-        /// void HostCloudAnchor(Pose pose)
-        /// {
-        ///     // Create a local anchor, you may also use another ARAnchor you already have.
-        ///     ARAnchor localAnchor = AnchorManager.AddAnchor(pose);
-        /// &nbsp;
-        ///     // Request the Cloud Anchor.
-        ///     _cloudAnchor = AnchorManager.HostCloudAnchor(localAnchor);
-        /// }
-        /// &nbsp;
-        /// void Update()
-        /// {
-        ///     if (_cloudAnchor)
-        ///     {
-        ///         // Check the Cloud Anchor state.
-        ///         CloudAnchorState cloudAnchorState = _cloudAnchor.cloudAnchorState;
-        ///         if (cloudAnchorState == CloudAnchorState.Success)
-        ///         {
-        ///             myOtherGameObject.transform.SetParent(_cloudAnchor.transform, false);
-        ///             _cloudAnchor = null;
-        ///         }
-        ///         else if (cloudAnchorState == CloudAnchorState.TaskInProgress)
-        ///         {
-        ///             // Wait, not ready yet.
-        ///         }
-        ///         else
-        ///         {
-        ///             // An error has occurred.
-        ///         }
-        ///     }
-        /// }
+        /// Quaternion.AngleAxis(180f - theta, Vector3.up);
         /// </code>
-        /// </pre>
-        /// </example>
+        ///
+        /// </summary>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
+        /// <param name="latitude">
+        /// The latitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="longitude">
+        /// The longitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="altitudeAboveRooftop">
+        /// The altitude of the anchor above the Earth's Rooftop.</param>
+        /// <param name="eunRotation">The rotation of the anchor with respect to the east-up-north
+        /// coordinate frame where X+ points east, Y+ points up away from gravity, and Z+ points
+        /// north. A rotation about the Y+ axis creates a rotation counterclockwise from north.
+        /// </param>
+        /// <returns>Returns a <c><see cref="ResolveAnchorOnRooftopPromise"/></c>
+        /// used in a <a href="https://docs.unity3d.com/Manual/Coroutines.html">Unity
+        /// Coroutine</a>. It updates its results in frame update events.</returns>
+        public static ResolveAnchorOnRooftopPromise ResolveAnchorOnRooftopAsync(
+            this ARAnchorManager anchorManager, double latitude, double longitude,
+            double altitudeAboveRooftop, Quaternion eunRotation)
+        {
+            IntPtr earthHandle = SessionApi.AcquireEarth(
+                ARCoreExtensions._instance.currentARCoreSessionHandle);
+            if (earthHandle == IntPtr.Zero)
+            {
+                Debug.LogError("Failed to acquire earth.");
+                return new ResolveAnchorOnRooftopPromise(IntPtr.Zero);
+            }
+
+            IntPtr future = EarthApi.ResolveAnchorOnRooftopFuture(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, earthHandle, latitude,
+                longitude, altitudeAboveRooftop, eunRotation, IntPtr.Zero);
+
+            TrackableApi.Release(earthHandle);
+
+            return new ResolveAnchorOnRooftopPromise(future);
+        }
+
+        /// <summary>
+        /// Creates a new Cloud Anchor using an existing local ARAnchor.
         /// </summary>
         /// <param name="anchorManager">The <c><see cref="ARAnchorManager"/></c> instance.</param>
         /// <param name="anchor">The local <c><see cref="ARAnchor"/></c> to be used as the
         /// basis to host a new Cloud Anchor.</param>
         /// <returns>If successful, a <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
+        /// @deprecated Please use <c><see
+        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> instead with <c>ttlDays=1</c>.
+        [Obsolete("This method has been deprecated. " +
+            "Please use HostCloudAnchorAsync(ARAnchor, int) instead with ttlDays=1.")]
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor)
         {
@@ -117,16 +162,21 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Creates a new Cloud Anchor with a given lifetime using an existing local ARAnchor.
+        /// Creates a new Cloud Anchor with a given lifetime using an existing local
+        /// <c>ARAnchor</c>.
         /// </summary>
         /// <param name="anchorManager">The <c><see cref="ARAnchorManager"/></c> instance.</param>
         /// <param name="anchor">The local <c><see cref="ARAnchor"/></c> to be used as the
         /// basis to host a new Cloud Anchor.</param>
         /// <param name="ttlDays">The lifetime of the anchor in days. Must be positive. The
         /// maximum allowed value is 1 if using an API Key to authenticate with the
-        /// ARCore Cloud Anchor service, otherwise the maximum allowed value is 365.</param>
+        /// ARCore API, otherwise the maximum allowed value is 365.</param>
         /// <returns>If successful, an <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
+        /// @deprecated Use <c><see cref="HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> instead with <c>ttlDays=1</c>.
+        [Obsolete("This method has been deprecated. " +
+            "Please use HostCloudAnchorAsync(ARAnchor, int) instead with ttlDays=1.")]
         public static ARCloudAnchor HostCloudAnchor(
             this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
         {
@@ -142,7 +192,7 @@ namespace Google.XR.ARCoreExtensions
                 Debug.LogErrorFormat("Failed to host a Cloud Anchor with invalid TTL {0}. " +
                     "The lifetime of the anchor in days must be positive, " +
                     "the maximum allowed value is 1 when using an API Key to authenticate with " +
-                    "the ARCore Cloud Anchor service, otherwise the maximum allowed value is 365.",
+                    "the ARCore API, otherwise the maximum allowed value is 365.",
                     ttlDays);
                 return null;
             }
@@ -172,11 +222,82 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Set the token to use when authenticating with the ARCore Cloud Anchor service
-        /// on the iOS platform.  This should be called each time the application's
+        /// Uses the pose and other data from <c>anchor</c> to host a new Cloud Anchor.
+        /// A Cloud Anchor is assigned an identifier that can be used to create an
+        /// <c><see cref="ARAnchor"/></c> in the same position in subsequent sessions across devices
+        /// using <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
+        /// string)"/></c>. See the <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide">Cloud
+        /// Anchors developer guide</a> for more information.
+        ///
+        /// The duration that a Cloud Anchor can be resolved for is specified by
+        /// <c>ttlDays</c>. When using <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide-android#keyless-authorization">Keyless
+        /// authorization</a> or <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide-ios#token-signed-jwt-authorization">Token
+        /// authorization</a>, the maximum allowed value is 365 days. When using an <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide-android#api-key-authorization">API
+        /// Key</a> to authenticate with the ARCore API, the maximum allowed value is 1 day.
+        ///
+        /// Cloud Anchors requires a <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c>
+        /// with <c><see cref="CloudAnchorMode.Enabled"/></c> set on this session. Use
+        /// <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c> to enable the Cloud Anchors
+        /// API.
+        ///
+        /// Hosting a Cloud Anchor works best when ARCore is able to create a good
+        /// feature map around the <c><see cref="ARAnchor"/></c>. Use <c><see
+        /// cref="EstimateFeatureMapQualityForHosting(this ARAnchorManager anchorManager,
+        /// Pose)"/></c> to determine the quality of visual features seen by ARCore in the preceding
+        /// few seconds. Cloud Anchors hosted using higher quality features will generally result in
+        /// quicker and more accurately resolved Cloud Anchor poses.
+        ///
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
+        /// function returns a <c><see cref="HostCloudAnchorPromise"/></c> which can be used to
+        /// obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be set
+        /// to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
+        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
+        /// can be obtained. See documentation on <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        ///
+        /// ARCore can have up to 40 simultaneous Cloud Anchor operations, including
+        /// resolved anchors and active hosting operations.
+        ///
+        /// </summary>
+        /// <param name="anchorManager">The <c><see cref="ARAnchorManager"/></c> instance.</param>
+        /// <param name="anchor">The local <c><see cref="ARAnchor"/></c> to be used as the
+        /// basis to host a new Cloud Anchor.</param>
+        /// <param name="ttlDays">The lifetime of the anchor in days. Must be positive. The
+        /// maximum allowed value is 1 if using an API Key to authenticate with the
+        /// ARCore API, otherwise the maximum allowed value is 365.</param>
+        /// <returns>Returns a <c><see cref="HostCloudAnchorPromise"/></c>
+        /// used in a <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity
+        /// Coroutine</a>. It updates its results in frame update events.
+        /// </returns>
+        public static HostCloudAnchorPromise HostCloudAnchorAsync(
+            this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
+        {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                anchor == null || anchor.nativePtr == IntPtr.Zero ||
+                anchor.AnchorHandle() == IntPtr.Zero)
+            {
+                return new HostCloudAnchorPromise(IntPtr.Zero);
+            }
+
+            IntPtr future = SessionApi.HostCloudAnchorAsync(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, anchor.AnchorHandle(),
+                ttlDays);
+
+            return new HostCloudAnchorPromise(future);
+        }
+
+        /// <summary>
+        /// Set the token to use when authenticating with the ARCore API
+        /// on the iOS platform. This should be called each time the application's
         /// token is refreshed.
         /// </summary>
-        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
         /// <param name="authToken">The authentication token to set.</param>
         public static void SetAuthToken(this ARAnchorManager anchorManager, string authToken)
         {
@@ -222,10 +343,10 @@ namespace Google.XR.ARCoreExtensions
         /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
         /// otherwise <c>null</c>.</returns>
         ///
-        /// @deprecated Use
-        /// <c><see cref="ARAnchorManagerExtensions.HostCloudAnchor(this ARAnchorManager, ARAnchor)"/></c>
-        /// instead.
-        [Obsolete("This method has been deprecated. Use HostCloudAnchor(ARAnchor) instead.")]
+        /// @deprecated Use <c><see
+        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> instead.
+        [Obsolete("This method is deprecated. Use HostCloudAnchorAsync(ARAnchor, int) instead.")]
         public static ARCloudReferencePoint AddCloudReferencePoint(
             this ARAnchorManager referencePointManager, ARAnchor referencePoint)
         {
@@ -257,47 +378,16 @@ namespace Google.XR.ARCoreExtensions
         /// Creates a new local Cloud Anchor from the provided Id.
         /// A session can be resolving up to 40 Cloud Anchors at a given time.
         /// If resolving fails, the anchor will be automatically removed from the session.
-        /// <example>
-        /// The sample code below illustrates how to resolve a Cloud Anchor.
-        /// <pre>
-        /// <code>
-        /// private ARCloudAnchor _cloudAnchor;
-        /// &nbsp;
-        /// void ResolveCloudAnchor(string cloudAnchorId)
-        /// {
-        ///     // Request the Cloud Anchor.
-        ///     _cloudAnchor = AnchorManager.ResolveCloudAnchorId(cloudAnchorId);
-        /// }
-        /// &nbsp;
-        /// void Update()
-        /// {
-        ///     if (_cloudAnchor)
-        ///     {
-        ///         // Check the Cloud Anchor state.
-        ///         CloudAnchorState cloudAnchorState = _cloudAnchor.cloudAnchorState;
-        ///         if (cloudAnchorState == CloudAnchorState.Success)
-        ///         {
-        ///             myOtherGameObject.transform.SetParent(_cloudAnchor.transform, false);
-        ///             _cloudAnchor = null;
-        ///         }
-        ///         else if (cloudAnchorState == CloudAnchorState.TaskInProgress)
-        ///         {
-        ///             // Wait, not ready yet.
-        ///         }
-        ///         else
-        ///         {
-        ///             // An error has occurred.
-        ///         }
-        ///     }
-        /// }
-        /// </code>
-        /// </pre>
-        /// </example>
         /// </summary>
-        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
         /// <param name="cloudAnchorId">String representing the Cloud Anchor.</param>
         /// <returns>If successful, a <c><see cref="ARCloudAnchor"/></c>,
         /// otherwise <c>null</c>.</returns>
+        /// @deprecated Use <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
+        /// string)"/></c> instead.
+        [Obsolete("This method has been deprecated. " +
+            "Please use ResolveCloudAnchorAsync(ARAnchor, string) instead.")]
         public static ARCloudAnchor ResolveCloudAnchorId(
             this ARAnchorManager anchorManager, string cloudAnchorId)
         {
@@ -332,15 +422,69 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
+        /// Attempts to resolve a Cloud Anchor using the provided <c>cloudAnchorId</c>.
+        /// The Cloud Anchor must previously have been hosted by <c><see
+        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> or another Cloud Anchor hosting method within the allotted <c>ttlDays</c>.
+        /// See the <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide">Cloud
+        /// Anchors developer guide</a> for more information.
+        ///
+        /// When resolving a Cloud Anchor, the ARCore API periodically compares visual
+        /// features from the scene against the anchor's 3D feature map to pinpoint the
+        /// user's position and orientation relative to the anchor. When it finds a
+        /// match, the task completes.
+        ///
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
+        /// function returns a <c><see cref="ResolveCloudAnchorPromise"/></c> which can be used to
+        /// obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be set
+        /// to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
+        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
+        /// can be obtained. See documentation on <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        ///
+        /// Cloud Anchors requires a <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c>
+        /// with <c><see cref="CloudAnchorMode.Enabled"/></c> set on this session. Use
+        /// <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c> to enable the Cloud Anchors
+        /// API.
+        ///
+        /// ARCore can have up to 40 simultaneous Cloud Anchor operations, including
+        /// resolved anchors and active hosting operations.
+        ///
+        /// </summary>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
+        /// <param name="cloudAnchorId">The Cloud Anchor ID to resolve.</param>
+        /// <returns>Returns a <c><see cref="ResolveCloudAnchorPromise"/></c> used in a
+        /// <a href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>.
+        /// It updates its results in frame update events.
+        /// </returns>
+        public static ResolveCloudAnchorPromise ResolveCloudAnchorAsync(
+            this ARAnchorManager anchorManager, string cloudAnchorId)
+        {
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                string.IsNullOrEmpty(cloudAnchorId))
+            {
+                return new ResolveCloudAnchorPromise(IntPtr.Zero);
+            }
+
+            IntPtr future = SessionApi.ResolveCloudAnchorAsync(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, cloudAnchorId);
+
+            return new ResolveCloudAnchorPromise(future);
+        }
+
+        /// <summary>
         /// Creates a new local cloud reference point from the provided Id.
         /// </summary>
-        /// <param name="referencePointManager">The ARAnchorManager instance.</param>
+        /// <param name="referencePointManager">The <c>ARAnchorManager</c> instance.</param>
         /// <param name="cloudReferenceId">String representing the cloud reference.</param>
         /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
         /// otherwise <c>null</c>.</returns>
-        /// @deprecated Please use ResolveCloudAnchorId(string) instead.
+        /// @deprecated Use <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
+        /// string)"/></c> instead.
         [Obsolete("This method has been deprecated. " +
-            "Please use ResolveCloudAnchorId(string) instead.")]
+            "Please use ResolveCloudAnchorAsync(ARAnchor, string) instead.")]
         public static ARCloudReferencePoint ResolveCloudReferenceId(
             this ARAnchorManager referencePointManager,
             string cloudReferenceId)
@@ -372,13 +516,11 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Estimates the quality of the visual feature points seen by ARCore in the
         /// preceding few seconds and visible from the provided camera <paramref name="pose"/>.
+        ///
         /// Cloud Anchors hosted using higher feature map quality will generally result
         /// in easier and more accurately resolved <c><see cref="ARCloudAnchor"/></c> poses.
-        /// If feature map quality cannot be estimated for the given <paramref name="pose"/>,
-        /// a warning message "Failed to estimate feature map quality" with the error status
-        /// is logged and <c><see cref="FeatureMapQuality.Insufficient"/></c> is returned.
         /// </summary>
-        /// <param name="anchorManager">The ARAnchorManager instance.</param>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
         /// <param name="pose">The camera pose to use in estimating the quality.</param>
         /// <returns>The estimated feature map quality.</returns>
         public static FeatureMapQuality EstimateFeatureMapQualityForHosting(
@@ -403,9 +545,9 @@ namespace Google.XR.ARCoreExtensions
         /// the WGS84 ellipsoid.
         /// To create an anchor using an altitude
         /// relative to the Earth's terrain instead of altitude above the WGS84
-        /// ellipsoid, use <c><see 
-        /// cref="ARAnchorManagerExtensions.ResolveAnchorOnTerrain(this ARAnchorManager, double,
-        /// double, double, Quaternion)"/></c>.
+        /// ellipsoid, use <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveAnchorOnTerrainAsync(this ARAnchorManager,
+        /// double, double, double, Quaternion)"/></c>.
         ///
         /// Creating anchors near the north pole or south pole is not supported. If
         /// the latitude is within 0.1 degrees of the north pole or south pole (90
@@ -481,8 +623,8 @@ namespace Google.XR.ARCoreExtensions
         /// altitude relative to the horizontal position's terrain. Terrain means the ground or
         /// ground floor inside a building with VPS coverage. If the altitude relative to the WGS84
         /// ellipsoid is known, use
-        /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(this ARAnchorManager, double, double, double, Quaternion)"/></c>
-        /// instead.
+        /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(this ARAnchorManager, double, double,
+        /// double, Quaternion)"/></c> instead.
         ///
         /// The specified <c><paramref name="altitudeAboveTerrain"/></c> is interpreted to be
         /// relative to the Earth's terrain (or floor) at the specified latitude/longitude
@@ -508,7 +650,9 @@ namespace Google.XR.ARCoreExtensions
         ///
         /// Creating a Terrain anchor requires <c><see cref="AREarthManager.EarthState"/></c> to be
         /// <c><see cref="EarthState.Enabled"/></c>,
-        /// and <c><see cref="AREarthManager.EarthTrackingState"/></c> to be <c>Tracking</c>.
+        /// and <c><see cref="AREarthManager.EarthTrackingState"/></c> to be
+        /// <c><see cref="TrackingState.Tracking"/></c> or
+        /// <c><see cref="TrackingState.Paused"/></c>. If it is not, then
         /// If it is not, then this function returns <c>null</c>. This call also requires a working
         /// internet. connection to communicate with the ARCore API on Google Cloud. ARCore will
         /// continue to retry if it is unable to establish a connection to the ARCore
@@ -545,6 +689,11 @@ namespace Google.XR.ARCoreExtensions
         /// <returns>
         /// If successful, a <c><see cref="ARGeospatialAnchor"/></c>, otherwise, <c>null</c>.
         /// </returns>
+        /// @deprecated Use <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveAnchorOnTerrainAsync(this ARAnchorManager,
+        /// double, double, double, Quaternion)"/></c> instead.
+        [Obsolete("This method has been deprecated. Please use " +
+            "ResolveAnchorOnTerrainAsync(double, double, double, Quaternion) instead.")]
         public static ARGeospatialAnchor ResolveAnchorOnTerrain(this ARAnchorManager anchorManager,
             double latitude, double longitude, double altitudeAboveTerrain, Quaternion eunRotation)
         {
@@ -582,6 +731,95 @@ namespace Google.XR.ARCoreExtensions
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
             return anchor;
+        }
+
+        /// <summary>
+        /// Asynchronously creates a <c><see cref="ARGeospatialAnchor"/></c> at a specified
+        /// horizontal position and altitude relative to the horizontal position's terrain.
+        /// See the <a
+        /// href="https://developers.google.com/ar/develop/geospatial/java/anchors#terrain-anchors">Terrain
+        /// anchors developer guide</a> for more information.
+        ///
+        /// The specified <c><paramref name="altitudeAboveTerrain"/></c> is interpreted to be
+        /// relative to the terrain at the specified latitude/longitude geodetic coordinates, rather
+        /// than relative to the WGS-84 ellipsoid. Specifying an altitude of 0 will position the
+        /// anchor directly on the terrain whereas specifying a positive altitude will position the
+        /// anchor above the terrain, against the direction of gravity.
+        ///
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
+        /// function returns a <c><see cref="ResolveAnchorOnTerrainPromise"/></c> which can be used
+        /// to obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be
+        /// set to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
+        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
+        /// can be obtained. See documentation on <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        ///
+        /// Creating anchors near the north pole or south pole is not supported. If the latitude is
+        /// within 0.1 degrees of the north pole or south pole (90 degrees or -90 degrees),
+        /// <c><see cref="ResolveAnchorOnTerrainResult.Anchor"/></c> will be <c>null</c>.
+        ///
+        /// This schedules a task to resolve the anchor's pose using the given parameters. You may
+        /// resolve multiple anchors at a time, but a session cannot be tracking more than 100
+        /// Terrain and Rooftop anchors at time.
+        ///
+        /// Creating a Terrain anchor requires an <c><see cref="AREarthManager.EarthState"/></c> to
+        /// be <c><see cref="EarthState.Enabled"/></c> and
+        /// <c><see cref="AREarthManager.EarthTrackingState"/></c> to be
+        /// <c><see cref="TrackingState.Tracking"/></c> or
+        /// <c><see cref="TrackingState.Paused"/></c>. If it is not, then
+        /// <c><see cref="ResolveAnchorOnTerrainResult.Anchor"/></c> will be <c>null</c>. This call
+        /// also requires a working internet connection to communicate with the ARCore API on Google
+        /// Cloud. ARCore will continue to retry if it is unable to establish a connection to the
+        /// ARCore service.
+        ///
+        /// Latitude and longitude are defined by the
+        /// <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
+        /// specification</a>.
+        ///
+        /// The rotation provided by <c><paramref name="eunRotation"/></c> is a rotation with
+        /// respect to an east-up-north coordinate frame. An identity rotation will have the anchor
+        /// oriented such that X+ points to the east, Y+ points up away from the center of the
+        /// earth, and Z+ points to the north.
+        ///
+        /// To create a quaternion that represents a clockwise angle theta from north around the +Y
+        /// anchor frame axis, use the following formula:
+        /// <code>
+        /// Quaternion.AngleAxis(180f - theta, Vector3.up);
+        /// </code>
+        ///
+        /// </summary>
+        /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
+        /// <param name="latitude">
+        /// The latitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="longitude">
+        /// The longitude of the anchor relative to the WGS84 ellipsoid.</param>
+        /// <param name="altitudeAboveTerrain">
+        /// The altitude of the anchor above the Earth's terrain.</param>
+        /// <param name="eunRotation">The rotation of the anchor with respect to the east-up-north
+        /// coordinate frame where X+ points east, Y+ points up away from gravity, and Z+ points
+        /// north. A rotation about the Y+ axis creates a rotation counterclockwise from north.
+        /// </param>
+        /// <returns>Returns a <c><see cref="ResolveAnchorOnTerrainPromise"/></c> used in a <a
+        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>.
+        /// It updates its results in frame update events.</returns>
+        public static ResolveAnchorOnTerrainPromise ResolveAnchorOnTerrainAsync(
+            this ARAnchorManager anchorManager, double latitude, double longitude,
+            double altitudeAboveTerrain, Quaternion eunRotation)
+        {
+            IntPtr earthHandle = SessionApi.AcquireEarth(
+                ARCoreExtensions._instance.currentARCoreSessionHandle);
+            if (earthHandle == IntPtr.Zero)
+            {
+                Debug.LogError("Failed to acquire earth.");
+                return new ResolveAnchorOnTerrainPromise(IntPtr.Zero);
+            }
+
+            IntPtr future = EarthApi.ResolveAnchorOnTerrainFuture(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, earthHandle, latitude,
+                longitude, altitudeAboveTerrain, eunRotation, IntPtr.Zero);
+            TrackableApi.Release(earthHandle);
+
+            return new ResolveAnchorOnTerrainPromise(future);
         }
     }
 }

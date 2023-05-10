@@ -33,6 +33,11 @@ namespace Google.XR.ARCoreExtensions.Internal
     /// </summary>
     internal static class CachedData
     {
+        public const string SemanticsTimestamp = "semanticsTimestamp";
+        public const string SemanticsTexture = "semanticsTexture";
+        public const string SemanticsConfidenceTimestamp = "semanticsConfidenceTimestamp";
+        public const string SemanticsConfidenceTexture = "semanticsConfidenceTexture";
+
         private static Dictionary<string, object> _cachedData = new Dictionary<string, object>();
 
         /// <summary>

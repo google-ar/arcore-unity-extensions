@@ -20,13 +20,15 @@
 
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
+
     /// <summary>
-    /// Describes the current terrain anchor state of a <c><see cref="ARGeospatialAnchor"/></c>.
+    /// Describes the result of a Terrain anchor resolving operation.
     /// </summary>
     public enum TerrainAnchorState
     {
         /// <summary>
-        /// Not a Terrain anchor or is not ready to use.
+        /// Not a valid value for a Terrain anchor operation.
         /// </summary>
         None = 0,
 
@@ -35,6 +37,10 @@ namespace Google.XR.ARCoreExtensions
         /// Once the task completes in the background, the Terrain anchor will get
         /// a new state after the next update.
         /// </summary>
+        /// @deprecated Not returned by async methods.
+        /// Replaced by <c><see cref="PromiseState.Pending"/></c>.
+        [Obsolete("This enum value has been deprecated. " +
+            "Not returned by async methods - replaced by PromiseState.Pending.")]
         TaskInProgress = 1,
 
         /// <summary>

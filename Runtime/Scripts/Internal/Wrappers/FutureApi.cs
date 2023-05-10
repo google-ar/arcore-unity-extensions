@@ -21,9 +21,15 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Runtime.InteropServices;
     using UnityEngine;
     using UnityEngine.XR.ARSubsystems;
 
+#if UNITY_IOS && !CLOUDANCHOR_IOS_SUPPORT
+    using CloudAnchorImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#else
+    using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
+#endif
 #if UNITY_IOS && !GEOSPATIAL_IOS_SUPPORT
     using EarthImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
 #else
@@ -36,39 +42,133 @@ namespace Google.XR.ARCoreExtensions.Internal
             double longitude)
         {
             IntPtr futureHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             ApiArStatus status = ExternApi.ArSession_checkVpsAvailabilityAsync(
                 sessionHandle, latitude, longitude, IntPtr.Zero, IntPtr.Zero, ref futureHandle);
             if (status != ApiArStatus.Success)
             {
                 Debug.LogErrorFormat("Failed to get the availability of VPS, status '{0}'", status);
             }
-
+#endif
             return futureHandle;
         }
 
         public static PromiseState GetState(IntPtr sessionHandle, IntPtr futureHandle)
         {
             var state = PromiseState.Pending;
-            ExternApi.ArVpsAvailabilityFuture_getState(sessionHandle, futureHandle, ref state);
+            ExternApi.ArFuture_getState(sessionHandle, futureHandle, ref state);
             return state;
         }
 
-        public static VpsAvailability GetResult(IntPtr sessionHandle, IntPtr futureHandle)
+        public static VpsAvailability GetVpsAvailabilityResult(IntPtr sessionHandle,
+            IntPtr futureHandle)
         {
             var result = VpsAvailability.Unknown;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             ExternApi.ArVpsAvailabilityFuture_getResult(sessionHandle, futureHandle, ref result);
+#endif
             return result;
+        }
+
+        public static RooftopAnchorState GetRooftopAnchorState(IntPtr sessionHandle,
+            IntPtr futureHandle)
+        {
+            ApiRooftopAnchorState outApiRooftopAnchorState = ApiRooftopAnchorState.None;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArResolveAnchorOnRooftopFuture_getResultRooftopAnchorState(sessionHandle,
+                futureHandle, ref outApiRooftopAnchorState);
+#endif
+            return outApiRooftopAnchorState.ToRooftopAnchorState();
+        }
+
+        public static IntPtr GetRooftopAnchorHandle(IntPtr sessionHandle, IntPtr futureHandle)
+        {
+            IntPtr outAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArResolveAnchorOnRooftopFuture_acquireResultAnchor(sessionHandle,
+                futureHandle, ref outAnchorHandle);
+#endif
+            return outAnchorHandle;
+        }
+
+        public static TerrainAnchorState GetTerrainAnchorState(IntPtr sessionHandle,
+            IntPtr futureHandle)
+        {
+            ApiTerrainAnchorState outApiTerrainAnchorState = ApiTerrainAnchorState.None;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArResolveAnchorOnTerrainFuture_getResultTerrainAnchorState(sessionHandle,
+                futureHandle, ref outApiTerrainAnchorState);
+#endif
+            return outApiTerrainAnchorState.ToTerrainAnchorState();
+        }
+
+        public static IntPtr GetTerrainAnchorHandle(IntPtr sessionHandle, IntPtr futureHandle)
+        {
+            IntPtr outAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ExternApi.ArResolveAnchorOnTerrainFuture_acquireResultAnchor(sessionHandle,
+                futureHandle, ref outAnchorHandle);
+#endif
+            return outAnchorHandle;
+        }
+
+        public static CloudAnchorState GetResolveCloudAnchorState(IntPtr sessionHandle,
+            IntPtr futureHandle)
+        {
+            ApiCloudAnchorState outApiCloudAnchorState = ApiCloudAnchorState.None;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            ExternApi.ArResolveCloudAnchorFuture_getResultCloudAnchorState(sessionHandle,
+                futureHandle, ref outApiCloudAnchorState);
+#endif
+            return outApiCloudAnchorState.ToCloudAnchorState();
+        }
+
+        public static IntPtr GetCloudAnchorHandle(IntPtr sessionHandle, IntPtr futureHandle)
+        {
+            IntPtr outAnchorHandle = IntPtr.Zero;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            ExternApi.ArResolveCloudAnchorFuture_acquireResultAnchor(sessionHandle,
+                futureHandle, ref outAnchorHandle);
+#endif
+            return outAnchorHandle;
+        }
+
+        public static CloudAnchorState GetHostCloudAnchorState(IntPtr sessionHandle,
+            IntPtr futureHandle)
+        {
+            ApiCloudAnchorState outApiCloudAnchorState = ApiCloudAnchorState.None;
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            ExternApi.ArHostCloudAnchorFuture_getResultCloudAnchorState(sessionHandle,
+                futureHandle, ref outApiCloudAnchorState);
+#endif
+            return outApiCloudAnchorState.ToCloudAnchorState();
+        }
+
+        public static string GetCloudAnchorId(IntPtr sessionHandle, IntPtr futureHandle)
+        {
+#if !UNITY_IOS || CLOUDANCHOR_IOS_SUPPORT
+            IntPtr stringHandle = IntPtr.Zero;
+            ExternApi.ArHostCloudAnchorFuture_acquireResultCloudAnchorId(
+                sessionHandle, futureHandle, ref stringHandle);
+            string cloudAnchorId = Marshal.PtrToStringAnsi(stringHandle);
+
+            ExternApi.ArString_release(stringHandle);
+
+            return cloudAnchorId;
+#else
+            return null;
+#endif
         }
 
         public static void Cancel(IntPtr sessionHandle, IntPtr futureHandle)
         {
             int defaultInt = 0;
-            ExternApi.ArVpsAvailabilityFuture_cancel(sessionHandle, futureHandle, ref defaultInt);
+            ExternApi.ArFuture_cancel(sessionHandle, futureHandle, ref defaultInt);
         }
 
         public static void Release(IntPtr futureHandle)
         {
-            ExternApi.ArVpsAvailabilityFuture_release(futureHandle);
+            ExternApi.ArFuture_release(futureHandle);
             futureHandle = IntPtr.Zero;
         }
 
@@ -79,20 +179,57 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr sessionHandle, double latitude, double longitude, IntPtr context,
                 IntPtr callback, ref IntPtr out_future);
 
-            [EarthImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArVpsAvailabilityFuture_getState(IntPtr sessionHandle,
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFuture_getState(IntPtr sessionHandle,
                 IntPtr future, ref PromiseState out_state);
 
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArVpsAvailabilityFuture_getResult(IntPtr sessionHandle,
                 IntPtr future, ref VpsAvailability out_result);
 
-            [EarthImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArVpsAvailabilityFuture_cancel(IntPtr sessionHandle,
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFuture_cancel(IntPtr sessionHandle,
                 IntPtr future, ref int out_cancel);
 
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArFuture_release(IntPtr future);
+
             [EarthImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArVpsAvailabilityFuture_release(IntPtr future);
+            public static extern void ArResolveAnchorOnRooftopFuture_getResultRooftopAnchorState(
+                IntPtr sessionHandle, IntPtr future,
+                ref ApiRooftopAnchorState outRooftopAnchorState);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArResolveAnchorOnRooftopFuture_acquireResultAnchor(
+                IntPtr sessionHandle, IntPtr future, ref IntPtr outAnchorHandle);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArResolveAnchorOnTerrainFuture_getResultTerrainAnchorState(
+                IntPtr sessionHandle, IntPtr future,
+                ref ApiTerrainAnchorState outTerrainAnchorState);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArResolveAnchorOnTerrainFuture_acquireResultAnchor(
+                IntPtr sessionHandle, IntPtr future, ref IntPtr outAnchorHandle);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArResolveCloudAnchorFuture_getResultCloudAnchorState(
+                IntPtr sessionHandle, IntPtr future, ref ApiCloudAnchorState outCloudAnchorState);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArResolveCloudAnchorFuture_acquireResultAnchor(
+                IntPtr sessionHandle, IntPtr future, ref IntPtr outAnchorHandle);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArHostCloudAnchorFuture_getResultCloudAnchorState(
+                IntPtr sessionHandle, IntPtr future, ref ApiCloudAnchorState outCloudAnchorState);
+
+            [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArHostCloudAnchorFuture_acquireResultCloudAnchorId(
+                IntPtr sessionHandle, IntPtr futureHandle, ref IntPtr cloudAnchorIdHandle);
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArString_release(IntPtr stringHandle);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Google.XR.ARCoreExtensions
     /// <summary>
     /// Deprecated version of <c><see cref="CloudAnchorState"/></c>.
     /// </summary>
-    /// @deprecated Please use CloudAnchorState instead.
+    /// @deprecated Please use <c><see cref="CloudAnchorState"/></c> instead.
     [System.Obsolete("This enum has been renamed to CloudAnchorState. " +
         "See details in release notes v1.16.0.")]
     public enum CloudReferenceState

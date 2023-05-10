@@ -43,64 +43,20 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Constructs a specific promise with the desired latitude and longitude. It polls the
+        /// Constructs a specific promise from the given VpsAvailabilityFuture. It polls the
         /// result in the Update event every frame until the result gets resolved. The promise
         /// result is accessible via <c><see cref="Result"/></c>, and can be cancelled by
         /// <c><see cref="Cancel()"/></c>.
         /// </summary>
-        /// <param name="latitude">The latitude, in degrees.</param>
-        /// <param name="longitude">The longitude, in degrees.</param>
-        internal VpsAvailabilityPromise(double latitude, double longitude)
+        /// <param name="future">The native future. If null initializes a Done promise with <c><see
+        /// cref="VpsAvailability.ErrorInternal"/></c> state.</param>
+        internal VpsAvailabilityPromise(IntPtr future)
         {
-#if UNITY_ANDROID
-            ARPrestoApi.SetSessionRequired(true);
-#elif UNITY_IOS && ARCORE_EXTENSIONS_IOS_SUPPORT
-            SessionApi.SetAuthToken(GetSessionHandle());
-#endif
-            var sessionHandle = GetSessionHandle();
-            if (sessionHandle == IntPtr.Zero)
+            _future = future;
+            if (_future == IntPtr.Zero)
             {
                 _state = PromiseState.Done;
                 _result = VpsAvailability.ErrorInternal;
-            }
-            else
-            {
-                _future = FutureApi.CheckVpsAvailabilityAsync(sessionHandle, latitude, longitude);
-                if (_future == IntPtr.Zero)
-                {
-                    _state = PromiseState.Done;
-                    _result = VpsAvailability.ErrorInternal;
-                }
-            }
-
-#if UNITY_ANDROID
-            ARPrestoApi.SetSessionRequired(false);
-#endif
-        }
-
-        /// <summary>
-        /// Releases the underlying native handle.
-        /// </summary>
-        ~VpsAvailabilityPromise()
-        {
-            FutureApi.Release(_future);
-        }
-
-        /// <summary>
-        /// Gets the <c><see cref="PromiseState"/></c> associated with this promise. Used to
-        /// determine if the promise is still waiting for the result.
-        /// </summary>
-        public override PromiseState State
-        {
-            get
-            {
-                var sessionHandle = GetSessionHandle();
-                if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
-                {
-                    _state = FutureApi.GetState(sessionHandle, _future);
-                }
-
-                return _state;
             }
         }
 
@@ -115,19 +71,11 @@ namespace Google.XR.ARCoreExtensions
                 var sessionHandle = GetSessionHandle();
                 if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
                 {
-                    _result = FutureApi.GetResult(sessionHandle, _future);
+                    _result = FutureApi.GetVpsAvailabilityResult(sessionHandle, _future);
                 }
 
                 return _result;
             }
-        }
-
-        /// <summary>
-        /// Cancels execution of this promise if it's still pending.
-        /// </summary>
-        public override void Cancel()
-        {
-            FutureApi.Cancel(GetSessionHandle(), _future);
         }
     }
 }

@@ -175,6 +175,44 @@ namespace Google.XR.ARCoreExtensions.Internal
 #endif
         }
 
+        public static IntPtr ResolveAnchorOnRooftopFuture(IntPtr sessionHandle, IntPtr earthHandle,
+            double latitude, double longitude, double altitudeAboveRooftop, Quaternion eunRotation,
+            IntPtr context)
+        {
+            ApiQuaternion apiQuaternion = eunRotation.ToApiQuaternion();
+            IntPtr outFutureHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ApiArStatus status = ExternApi.ArEarth_resolveAnchorOnRooftopAsync(sessionHandle,
+                earthHandle, latitude, longitude, altitudeAboveRooftop, ref apiQuaternion, context,
+                IntPtr.Zero, ref outFutureHandle);
+
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to add Rooftop Anchor, status '{0}'", status);
+            }
+#endif
+            return outFutureHandle;
+        }
+
+        public static IntPtr ResolveAnchorOnTerrainFuture(IntPtr sessionHandle, IntPtr earthHandle,
+            double latitude, double longitude, double altitudeAboveTerrain, Quaternion eunRotation,
+            IntPtr context)
+        {
+            ApiQuaternion apiQuaternion = eunRotation.ToApiQuaternion();
+            IntPtr outFutureHandle = IntPtr.Zero;
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            ApiArStatus status = ExternApi.ArEarth_resolveAnchorOnTerrainAsync(sessionHandle,
+                earthHandle, latitude, longitude, altitudeAboveTerrain, ref apiQuaternion, context,
+                IntPtr.Zero, ref outFutureHandle);
+
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat("Failed to add Terrain Anchor, status '{0}'", status);
+            }
+#endif
+            return outFutureHandle;
+        }
+
         private struct ExternApi
         {
             [EarthImport(ApiConstants.ARCoreNativeApi)]
@@ -212,6 +250,18 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern ApiArStatus ArEarth_getPose(
                 IntPtr session, IntPtr earth, double latitude, double longitude, double altitude,
                 ref ApiQuaternion eus_quaternion_4, IntPtr outPoseHandle);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArEarth_resolveAnchorOnRooftopAsync(
+                IntPtr session, IntPtr earth, double latitude, double longitude,
+                double altitudeAboveRooftop, ref ApiQuaternion eus_quaternion_4, IntPtr context,
+                IntPtr callback, ref IntPtr outFuture);
+
+            [EarthImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArEarth_resolveAnchorOnTerrainAsync(
+                IntPtr session, IntPtr earth, double latitude, double longitude,
+                double altitudeAboveTerrain, ref ApiQuaternion eus_quaternion_4, IntPtr context,
+                IntPtr callback, ref IntPtr outFuture);
         }
   }
 }

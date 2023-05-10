@@ -21,19 +21,44 @@
 namespace Google.XR.ARCoreExtensions
 {
     /// <summary>
-    /// Defines possible modes for ARCore Cloud Anchors.
+    /// Describes the desired behavior of the ARCore Cloud Anchor API. The Cloud
+    /// Anchors API uses feature maps to persist an anchor throughout sessions and
+    /// across devices. See the <a
+    /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide">Cloud
+    /// Anchors developer guide</a> for more information.
+    ///
+    /// The default value is <c><see cref="CloudAnchorMode.Disabled"/></c>. Use <c><see
+    /// cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c> to set the desired mode.
     /// </summary>
     public enum CloudAnchorMode
     {
         /// <summary>
-        /// Cloud Anchors are disabled. This is the default value.
+        /// The Cloud Anchor API is disabled. Calling <c><see
+        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> and <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
+        /// string)"/></c> will cause the promise to fail immediately.
+        ///
+        /// This is the default value.
         /// </summary>
         Disabled = 0,
 
         /// <summary>
-        /// Cloud Anchors are enabled, HostCloudAnchor() and ResolveCloudAnchorId()
-        /// functions are available. The app is expected to have the INTERNET
-        /// permission (Android only).
+        /// The Cloud Anchor API is enabled. <c><see
+        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
+        /// int)"/></c> and <c><see
+        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
+        /// string)"/></c> can be used to host and resolve Cloud Anchors.
+        ///
+        /// Using this mode requires your app to do the following:
+        ///
+        /// - On Android: Include the <a
+        ///   href="https://developer.android.com/training/basics/network-ops/connecting"><c>ACCESS_INTERNET</c></a>
+        ///   permission to the app's AndroidManifest,
+        /// - Configure <a
+        ///   href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide">authorization</a>.
+        ///
+        /// Use <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c> to set this mode.
         /// </summary>
         Enabled = 1,
     }
