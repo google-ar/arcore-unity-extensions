@@ -109,7 +109,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 // disabled if they are present.
             }
 #else // Error state because this is an invalid version of Unity
-            throw new Exception("Geospatial Creator requires Unity 2021.3 or later.");
+            if (toggleChecked)
+            {
+                Debug.LogError("Geospatial Creator requires Unity 2021.3 or later.");
+            }
 #endif
         }
 
