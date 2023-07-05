@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="GeospatialEditorHelper.cs" company="Google LLC">
+// <copyright file="GeospatialCreatorHelper.cs" company="Google LLC">
 //
 // Copyright 2023 Google LLC
 //
@@ -18,7 +18,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System;
@@ -32,9 +31,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     /// </summary>
     /// <remarks> The functions defined here can be invoked directly from other parts of ARCore
     /// Extensions, which is why this class is in the Google.XR.ARCoreExtensions.Editor namespace
-    /// and ASMDEF. If this code was in the GeospatialEditor assembly, we'd need to modify the
+    /// and ASMDEF. If this code was in the GeospatialCreator assembly, we'd need to modify the
     /// ARCoreExtensions ASMDEF to include additional assemblies. </remarks>
-    public static class GeospatialEditorHelper
+    public static class GeospatialCreatorHelper
     {
         /// <summary> URL for the Geospatial Creator quickstart page. </summary>
         public static readonly string QuickstartUrl =

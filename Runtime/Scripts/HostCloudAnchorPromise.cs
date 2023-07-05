@@ -46,9 +46,10 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Constructs a specific promise with the associated handle. It polls the
-        /// result in the Update event every frame until the result gets resolved. The promise
-        /// result is accessible via <c><see cref="Result"/></c>, and can be cancelled by
+        /// Constructs a specific promise with the associated handle. The <c><see cref="State"/>
+        /// </c> must be polled in a coroutine until it returns <c><see cref="PromiseState.Done"/>
+        /// </c> or <c><see cref="PromiseState.Cancelled"/></c>. When done, the promise result is
+        /// accessible via <c><see cref="Result"/></c>. The promise can be cancelled by
         /// <c><see cref="Cancel()"/></c>.
         /// </summary>
         /// <param name="futureHandle">The future handle associated with this promise.</param>
@@ -75,6 +76,7 @@ namespace Google.XR.ARCoreExtensions
                 // Set defaults.
                 _state = PromiseState.Pending;
                 _result = new HostCloudAnchorResult();
+                _onPromiseDone += AssignResult;
             }
 
 #if UNITY_ANDROID
@@ -82,35 +84,19 @@ namespace Google.XR.ARCoreExtensions
 #endif
         }
 
-        /// <summary>
-        /// Gets the <c><see cref="HostCloudAnchorResult"/></c> associated with this
-        /// promise or the default values of <c><see cref="CloudAnchorState.None"/></c> and
-        /// <c>null</c> if the promise was cancelled.
-        /// </summary>
-        public override HostCloudAnchorResult Result
+        private void AssignResult()
         {
-            get
+            IntPtr sessionHandle = GetSessionHandle();
+            CloudAnchorState cloudAnchorState = FutureApi.GetHostCloudAnchorState(
+                sessionHandle, _future);
+            string cloudAnchorId = null;
+
+            if (cloudAnchorState == CloudAnchorState.Success)
             {
-                IntPtr sessionHandle = GetSessionHandle();
-
-                if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero &&
-                    _result.CloudAnchorState == CloudAnchorState.None &&
-                    this.State == PromiseState.Done)
-                {
-                    CloudAnchorState cloudAnchorState = FutureApi.GetHostCloudAnchorState(
-                        sessionHandle, _future);
-                    string cloudAnchorId = null;
-
-                    if (cloudAnchorState == CloudAnchorState.Success)
-                    {
-                        cloudAnchorId = FutureApi.GetCloudAnchorId(sessionHandle, _future);
-                    }
-
-                    _result = new HostCloudAnchorResult(cloudAnchorState, cloudAnchorId);
-                }
-
-                return _result;
+                cloudAnchorId = FutureApi.GetCloudAnchorId(sessionHandle, _future);
             }
+
+            _result = new HostCloudAnchorResult(cloudAnchorState, cloudAnchorId);
         }
     }
 }

@@ -58,24 +58,15 @@ namespace Google.XR.ARCoreExtensions
                 _state = PromiseState.Done;
                 _result = VpsAvailability.ErrorInternal;
             }
+            else
+            {
+                _onPromiseDone = AssignResult;
+            }
         }
 
-        /// <summary>
-        /// Gets the <c><see cref="VpsAvailability"/></c> associated with this promise or the
-        /// default value <c><see cref="VpsAvailability.Unknown"/></c> if the promise was cancelled.
-        /// </summary>
-        public override VpsAvailability Result
+        private void AssignResult()
         {
-            get
-            {
-                var sessionHandle = GetSessionHandle();
-                if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
-                {
-                    _result = FutureApi.GetVpsAvailabilityResult(sessionHandle, _future);
-                }
-
-                return _result;
-            }
+            _result = FutureApi.GetVpsAvailabilityResult(GetSessionHandle(), _future);
         }
     }
 }

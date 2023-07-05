@@ -6,9 +6,7 @@
         "Unity.XR.ARCore",
         "Unity.XR.ARSubsystems",
         "Unity.XR.ARFoundation",
-        "Unity.XR.CoreUtils",
-        "CesiumRuntime",
-        "Unity.Mathematics"
+        "Unity.XR.CoreUtils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -17,18 +15,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.cesium.unity",
-            "expression": "1.0.0",
-            "define": "ARCORE_INTERNAL_USE_CESIUM"
-        },
-        {
-            "name": "com.unity.mathematics",
-            "expression": "1.2.0",
-            "define": "ARCORE_INTERNAL_USE_UNITY_MATH"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
-

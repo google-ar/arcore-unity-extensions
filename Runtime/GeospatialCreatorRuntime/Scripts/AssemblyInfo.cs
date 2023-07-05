@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="AssemblyInfo.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
-{
-    /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
-    /// </summary>
-    public class VersionInfo
-    {
-        /// <summary>
-        /// The current ARCore Extensions package version.
-        /// </summary>
-        public static readonly string Version = "1.38.0";
-    }
-}
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(
+    "Google.XR.ARCoreExtensions.GeospatialCreator.Editor")]
+

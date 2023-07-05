@@ -17,74 +17,28 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-#if UNITY_2021_3_OR_NEWER
 
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     using System;
     using System.Collections;
+    using Google.XR.ARCoreExtensions;
     using Google.XR.ARCoreExtensions.Internal;
-#if ARCORE_INTERNAL_USE_UNITY_MATH
-    using Unity.Mathematics;
-#endif
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
 
+    /// <summary>
+    /// A representation of a Geospatial Anchor that was created using the Geospatial Creator tool.
+    /// This object is responsible for creating a proper ARGeospatialAnchor at runtime at the
+    /// latitude, longitude, and altitude specified.
+    /// </summary>
     [AddComponentMenu("XR/AR Geospatial Creator Anchor")]
     [ExecuteInEditMode]
-    public class ARGeospatialCreatorAnchor : MonoBehaviour
+    public class ARGeospatialCreatorAnchor : ARGeospatialCreatorObject
     {
-        public enum AltitudeType
-        {
-            ManualAltitude,
-            Terrain,
-            Rooftop,
-        };
-
-#if !UNITY_EDITOR
-        private enum AnchorResolutionState {
-            NotStarted,
-            InProgress,
-            Complete
-        };
-#endif
-
-#if UNITY_EDITOR
-        public GeoTilesReference GeoReference;
-
-        public double3 ECEF;
-        public double3 EUN;
-        public double3 EUS;
-
-        public bool shouldPosition = true;
-#endif
-
+        /// <summary>Gets or sets the AltitudeType used for resolution of this anchor.</summary>
         public AltitudeType AltType = AltitudeType.ManualAltitude;
-
-        public double Latitude
-        {
-            get => this._latitude;
-            set { this._latitude = value; }
-        }
-
-        public double Longitude
-        {
-            get => this._longitude;
-            set { this._longitude = value; }
-        }
-
-        public double Altitude
-        {
-            get => this._altitude;
-            set { this._altitude = value; }
-        }
-
-        public double AltitudeOffset
-        {
-            get => this._altitudeOffset;
-            set { this._altitudeOffset = value; }
-        }
 
         [SerializeField]
         private double _latitude;
@@ -102,149 +56,100 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         private AnchorResolutionState _anchorResolution = AnchorResolutionState.NotStarted;
 #endif
 
-#if UNITY_EDITOR
-        [SerializeField]
-        private double _geoRefLatitude;
-
-        [SerializeField]
-        private double _geoRefLongitude;
-
-        [SerializeField]
-        private double _geoRefHeight;
-
-        private double4x4 ENUToECEF;
-        private double4x4 ECEFToENU;
-        private Vector3 _oldPosition = Vector3.zero;
-        private Quaternion _oldRotation = Quaternion.identity;
-        private Vector3 _oldScale = Vector3.one;
-
-        public void SetUnityPosition()
+        /// <summary>
+        /// Determines how the Altitude and AlttudeOffset fields are interpreted.
+        /// </summary>
+        public enum AltitudeType
         {
-            shouldPosition = false;
-            CalculateRealWorldPosition();
-            GeoCoor coor = new GeoCoor(Latitude, Longitude, Altitude);
-            double3 localInECEF = GeoCoor.GeoCoorToECEF(coor);
-            double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
-            // Unity is EUN not ENU so swap z and y
-            Vector3 EUN = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
-            transform.position = EUN;
+            /// <summary>
+            /// Altitude specifies the altitude of the anchor in meters for WGS84. AltitudeOffset
+            /// is not used.
+            /// </summary>
+            ManualAltitude,
+
+            /// <summary>
+            /// AltitudeOffset specifies the relative altitude above/below the terrain, in meters.
+            /// Altitude is used only in the Editor for visualizing the anchor in the scene view.
+            /// </summary>
+            Terrain,
+
+            /// <summary>
+            /// AltitudeOffset specifies the relative altitude above/below the rooftop, in meters.
+            /// Altitude is used only in the Editor for visualizing the anchor in the scene view.
+            /// </summary>
+            Rooftop
         }
 
-        private void CalculateRealWorldPosition()
+#if !UNITY_EDITOR
+        private enum AnchorResolutionState
         {
-            GeoCoor coor;
-            GeoTilesReferencePoint refPoint = GeoReference.GetTilesReferencePoint(this.gameObject);
-            if (refPoint != null)
-            {
-                coor = new GeoCoor(refPoint.Latitude, refPoint.Longitude, refPoint.Height);
-            }
-            else
-            {
-                coor = new GeoCoor(_geoRefLatitude, _geoRefLongitude, _geoRefHeight);
-            }
+            NotStarted,
+            InProgress,
+            Complete
+        }
+#endif
 
-            // :TODO b/277370107: This could be optimized by only changing the position if the
-            // object or origin has moved
-            double3 PositionInECEF = GeoCoor.GeoCoorToECEF(coor);
-
-            // Rotate from y up to z up and flip X. References:
-            //   https://github.com/CesiumGS/3d-tiles/tree/main/specification#transforms
-            //   https://stackoverflow.com/questions/1263072/changing-a-matrix-from-right-handed-to-left-handed-coordinate-system
-            //   https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_ECEF_to_ENU
-            MatrixStack _matrixStack = new MatrixStack();
-            _matrixStack.PushMatrix();
-
-            double latSin, latCos;
-            math.sincos(coor.Latitude / 180 * Math.PI, out latSin, out latCos);
-            double lngSin, lngCos;
-            math.sincos(coor.Longitude / 180 * Math.PI, out lngSin, out lngCos);
-            double4x4 ECEFToENURot = new double4x4(
-                -lngSin,
-                lngCos,
-                0.0,
-                0.0,
-                -latSin * lngCos,
-                -latSin * lngSin,
-                latCos,
-                0.0,
-                latCos * lngCos,
-                latCos * lngSin,
-                latSin,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0);
-
-            _matrixStack.MultMatrix(
-                MatrixStack.Translate(
-                    new double3(-PositionInECEF.x, -PositionInECEF.y, -PositionInECEF.z)));
-            _matrixStack.MultMatrix(ECEFToENURot);
-            ECEFToENU = _matrixStack.GetMatrix();
-            ENUToECEF = math.inverse(ECEFToENU);
-
-            if (refPoint != null)
-            {
-                _geoRefLatitude = refPoint.Latitude;
-                _geoRefLongitude = refPoint.Longitude;
-                _geoRefHeight = refPoint.Height;
-            }
+        /// <summary>Gets or sets the latitude of this anchor.</summary>
+        public double Latitude
+        {
+            get => this._latitude;
+            set { this._latitude = value; }
         }
 
+        /// <summary>Gets or sets the longitude of this anchor.</summary>
+        public double Longitude
+        {
+            get => this._longitude;
+            set { this._longitude = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the altitude. When AltType is ManualAltitude, this value is the altitude
+        ///  of the anchor, in meters according to WGS84. When AltType is Terrain or Rooftop, this
+        /// value is ONLY used in Editor mode, to determine the altitude at which to render the
+        /// anchor in the Editor's Scene View. If AltType is Terrain or Rooftop, this value is
+        /// ignored in the Player.
+        /// </summary>
+        public double Altitude
+        {
+            get => this._altitude;
+            set { this._altitude = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the altitude offset of the anchor, in meters relative to the resolved
+        /// terrain or rooftop. This value is ignored when AltType is ManualAltitude.
+        /// </summary>
+        public double AltitudeOffset
+        {
+            get => this._altitudeOffset;
+            set { this._altitudeOffset = value; }
+        }
+
+#if !UNITY_EDITOR
         private void Update()
         {
-            if (Application.isPlaying)
+            // Create the geospatial anchor in Player mode only
+            if (!Application.isPlaying)
             {
                 return;
             }
 
-            CalculateRealWorldPosition();
-            EUN = new double3(transform.position.x, transform.position.y, transform.position.z);
-            double3 ENU = new double3(EUN.x, EUN.z, EUN.y);
-            EUS = new double3(EUN.x, EUN.y, -EUN.z);
-            ECEF = MatrixStack.MultPoint(ENUToECEF, ENU);
-
-            double3 llh = CesiumWgs84Ellipsoid.EarthCenteredEarthFixedToLongitudeLatitudeHeight(
-                ECEF
-            );
-            if (_oldPosition != transform.position)
+            // Only attempt to create the geospatial anchor once
+            if (_anchorResolution == AnchorResolutionState.NotStarted)
             {
-                shouldPosition = true;
-                _oldPosition = transform.position;
-            }
-            if (_oldRotation != transform.rotation)
-            {
-                shouldPosition = true;
-                _oldRotation = transform.rotation;
-            }
-            if (_oldScale != transform.localScale)
-            {
-                shouldPosition = true;
-                _oldScale = transform.localScale;
-            }
-
-            if (shouldPosition)
-            {
-                _longitude = llh.x;
-                _latitude = llh.y;
-                _altitude = llh.z;
+                AddGeoAnchorAtRuntime();
             }
         }
 
-        private void OnEnable()
-        {
-            GeoReference = new GeoTilesReference(this.gameObject);
-            CalculateRealWorldPosition();
-        }
-
-        private void OnDisable()
-        {
-            GeoReference = null;
-        }
-#else // !UNITY_EDITOR
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "UnityRules.UnityStyleRules",
+            "US1300:LinesMustBe100CharactersOrShorter",
+            Justification = "Unity issue URL length > 100")]
         private void AddGeoAnchorAtRuntime()
         {
             IntPtr sessionHandle = ARCoreExtensions._instance.currentARCoreSessionHandle;
+
             // During boot this will return false a few times.
             if (sessionHandle == IntPtr.Zero)
             {
@@ -255,7 +160,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
             // https://developers.google.com/ar/develop/unity-arf/geospatial/geospatial-anchors#place_a_geospatial_anchor_in_the_real_world
             if (EarthApi.GetEarthTrackingState(sessionHandle) != TrackingState.Tracking)
             {
-                Debug.Log("Waiting for AR Session to become stable (earthTrackingState != TrackingState.Tracking)");
+                Debug.Log("Waiting for AR Session to become stable.");
                 return;
             }
 
@@ -293,8 +198,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         {
             if (resolvedAnchor == null)
             {
+                // If we failed once, resolution is likley to keep failing. Don't retry endlessly.
                 Debug.LogError("Failed to make Geospatial Anchor for " + name);
-                // If we failed once, resolution is likley to keep failing, so don't retry endlessly
                 _anchorResolution = AnchorResolutionState.Complete;
                 return;
             }
@@ -314,14 +219,13 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         private void ResolveManualAltitudeAnchor(ARAnchorManager anchorManager)
         {
             ARGeospatialAnchor anchor = anchorManager.AddAnchor(
-                    Latitude, Longitude, Altitude, transform.rotation);
+                Latitude, Longitude, Altitude, transform.rotation);
             FinishAnchor(anchor);
         }
 
         private IEnumerator ResolveTerrainAnchor(ARAnchorManager anchorManager)
         {
             ARGeospatialAnchor anchor = null;
-
             ResolveAnchorOnTerrainPromise promise =
                         anchorManager.ResolveAnchorOnTerrainAsync(
                             Latitude, Longitude, AltitudeOffset, transform.rotation);
@@ -332,6 +236,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
             {
                 anchor = result.Anchor;
             }
+
             FinishAnchor(anchor);
             yield break;
         }
@@ -339,7 +244,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         private IEnumerator ResolveRooftopAnchor(ARAnchorManager anchorManager)
         {
             ARGeospatialAnchor anchor = null;
-
             ResolveAnchorOnRooftopPromise promise =
                         anchorManager.ResolveAnchorOnRooftopAsync(
                             Latitude, Longitude, AltitudeOffset, transform.rotation);
@@ -350,25 +254,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
             {
                 anchor = result.Anchor;
             }
+
             FinishAnchor(anchor);
             yield break;
         }
-
-        private void Update()
-        {
-            // Only create the geospatial anchor in Player mode
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            // Only attempt to create the geospatial anchor once
-            if (_anchorResolution == AnchorResolutionState.NotStarted)
-            {
-                AddGeoAnchorAtRuntime();
-            }
-        }
-#endif // UNITY_EDITOR
+#endif // !UNITY_EDITOR
     }
 }
-#endif // UNITY_X_OR_NEWER
+

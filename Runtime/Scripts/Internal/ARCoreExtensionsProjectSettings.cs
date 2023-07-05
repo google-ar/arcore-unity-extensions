@@ -131,11 +131,13 @@ namespace Google.XR.ARCoreExtensions.Internal
         public bool GeospatialEnabled;
 
         /// <summary>
-        /// Indicates if ARCore Geospatial Editor features should be available in the Unity Editor.
+        /// Indicates if ARCore Geospatial Creator features should be available in the Unity Editor.
         /// When this is checked, the scripting symbol will be defined which enables the features.
         /// </summary>
+        /// <remarks> We use the original "GeospatialEditor" feature name for the field here to retain
+        /// backwards compatibility. </remarks>
         [DisplayName("Geospatial Creator")]
-        [DynamicHelp("GetGeospatialEditorHelpInfo")]
+        [DynamicHelp("GetGeospatialCreatorHelpInfo")]
         public bool GeospatialEditorEnabled;
 
         private const string _projectSettingsPath =
@@ -446,7 +448,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <see cref="GeospatialEditorEnabled"/>.
         /// </summary>
         /// <returns>Help info for <see cref="GeospatialEnabled"/>.</returns>
-        public HelpAttribute GetGeospatialEditorHelpInfo()
+        public HelpAttribute GetGeospatialCreatorHelpInfo()
         {
 #if !UNITY_2021_3_OR_NEWER
             if (GeospatialEditorEnabled)

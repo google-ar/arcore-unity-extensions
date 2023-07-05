@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="ARGeospatialCreatorObject.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,30 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
+namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
+    using System;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
+    using UnityEngine;
+
     /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
+    /// Base class for Geospatial Creator objects. Useful for managing Editor-specific updates.
     /// </summary>
-    public class VersionInfo
+    [ExecuteInEditMode]
+    public abstract class ARGeospatialCreatorObject : MonoBehaviour
     {
-        /// <summary>
-        /// The current ARCore Extensions package version.
-        /// </summary>
-        public static readonly string Version = "1.38.0";
+#if UNITY_EDITOR
+#if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
+        internal Action OnEditorUpdate;
+
+        internal virtual void Update()
+        {
+            OnEditorUpdate?.Invoke();
+        }
+#endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
+#endif // UNITY_EDITOR
     }
 }
+

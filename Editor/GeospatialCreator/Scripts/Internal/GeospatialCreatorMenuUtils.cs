@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="MenuUtils.cs" company="Google LLC">
+// <copyright file="GeospatialCreatorMenuUtils.cs" company="Google LLC">
 //
 // Copyright 2023 Google LLC
 //
@@ -18,7 +18,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if UNITY_2021_3_OR_NEWER
 
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
@@ -27,7 +26,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using UnityEditor;
     using UnityEngine;
 
-    internal static class MenuUtils
+    internal static class GeospatialCreatorMenuUtils
     {
         private static int _createdAnchorCount = 1;
 
@@ -39,8 +38,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             GameObject origin = CreateObject(
                 menuCommand,
                 "AR Geospatial Creator Origin",
-                typeof(ARGeospatialCreatorOrigin)
-            );
+                typeof(ARGeospatialCreatorOrigin));
+            origin.tag = "EditorOnly";
         }
 
 #if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
@@ -51,16 +50,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             CreateObject(
                 menuCommand,
                 $"AR Geospatial Creator Anchor {_createdAnchorCount}",
-                typeof(ARGeospatialCreatorAnchor)
-            );
+                typeof(ARGeospatialCreatorAnchor));
             _createdAnchorCount++;
         }
 
         private static GameObject CreateObject(
             MenuCommand menuCommand,
             string name,
-            params Type[] types
-        )
+            params Type[] types)
         {
             GameObject gameObject = ObjectFactory.CreateGameObject(name, types);
             GameObjectUtility.EnsureUniqueNameForSibling(gameObject);
@@ -75,4 +72,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     }
 }
 
-#endif // UNITY_X_OR_NEWER

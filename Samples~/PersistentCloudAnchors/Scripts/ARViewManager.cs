@@ -355,7 +355,6 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             }
 
             _resolveResults.Clear();
-
             UpdatePlaneVisibility(false);
         }
 
