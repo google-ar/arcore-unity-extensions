@@ -17,6 +17,7 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
+
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;

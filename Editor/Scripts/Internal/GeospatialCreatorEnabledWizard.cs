@@ -18,8 +18,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if UNITY_2021_3_OR_NEWER
-
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System;
@@ -31,69 +29,45 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    public class GeospatialCreatorEnabledWizard : EditorWindow
+    internal class GeospatialCreatorEnabledWizard : EditorWindow
     {
-        private static readonly string cesiumId = "com.cesium.unity";
-        private static readonly Version cesiumMinVersion = new Version("1.0.0");
+        private const string _cesiumId = "com.cesium.unity";
+        private const string _unityMathId = "com.unity.mathematics";
 
-        private static readonly string unityMathId = "com.unity.mathematics";
-        private static readonly Version unityMathMinVersion = new Version("1.2.0");
+        private static readonly Version _cesiumMinVersion = new Version("1.1.0");
+        private static readonly Version _unityMathMinVersion = new Version("1.2.0");
+        private static readonly Vector2 _wizardWindowSize = new Vector2(350, 400);
 
-        private static readonly Vector2 wizardWindowSize = new Vector2(350, 400);
-
-        private static GeospatialCreatorEnabledWizard instance;
+        private static GeospatialCreatorEnabledWizard _instance;
 
         private ListRequest _listInstalledPackagesRequest = null;
         private bool _isMissingCesium = true;
         private bool _isMissingUnityMath = true;
 
-        private static class WizardStyles
-        {
-            public static readonly GUIStyle BodyLabel;
-            public static readonly GUIStyle BoldBodyLabel;
-            public static readonly GUIStyle TitleLabel;
-
-            static WizardStyles()
-            {
-                BodyLabel = new GUIStyle(EditorStyles.largeLabel);
-                BodyLabel.wordWrap = true;
-
-                BoldBodyLabel = new GUIStyle(BodyLabel);
-                BoldBodyLabel.fontStyle = FontStyle.Bold;
-
-                TitleLabel = new GUIStyle(EditorStyles.boldLabel);
-                TitleLabel.fontSize = 20;
-                TitleLabel.alignment = TextAnchor.MiddleCenter;
-            }
-        }
-
         public static GeospatialCreatorEnabledWizard ShowWizard()
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance =
+                _instance =
                     ScriptableObject.CreateInstance(typeof(GeospatialCreatorEnabledWizard))
                     as GeospatialCreatorEnabledWizard;
-                instance.ShowUtility();
+                _instance.ShowUtility();
 
-                instance.titleContent = new GUIContent("Geospatial Creator");
-                instance.minSize = wizardWindowSize;
-                instance.maxSize = instance.minSize;
+                _instance.titleContent = new GUIContent("Geospatial Creator");
+                _instance.minSize = _wizardWindowSize;
+                _instance.maxSize = _instance.minSize;
             }
             else
             {
-                instance.ShowUtility();
+                _instance.ShowUtility();
             }
-            return instance;
-        }
 
-        private static bool MeetsVersionRequirement(Version toCheck, Version minVersion) {
-            return (toCheck.CompareTo(minVersion) >= 0);
+            return _instance;
         }
 
         public void OnDestroy()
         {
-            instance = null;
+            _instance = null;
         }
 
         public void OnFocus()
@@ -118,7 +92,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 FinishGUI();
             }
+
             GUILayout.EndVertical();
+        }
+
+        private static bool MeetsVersionRequirement(Version toCheck, Version minVersion)
+        {
+            return (toCheck.CompareTo(minVersion) >= 0);
         }
 
         // Draw the GUI elements for the title, fixed product summary, and Quickstart button
@@ -135,8 +115,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 "Open the Quickstart webpage for Geospatial Creator in a browser.");
             if (GUILayout.Button(openQuickstartContent))
             {
-                Application.OpenURL(GeospatialEditorHelper.QuickstartUrl);
+                Application.OpenURL(GeospatialCreatorHelper.QuickstartUrl);
             }
+
             EditorGUILayout.Space();
         }
 
@@ -168,6 +149,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 action();
             }
+
             GUI.enabled = prevEnabled;
             GUILayout.EndHorizontal();
         }
@@ -190,13 +172,18 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             if (_isMissingCesium)
             {
                 dependenciesText.Append(
-                    String.Format("\n   • {0} {1}+", cesiumId, cesiumMinVersion.ToString()));
+                    String.Format("\n   • {0} {1}+", _cesiumId, _cesiumMinVersion.ToString()));
             }
+
             if (_isMissingUnityMath)
             {
                 dependenciesText.Append(
-                    String.Format("\n   • {0} {1}+", unityMathId, unityMathMinVersion.ToString()));
+                    String.Format(
+                        "\n   • {0} {1}+",
+                        _unityMathId,
+                        _unityMathMinVersion.ToString()));
             }
+
             dependenciesText.Append("\n\nSee the Quickstart Guide for more information.");
 
             HeaderGUI();
@@ -220,11 +207,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
             FooterGUI(false, true, finishButtonText, () =>
             {
-               GeospatialEditorHelper.ConfigureScriptingSymbols(true);
-               ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled = true;
-               ARCoreExtensionsProjectSettings.Instance.Save();
-               // :TODO (b/277333333): Consider waiting for scripts to reload before closing
-               Close();
+                GeospatialCreatorHelper.ConfigureScriptingSymbols(true);
+                ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled = true;
+                ARCoreExtensionsProjectSettings.Instance.Save();
+
+                // :TODO (b/277333333): Consider waiting for scripts to reload before closing
+                Close();
             });
         }
 
@@ -252,28 +240,51 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 return;
             }
+
             foreach (var package in _listInstalledPackagesRequest.Result)
             {
-                if (package.name == cesiumId)
+                if (package.name == _cesiumId)
                 {
                     _isMissingCesium =
-                        !MeetsVersionRequirement(new Version(package.version), cesiumMinVersion);
+                        !MeetsVersionRequirement(new Version(package.version), _cesiumMinVersion);
                 }
-                else if (package.name == unityMathId)
+                else if (package.name == _unityMathId)
                 {
                     _isMissingUnityMath =
-                        !MeetsVersionRequirement(new Version(package.version), unityMathMinVersion);
+                        !MeetsVersionRequirement(
+                            new Version(package.version), _unityMathMinVersion);
                 }
+
                 if (!_isMissingCesium && !_isMissingUnityMath)
                 {
                     break;
                 }
             }
+
             EditorApplication.update -= ListPackagesRequestProgress;
             _listInstalledPackagesRequest = null;
             Repaint();
         }
+
+        private static class WizardStyles
+        {
+            public static readonly GUIStyle BodyLabel;
+            public static readonly GUIStyle BoldBodyLabel;
+            public static readonly GUIStyle TitleLabel;
+
+            static WizardStyles()
+            {
+                BodyLabel = new GUIStyle(EditorStyles.largeLabel);
+                BodyLabel.wordWrap = true;
+
+                BoldBodyLabel = new GUIStyle(BodyLabel);
+                BoldBodyLabel.fontStyle = FontStyle.Bold;
+
+                TitleLabel = new GUIStyle(EditorStyles.boldLabel);
+                TitleLabel.fontSize = 20;
+                TitleLabel.alignment = TextAnchor.MiddleCenter;
+            }
+        }
     }
 }
 
-#endif // UNITY_X_OR_LATER

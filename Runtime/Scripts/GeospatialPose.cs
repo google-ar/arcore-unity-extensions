@@ -41,7 +41,7 @@ namespace Google.XR.ARCoreExtensions
     /// up away from gravity, and Z+ points north.
     /// </item>
     /// <item>
-    /// Accuracy of the latitude, longitude, altitude, and heading are available as numeric
+    /// Accuracy of the latitude, longitude, altitude, and orientation are available as numeric
     /// confidence intervals where a large value (large interval) means low confidence and small
     /// value (small interval) means high confidence.
     /// </item>
@@ -99,6 +99,7 @@ namespace Google.XR.ARCoreExtensions
         /// i.e. perpendicular to the ground, heading is analoguous to roll, and when the device is
         /// upright in the device's default orientation mode, heading is analogous to yaw.
         [Obsolete("This field has been deprecated. Please use EunRotation instead.")]
+
         /// </summary>
         public double Heading;
 
@@ -121,6 +122,7 @@ namespace Google.XR.ARCoreExtensions
         /// heading accuracy when the device is held upright in the default orientation mode.
         [Obsolete(
             "This field has been deprecated. Please use OrientationYawAccuracy instead.")]
+
         /// </summary>
         public double HeadingAccuracy;
 

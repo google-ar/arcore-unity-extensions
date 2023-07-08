@@ -46,6 +46,11 @@ namespace Google.XR.ARCoreExtensions.Internal
         protected IntPtr _future;
 
         /// <summary>
+        /// Invoked when the promise successfully completes, so the subclass can assign the result.
+        /// </summary>
+        protected Action _onPromiseDone;
+
+        /// <summary>
         /// Releases the underlying native handle.
         /// </summary>
         ~InterruptiblePromise()
@@ -76,12 +81,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             get
             {
-                var sessionHandle = GetSessionHandle();
-                if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
-                {
-                    _state = FutureApi.GetState(sessionHandle, _future);
-                }
-
+                CheckState();
                 return _state;
             }
         }
@@ -89,7 +89,14 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <summary>
         /// Gets the result, if the operation is done.
         /// </summary>
-        public abstract T Result { get; }
+        public virtual T Result
+        {
+            get
+            {
+                CheckState();
+                return _result;
+            }
+        }
 
         /// <summary>
         /// Cancels execution of this promise if it's still pending.
@@ -111,6 +118,30 @@ namespace Google.XR.ARCoreExtensions.Internal
 #else
             return ARPrestoApi.GetSessionHandle();
 #endif
+        }
+
+        /// <summary>
+        /// Update the state field based on the current status of future. If it has transitioned
+        /// from Pending to Done, invoke the PromiseDone action to set the result.
+        /// </summary>
+        private void CheckState()
+        {
+            if (_state != PromiseState.Pending)
+            {
+                return;
+            }
+
+            var sessionHandle = GetSessionHandle();
+            if (_future != IntPtr.Zero && sessionHandle != IntPtr.Zero)
+            {
+                _state = FutureApi.GetState(sessionHandle, _future);
+                if (_state == PromiseState.Done && _onPromiseDone != null)
+                {
+                    // Guaranteed to be called at most once, since future calls to "get" will
+                    // return immediately when _state == Done
+                    _onPromiseDone();
+                }
+            }
         }
     }
 }

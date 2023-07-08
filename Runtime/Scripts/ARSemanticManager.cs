@@ -64,7 +64,7 @@ namespace Google.XR.ARCoreExtensions
         /// Attempts to get a texture representing the semantic image for the current frame.
         /// The texture format is <c><see cref="TextureFormat.R8"/></c>. Each pixel in the
         /// image is an 8-bit unsigned integer representing a semantic class label.
-        /// <c><see cref="ARSemanticLabel"/></c> is the list of possible pixel labels. See the <a
+        /// <c><see cref="SemanticLabel"/></c> is the list of possible pixel labels. See the <a
         /// href="https://developers.google.com/ar/develop/unity-arf/scene-semantics">Scene
         /// Semantics Developer Guide</a> for more information.
         ///
@@ -153,7 +153,7 @@ namespace Google.XR.ARCoreExtensions
         /// to query for support for Scene Semantics.
         ///
         /// The size of the semantic confidence image is the same size as the image
-        /// obtained by <c><see cref="ARSemanticManager.TryGetSemanticTexture(Texture2D)"/></c>.
+        /// obtained by <c><see cref="ARSemanticManager.TryGetSemanticTexture(ref Texture2D)"/></c>.
         ///
         /// Scene Semantics is currently not supported on the iOS platform. Calling this
         /// on an iOS device will return false.
