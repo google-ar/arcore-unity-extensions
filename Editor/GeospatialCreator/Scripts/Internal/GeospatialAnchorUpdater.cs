@@ -23,7 +23,6 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
-    using System.Collections.Generic;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
     using Unity.Mathematics;
@@ -64,7 +63,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         // :TODO b/278071434: Make the Origin a property of the anchor instead of finding it. This
         // implementation is inefficient to do on each Editor Update, but will be replaced soon.
-        private static GeoCoordinate FindOriginPoint()
+        public static GeoCoordinate FindOriginPoint()
         {
             ARGeospatialCreatorOrigin[] origins =
                 GameObject.FindObjectsOfType<ARGeospatialCreatorOrigin>();

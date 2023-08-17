@@ -269,6 +269,13 @@ namespace Google.XR.ARCoreExtensions.Internal
             return supported;
         }
 
+        public static void ReportEngineType(IntPtr sessionHandle)
+        {
+#if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
+            ExternApi.ArSession_reportEngineType(sessionHandle, "Unity", Application.unityVersion);
+#endif
+        }
+
         private struct ExternApi
         {
             [CloudAnchorImport(ApiConstants.ARCoreNativeApi)]
@@ -365,6 +372,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern void ArSession_isSemanticModeSupported(
                 IntPtr sessionHandle, ApiSemanticMode mode, ref int out_is_supported);
 #endif // UNITY_ANDROID
+
+            [DllImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_reportEngineType(
+                IntPtr sessionHandle, string engineType, string engineVersion);
         }
     }
 }

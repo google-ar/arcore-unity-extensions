@@ -21,7 +21,6 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     using System;
-    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary> Immutable class representing a specific lat/lon/altitude.</summary>
@@ -54,4 +53,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         }
     }
 }
-

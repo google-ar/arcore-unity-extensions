@@ -23,9 +23,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
     using System;
 
     using Google.XR.ARCoreExtensions.Internal;
-#if UNITY_EDITOR
-    using UnityEditor;
-#endif
     using UnityEngine;
 
     /// <summary>
@@ -45,4 +42,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 #endif
     }
 }
-

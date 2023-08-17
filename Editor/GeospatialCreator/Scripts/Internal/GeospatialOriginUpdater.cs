@@ -23,7 +23,6 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
-    using System.Collections.Generic;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
     using UnityEditor;
     using UnityEngine;
@@ -77,4 +76,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 }
 
 #endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
-

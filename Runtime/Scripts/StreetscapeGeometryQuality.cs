@@ -29,7 +29,7 @@ namespace Google.XR.ARCoreExtensions
     /// of detail (LOD) defined by the <a
     /// href="https://portal.ogc.org/files/?artifact_id=16675">CityGML 2.0 standard</a>.
     ///
-    /// Obtained by <c><see cref="StreetscapeGeometry.streetscapeGeometryQuality"/></c>.
+    /// Obtained by <c><see cref="ARStreetscapeGeometry.quality"/></c>.
     /// </summary>
     public enum StreetscapeGeometryQuality
     {

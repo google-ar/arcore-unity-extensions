@@ -53,7 +53,6 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 IOSSupportHelper.UpdateIOSScriptingDefineSymbols(
                     ARCoreExtensionsProjectSettings.Instance);
-
                 GeospatialCreatorHelper.OnToggle(
                     ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled);
                 ARCoreExtensionsProjectSettings.Instance.Save();

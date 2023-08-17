@@ -87,7 +87,7 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Gets the <c>ARStreetscapeGeometryType</c> corrosponding to this geometry.
+        /// Gets the <c>StreetscapeGeometryType</c> corrosponding to this geometry.
         /// </summary>
         public StreetscapeGeometryType streetscapeGeometryType
         {
@@ -103,7 +103,8 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// Gets the Unity <c>Mesh</c> associated with this geometry.
         /// Normals are not calculated: if normals are required, use
-        /// <c><see cref="Mesh.RecalculateNormals()"/></c>.
+        /// <c><a
+        /// href="https://docs.unity3d.com/ScriptReference/Mesh.RecalculateNormals.html">Mesh.RecalculateNormals()</a></c>.
         /// </summary>
         public Mesh mesh
         {

@@ -20,4 +20,3 @@
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(
     "Google.XR.ARCoreExtensions.GeospatialCreator.Editor")]
-

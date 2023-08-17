@@ -41,9 +41,9 @@ namespace Google.XR.ARCoreExtensions
     {
         /// <summary>
         /// The Scene Semantics API is disabled. Calls to
-        /// <c><see cref="ARSemanticManager.TryGetSemanticTexture(Texture2D)"/></c>,
-        /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(Texture2D)"/></c>, and
-        /// <c><see cref="ARSemanticManager.GetSemanticLabelFraction(SemanticLabel)"/></c> will
+        /// <c><see cref="ARSemanticManager.TryGetSemanticTexture(ref Texture2D)"/></c>,
+        /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(ref Texture2D)"/></c>,
+        /// and <c><see cref="ARSemanticManager.GetSemanticLabelFraction(SemanticLabel)"/></c> will
         /// not return valid results.
         ///
         /// This is the default mode.
@@ -52,9 +52,9 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// The Scene Semantics API is enabled. Calls to
-        /// <c><see cref="ARSemanticManager.TryGetSemanticTexture(Texture2D)"/></c>,
-        /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(Texture2D)"/></c>, and
-        /// <c><see cref="ARSemanticManager.GetSemanticLabelFraction(SemanticLabel)"/></c> will
+        /// <c><see cref="ARSemanticManager.TryGetSemanticTexture(ref Texture2D)"/></c>,
+        /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(ref Texture2D)"/></c>,
+        /// and <c><see cref="ARSemanticManager.GetSemanticLabelFraction(SemanticLabel)"/></c> will
         /// return valid results.
         /// </summary>
         Enabled = 1,

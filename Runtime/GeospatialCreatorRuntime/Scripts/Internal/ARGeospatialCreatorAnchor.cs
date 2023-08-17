@@ -261,4 +261,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 #endif // !UNITY_EDITOR
     }
 }
-

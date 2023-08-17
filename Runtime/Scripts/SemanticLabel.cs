@@ -26,9 +26,9 @@ namespace Google.XR.ARCoreExtensions
     /// href="https://developers.google.com/ar/develop/unity-arf/scene-semantics">Scene
     /// Semantics Developer Guide</a> for more information.
     ///
-    /// Use <c><see cref="ARSemanticManager.TryGetSemanticTexture(Texture2D)"/></c> to obtain an
+    /// Use <c><see cref="ARSemanticManager.TryGetSemanticTexture(ref Texture2D)"/></c> to obtain an
     /// image containing these pixels and
-    /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(Texture2D)"/></c>,
+    /// <c><see cref="ARSemanticManager.TryGetSemanticConfidenceTexture(ref Texture2D)"/></c>,
     /// and <c><see cref="ARSemanticManager.GetSemanticLabelFraction(SemanticLabel)"/></c>
     /// to query what percentage of the image contains these pixels.
     /// </summary>

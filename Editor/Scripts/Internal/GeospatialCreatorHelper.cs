@@ -195,4 +195,3 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
     }
 }
-

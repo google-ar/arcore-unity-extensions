@@ -17,7 +17,6 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
@@ -52,10 +51,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             GUIContent altitudeTypeLabel = new GUIContent("Altitude Type");
             EditorGUILayout.PropertyField(_altitudeType, altitudeTypeLabel);
+            ARGeospatialCreatorAnchor.AltitudeType altitudeType;
+
+            altitudeType = anchor.AltType;
+
             using (new EditorGUI.IndentLevelScope())
             {
-                if (anchor.AltType == ARGeospatialCreatorAnchor.AltitudeType.Terrain ||
-                    anchor.AltType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
+                if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Terrain ||
+                    altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
                 {
                     _altitudeOffset.doubleValue = EditorGUILayout.DoubleField(
                         "Altitude Offset",
@@ -64,7 +67,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
                 _altitude.doubleValue =
                     EditorGUILayout.DoubleField("WGS84 Altitude", _altitude.doubleValue);
-                if (anchor.AltType == ARGeospatialCreatorAnchor.AltitudeType.Terrain)
+                if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Terrain)
                 {
                     EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
                         "display altitude of the anchored object. At runtime Altitude Offset is " +
@@ -72,7 +75,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                         MessageType.Info,
                         wide: true);
                 }
-                else if (anchor.AltType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
+                else if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
                 {
                     EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
                         "display altitude of the anchored object. At runtime Altitude Offset is " +
@@ -81,6 +84,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                         wide: true);
                 }
             }
+
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -99,4 +103,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         }
     }
 }
-

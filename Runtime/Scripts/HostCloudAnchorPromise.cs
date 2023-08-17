@@ -26,12 +26,16 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// An interruptible promise launched by <c><see
+    /// An <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// launched by <c><see
     /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
-    /// int)"/></c>. Used with <a href="https://docs.unity3d.com/Manual/Coroutines.html">Unity
-    /// Coroutines</a> to poll results across multiple frames. See the <a
+    /// int)"/></c> with result type <c><see cref="HostCloudAnchorResult"/></c>.
+    /// See <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// for more information on how to retrieve results from the Promise, and the <a
     /// href="https://developers.google.com/ar/develop/unity-arf/cloud-anchors/developer-guide">Cloud
-    /// Anchors developer guide</a> for more information.
+    /// Anchors developer guide</a>.
     /// </summary>
     public class HostCloudAnchorPromise : InterruptiblePromise<HostCloudAnchorResult>
     {

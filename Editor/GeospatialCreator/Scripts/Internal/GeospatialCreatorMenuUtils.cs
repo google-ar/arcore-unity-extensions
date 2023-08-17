@@ -18,7 +18,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
@@ -71,4 +70,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         }
     }
 }
-

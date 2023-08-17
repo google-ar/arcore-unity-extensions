@@ -26,9 +26,16 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// A specific interruptible promise to check the VPS availability using the given location by
-    /// initializing a query with a remote service, used in coroutines to poll <c><see
-    /// cref="VpsAvailability"/></c> results across multiple frames.
+    /// An <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// launched by <c><see
+    /// cref="AREarthManager.CheckVpsAvailabilityAsync(double, double)"/></c> with result type
+    /// <c><see cref="VpsAvailability"/></c>.
+    /// See <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// for more information on how to retrieve results from the Promise, and the <a
+    /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/check-vps-availability">developer
+    /// guide on VPS availability</a>.
     /// </summary>
     public class VpsAvailabilityPromise : InterruptiblePromise<VpsAvailability>
     {

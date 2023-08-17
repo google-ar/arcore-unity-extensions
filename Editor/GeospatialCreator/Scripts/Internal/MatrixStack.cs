@@ -325,4 +325,3 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         }
     }
 }
-

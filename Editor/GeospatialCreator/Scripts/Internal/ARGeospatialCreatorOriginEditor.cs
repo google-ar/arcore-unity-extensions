@@ -29,6 +29,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using UnityEditor;
     using UnityEngine;
 
+    /// <summary>
+    /// ARGeospatialCreatorOriginEditor
+    ///
+    /// The GUI for ARGeospatialCreatorOrigin,
+    /// It looks like this go/prototype-geospatial-creator-gui-design.
+    /// </summary>
     [CustomEditor(typeof(ARGeospatialCreatorOrigin))]
     internal class ARGeospatialCreatorOriginEditor : Editor
     {
@@ -49,6 +55,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             return string.Empty;
         }
 
+        /// <summary>
+        ///  OnInspectorGUI()
+        ///
+        ///  function that is called every GUI update when the target object get updated.
+        /// </summary>
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -69,7 +80,52 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 GUIForMissingReference(origin);
             }
 
+
             serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>Finds the 3d tiles Application Key from the origin.</summary>
+        /// <param name = "origin">A ARGeospatialCreatorOrigin that has a Cesium3DTileset child.
+        /// </param>
+        /// <returns>The key extracted.</returns>
+        internal static string Get3DTilesApiKey(ARGeospatialCreatorOrigin origin)
+        {
+#if !ARCORE_INTERNAL_USE_CESIUM
+            throw new Exception("Cannot get Map Tiles API key; Cesium dependency is missing.");
+#else  // need to use #else block to avoid unreachable code failures
+            Cesium3DTileset tileset =
+                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
+                as Cesium3DTileset;
+            if (tileset == null)
+            {
+                return "";
+            }
+            return ApiKeyFromTilesetUrl(tileset.url);
+#endif
+        }
+
+        private static void Set3DTileApiKey(ARGeospatialCreatorOrigin origin, string key)
+        {
+#if !ARCORE_INTERNAL_USE_CESIUM
+            throw new Exception("Cannot set Map Tiles API key; Cesium dependency is missing.");
+#else  // need to use #else block to avoid unreachable code failures
+            Cesium3DTileset tileset =
+                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
+                as Cesium3DTileset;
+            if (tileset == null)
+            {
+                Debug.LogError(
+                    "Attempted to set Map Tiles API key on a missing Cesium3DTileset component.");
+                return;
+            }
+            String url = String.IsNullOrEmpty(key) ? "" : TilesApiUrl(key);
+            if (url != tileset.url)
+            {
+                Undo.RecordObject(tileset, "Update Map Tiles API key ");
+                tileset.url = url;
+                EditorUtility.SetDirty(tileset);
+            }
+#endif
         }
 
         // Helper that returns the URL for the tiles API for the given key
@@ -172,46 +228,5 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             Undo.RegisterCreatedObjectUndo(georeference, "Create Cesium Georeference");
 #endif
         }
-
-        private string Get3DTilesApiKey(ARGeospatialCreatorOrigin origin)
-        {
-#if !ARCORE_INTERNAL_USE_CESIUM
-            throw new Exception("Cannot get Map Tiles API key; Cesium dependency is missing.");
-#else // need to use #else block to avoid unreachable code failures
-            Cesium3DTileset tileset =
-                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
-                as Cesium3DTileset;
-            if (tileset == null)
-            {
-                return "";
-            }
-            return ApiKeyFromTilesetUrl(tileset.url);
-#endif
-        }
-
-        private void Set3DTileApiKey(ARGeospatialCreatorOrigin origin, string key)
-        {
-#if !ARCORE_INTERNAL_USE_CESIUM
-            throw new Exception("Cannot set Map Tiles API key; Cesium dependency is missing.");
-#else // need to use #else block to avoid unreachable code failures
-            Cesium3DTileset tileset =
-                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
-                as Cesium3DTileset;
-            if (tileset == null)
-            {
-                Debug.LogError(
-                    "Attempted to set Map Tiles API key on a missing Cesium3DTileset component.");
-                return;
-            }
-            String url = String.IsNullOrEmpty(key) ? "" : TilesApiUrl(key);
-            if (url != tileset.url)
-            {
-                Undo.RecordObject(tileset, "Update Map Tiles API key");
-                tileset.url = url;
-                EditorUtility.SetDirty(tileset);
-            }
-#endif
-        }
     }
 }
-

@@ -24,7 +24,8 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine;
 
     /// <summary>
-    /// Data that was recorded to an external Track. Retrievable through Frame.
+    /// Data that was recorded to an external <c><see cref="Track"/></c>. Obtained by
+    /// <c><see cref="ARPlaybackManager.GetUpdatedTrackData(System.Guid)"/></c>.
     /// </summary>
     public struct TrackData
     {

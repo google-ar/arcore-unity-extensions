@@ -1,4 +1,4 @@
-Google ARCore Extensions for AR Foundation
+Google ARCore Extensions and Geospatial Creator for Unity's AR Foundation
 ==========================================
 Copyright 2019 Google LLC
 

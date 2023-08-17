@@ -48,9 +48,13 @@ namespace Google.XR.ARCoreExtensions
         /// position the anchor directly on the rooftop whereas specifying a positive altitude will
         /// position the anchor above the rooftop, against the direction of gravity.
         ///
-        /// This schedules a task to resolve the anchor's pose using the given parameters. You may
-        /// resolve multiple anchors at a time, but a session cannot be tracking more than 100
-        /// Terrain and Rooftop Anchors at time.
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. See
+        /// <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for information on obtaining results and cancelling the operation.
+        ///
+        /// You may resolve multiple anchors at a time, but a session cannot be tracking more than
+        /// 100 Terrain and Rooftop Anchors at time.
         ///
         /// Creating a Rooftop anchor requires
         /// <c><see cref="AREarthManager.EarthState"/></c> to be
@@ -60,8 +64,10 @@ namespace Google.XR.ARCoreExtensions
         /// <c><see cref="TrackingState.Paused"/></c>. If it is not, then
         /// <c><see cref="ResolveAnchorOnRooftopResult.Anchor"/></c> will be <c>null</c>. This call
         /// also requires a working internet connection to communicate with the ARCore API on Google
-        /// Cloud. ARCore will continue to retry if it is unable to establish a connection to the
-        /// ARCore service.
+        /// Cloud. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/enable">Enable the
+        /// Geospatial API</a> for more details on required permissions and setup steps. ARCore will
+        /// continue to retry if it is unable to establish a connection to the ARCore service.
         ///
         /// Latitude and longitude are defined by the
         /// <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
@@ -90,9 +96,9 @@ namespace Google.XR.ARCoreExtensions
         /// coordinate frame where X+ points east, Y+ points up away from gravity, and Z+ points
         /// north. A rotation about the Y+ axis creates a rotation counterclockwise from north.
         /// </param>
-        /// <returns>Returns a <c><see cref="ResolveAnchorOnRooftopPromise"/></c>
-        /// used in a <a href="https://docs.unity3d.com/Manual/Coroutines.html">Unity
-        /// Coroutine</a>. It updates its results in frame update events.</returns>
+        /// <returns>Returns a <c><see cref="ResolveAnchorOnRooftopPromise"/></c>. See <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for more information on how to retrieve results from the Promise.</returns>
         public static ResolveAnchorOnRooftopPromise ResolveAnchorOnRooftopAsync(
             this ARAnchorManager anchorManager, double latitude, double longitude,
             double altitudeAboveRooftop, Quaternion eunRotation)
@@ -252,13 +258,10 @@ namespace Google.XR.ARCoreExtensions
         /// few seconds. Cloud Anchors hosted using higher quality features will generally result in
         /// quicker and more accurately resolved Cloud Anchor poses.
         ///
-        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
-        /// function returns a <c><see cref="HostCloudAnchorPromise"/></c> which can be used to
-        /// obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be set
-        /// to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
-        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
-        /// can be obtained. See documentation on <a
-        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. See
+        /// <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for information on obtaining results and cancelling the operation.
         ///
         /// ARCore can have up to 40 simultaneous Cloud Anchor operations, including
         /// resolved anchors and active hosting operations.
@@ -270,10 +273,9 @@ namespace Google.XR.ARCoreExtensions
         /// <param name="ttlDays">The lifetime of the anchor in days. Must be positive. The
         /// maximum allowed value is 1 if using an API Key to authenticate with the
         /// ARCore API, otherwise the maximum allowed value is 365.</param>
-        /// <returns>Returns a <c><see cref="HostCloudAnchorPromise"/></c>
-        /// used in a <a
-        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity
-        /// Coroutine</a>. It updates its results in frame update events.
+        /// <returns>Returns a <c><see cref="HostCloudAnchorPromise"/></c>. See <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for more information on how to retrieve results from the Promise.</returns>
         /// </returns>
         public static HostCloudAnchorPromise HostCloudAnchorAsync(
             this ARAnchorManager anchorManager, ARAnchor anchor, int ttlDays)
@@ -435,13 +437,10 @@ namespace Google.XR.ARCoreExtensions
         /// user's position and orientation relative to the anchor. When it finds a
         /// match, the task completes.
         ///
-        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
-        /// function returns a <c><see cref="ResolveCloudAnchorPromise"/></c> which can be used to
-        /// obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be set
-        /// to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
-        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
-        /// can be obtained. See documentation on <a
-        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. See
+        /// <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for information on obtaining results and cancelling the operation.
         ///
         /// Cloud Anchors requires a <c><see cref="ARCoreExtensionsConfig.CloudAnchorMode"/></c>
         /// with <c><see cref="CloudAnchorMode.Enabled"/></c> set on this session. Use
@@ -454,10 +453,9 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         /// <param name="anchorManager">The <c>ARAnchorManager</c> instance.</param>
         /// <param name="cloudAnchorId">The Cloud Anchor ID to resolve.</param>
-        /// <returns>Returns a <c><see cref="ResolveCloudAnchorPromise"/></c> used in a
-        /// <a href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>.
-        /// It updates its results in frame update events.
-        /// </returns>
+        /// <returns>Returns a <c><see cref="ResolveCloudAnchorPromise"/></c>. See <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for more information on how to retrieve results from the Promise.</returns>
         public static ResolveCloudAnchorPromise ResolveCloudAnchorAsync(
             this ARAnchorManager anchorManager, string cloudAnchorId)
         {
@@ -620,8 +618,9 @@ namespace Google.XR.ARCoreExtensions
 
         /// <summary>
         /// Creates a <c><see cref="ARGeospatialAnchor"/></c> at a specified horizontal position and
-        /// altitude relative to the horizontal position's terrain. Terrain means the ground or
-        /// ground floor inside a building with VPS coverage. If the altitude relative to the WGS84
+        /// altitude relative to the horizontal position's terrain. See the <a
+        /// href="https://developers.google.com/ar/develop/geospatial/unity-arf/anchors#terrain-anchors">Terrain
+        /// anchors developer guide</a> for more information. If the altitude relative to the WGS84
         /// ellipsoid is known, use
         /// <c><see cref="ARAnchorManagerExtensions.AddAnchor(this ARAnchorManager, double, double,
         /// double, Quaternion)"/></c> instead.
@@ -746,13 +745,10 @@ namespace Google.XR.ARCoreExtensions
         /// anchor directly on the terrain whereas specifying a positive altitude will position the
         /// anchor above the terrain, against the direction of gravity.
         ///
-        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. This
-        /// function returns a <c><see cref="ResolveAnchorOnTerrainPromise"/></c> which can be used
-        /// to obtain the task's result(s). Its initial <c><see cref="PromiseState"/></c> will be
-        /// set to <c><see cref="PromiseState.Pending"/></c>. When the operation is completed, its
-        /// state will be set to <c><see cref="PromiseState.Done"/></c>, and the future's result(s)
-        /// can be obtained. See documentation on <a
-        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutines</a>.
+        /// This launches an asynchronous operation used to query the Google Cloud ARCore API. See
+        /// <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for information on obtaining results and cancelling the operation.
         ///
         /// Creating anchors near the north pole or south pole is not supported. If the latitude is
         /// within 0.1 degrees of the north pole or south pole (90 degrees or -90 degrees),
@@ -769,8 +765,10 @@ namespace Google.XR.ARCoreExtensions
         /// <c><see cref="TrackingState.Paused"/></c>. If it is not, then
         /// <c><see cref="ResolveAnchorOnTerrainResult.Anchor"/></c> will be <c>null</c>. This call
         /// also requires a working internet connection to communicate with the ARCore API on Google
-        /// Cloud. ARCore will continue to retry if it is unable to establish a connection to the
-        /// ARCore service.
+        /// Cloud. See <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/enable">Enable the
+        /// Geospatial API</a> for more details on required permissions and setup steps. ARCore will
+        /// continue to retry if it is unable to establish a connection to the ARCore service.
         ///
         /// Latitude and longitude are defined by the
         /// <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
@@ -799,9 +797,9 @@ namespace Google.XR.ARCoreExtensions
         /// coordinate frame where X+ points east, Y+ points up away from gravity, and Z+ points
         /// north. A rotation about the Y+ axis creates a rotation counterclockwise from north.
         /// </param>
-        /// <returns>Returns a <c><see cref="ResolveAnchorOnTerrainPromise"/></c> used in a <a
-        /// href="https://docs.unity3d.com/Manual/Coroutines.html">Unity Coroutine</a>.
-        /// It updates its results in frame update events.</returns>
+        /// <returns>Returns a <c><see cref="ResolveAnchorOnTerrainPromise"/></c>. See <c><see
+        /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+        /// for more information on how to retrieve results from the Promise.</returns>
         public static ResolveAnchorOnTerrainPromise ResolveAnchorOnTerrainAsync(
             this ARAnchorManager anchorManager, double latitude, double longitude,
             double altitudeAboveTerrain, Quaternion eunRotation)

@@ -18,26 +18,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-// The InternalsVisibleTo below lets the GeospatialCreator Runtime's .asmdef access the internals
-// of Google.XR.ARCoreExtensions.asmdef
-//
-// This is to work around Geospatial Creator's dependency on Unity.Mathematics and CesiumRuntime,
-// without forcing all ARCore to also depend on them.
-//
-// This works around the following errors
-//
-// - For the InternalsVisibleTo to must have the using systems modules name space
-// Assembly and module attributes must precede all other elements defined in a file except using
-// clauses and extern alias declarations.
-//
-// - The type or namespace name 'InternalsVisibleToAttribute'
-// could not be found (are you missing a using directive or an assembly reference?)
-using System;
-using System.Runtime.CompilerServices;
+// InternalsVisibleTo is required because Geospatial Creator needs to access the internal
+// _instance field, but we don't want it to be part of the public API.
 
-[assembly: InternalsVisibleTo("Google.XR.ARCoreExtensions.GeospatialCreator")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(
+    "Google.XR.ARCoreExtensions.GeospatialCreator")]
+
 namespace Google.XR.ARCoreExtensions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
@@ -94,7 +83,10 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         [HideInInspector]
         public OnChooseXRCameraConfigurationEvent OnChooseXRCameraConfiguration;
+#if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
+        private bool _engineTypeLogged = false;
 
+#endif
         /// <summary>
         /// Selects a camera configuration for the ARCore session to use.
         /// </summary>
@@ -219,7 +211,14 @@ namespace Google.XR.ARCoreExtensions
                 _arCoreCameraSubsystem.beforeGetCameraConfiguration += BeforeGetCameraConfiguration;
             }
 #endif // UNITY_ANDROID
+#if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
 
+            if (Session != null && currentARCoreSessionHandle != IntPtr.Zero && !_engineTypeLogged)
+            {
+                SessionApi.ReportEngineType(currentARCoreSessionHandle);
+                _engineTypeLogged = true;
+            }
+#endif
             CachedData.Reset();
         }
 
@@ -242,6 +241,10 @@ namespace Google.XR.ARCoreExtensions
                 _arCoreCameraSubsystem.beforeGetCameraConfiguration -= BeforeGetCameraConfiguration;
             }
 #endif // UNITY_ANDROID
+
+#if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
+            _engineTypeLogged = false;
+#endif // !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
 
             CachedData.Reset();
         }

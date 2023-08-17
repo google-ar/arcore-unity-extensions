@@ -26,11 +26,17 @@ namespace Google.XR.ARCoreExtensions
     using UnityEngine.XR.ARSubsystems;
 
     /// <summary>
-    /// Handle to an async operation launched by <c><see
-    /// cref="ARAnchorManagerExtensions.ResolveAnchorOnRooftopAsync(this ARAnchorManager, double, double, double, UnityEngine.Quaternion)"/></c>.
-    /// See the <a
+    /// An <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// launched by <c><see
+    /// cref="ARAnchorManagerExtensions.ResolveAnchorOnRooftopAsync(this ARAnchorManager, double,
+    /// double, double, UnityEngine.Quaternion)"/></c> with result type
+    /// <c><see cref="ResolveAnchorOnRooftopResult"/></c>.
+    /// See <c><see
+    /// cref="Google.XR.ARCoreExtensions.Internal.InterruptiblePromise">InterruptiblePromise</see></c>
+    /// for more information on how to retrieve results from the Promise, and the <a
     /// href="https://developers.google.com/ar/develop/geospatial/unity-arf/anchors#rooftop-anchors">Rooftop
-    /// anchors developer guide</a> for more information.
+    /// anchors developer guide</a>.
     /// </summary>
     public class ResolveAnchorOnRooftopPromise : InterruptiblePromise<ResolveAnchorOnRooftopResult>
     {
