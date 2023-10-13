@@ -30,35 +30,13 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using UnityEngine;
 
     /// <summary>
-    /// ARGeospatialCreatorOriginEditor
-    ///
-    /// The GUI for ARGeospatialCreatorOrigin,
-    /// It looks like this go/prototype-geospatial-creator-gui-design.
+    /// Custom editor for ARGeospatialCreatorOrigin.
     /// </summary>
     [CustomEditor(typeof(ARGeospatialCreatorOrigin))]
     internal class ARGeospatialCreatorOriginEditor : Editor
     {
-        /// <summary>Helper that extracts the API key from a Google Map Tiles API URL.</summary>
-        /// <param name = "url">A URL containing a "key=" parameter.</param>
-        /// <returns>The key extracted from the "key" parameter.</returns>
-        public static string ApiKeyFromTilesetUrl(string url)
-        {
-            char[] delimeters = { '&', '?' };
-            foreach (string urlPart in url.Split(delimeters))
-            {
-                if (urlPart.StartsWith("key="))
-                {
-                    return urlPart.Substring(4);
-                }
-            }
-
-            return string.Empty;
-        }
-
         /// <summary>
-        ///  OnInspectorGUI()
-        ///
-        ///  function that is called every GUI update when the target object get updated.
+        /// Function that is called every GUI update when the target object get updated.
         /// </summary>
         public override void OnInspectorGUI()
         {
@@ -68,6 +46,9 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             GUIStyle titleStyle = new GUIStyle(EditorStyles.boldLabel);
             titleStyle.fontSize = 20;
             GUILayout.Label("Geospatial Creator Origin", titleStyle);
+
+            GUIForQuickstartButton();
+            EditorGUILayout.Space();
 
             if (HasGeoreference(origin))
             {
@@ -80,60 +61,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 GUIForMissingReference(origin);
             }
 
+            if (GUILayout.Button("Search for Location"))
+            {
+                PlaceSearchWindow.ShowPlaceSearchWindow();
+            }
 
             serializedObject.ApplyModifiedProperties();
-        }
-
-        /// <summary>Finds the 3d tiles Application Key from the origin.</summary>
-        /// <param name = "origin">A ARGeospatialCreatorOrigin that has a Cesium3DTileset child.
-        /// </param>
-        /// <returns>The key extracted.</returns>
-        internal static string Get3DTilesApiKey(ARGeospatialCreatorOrigin origin)
-        {
-#if !ARCORE_INTERNAL_USE_CESIUM
-            throw new Exception("Cannot get Map Tiles API key; Cesium dependency is missing.");
-#else  // need to use #else block to avoid unreachable code failures
-            Cesium3DTileset tileset =
-                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
-                as Cesium3DTileset;
-            if (tileset == null)
-            {
-                return "";
-            }
-            return ApiKeyFromTilesetUrl(tileset.url);
-#endif
-        }
-
-        private static void Set3DTileApiKey(ARGeospatialCreatorOrigin origin, string key)
-        {
-#if !ARCORE_INTERNAL_USE_CESIUM
-            throw new Exception("Cannot set Map Tiles API key; Cesium dependency is missing.");
-#else  // need to use #else block to avoid unreachable code failures
-            Cesium3DTileset tileset =
-                origin.gameObject.GetComponentInChildren(typeof(Cesium3DTileset))
-                as Cesium3DTileset;
-            if (tileset == null)
-            {
-                Debug.LogError(
-                    "Attempted to set Map Tiles API key on a missing Cesium3DTileset component.");
-                return;
-            }
-            String url = String.IsNullOrEmpty(key) ? "" : TilesApiUrl(key);
-            if (url != tileset.url)
-            {
-                Undo.RecordObject(tileset, "Update Map Tiles API key ");
-                tileset.url = url;
-                EditorUtility.SetDirty(tileset);
-            }
-#endif
-        }
-
-        // Helper that returns the URL for the tiles API for the given key
-        private static string TilesApiUrl(string apiKey)
-        {
-            return String.Format(
-                "https://tile.googleapis.com/v1/3dtiles/root.json?key={0}",
-                apiKey);
         }
 
         private bool HasGeoreference(ARGeospatialCreatorOrigin origin)
@@ -145,11 +78,22 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 #endif
         }
 
+        // Draw the GUI element for opening the Quickstart guide.
+        private void GUIForQuickstartButton()
+        {
+            GUIContent openQuickstartContent = new GUIContent(
+                "Open Geospatial Creator Quickstart",
+                "Open the Quickstart webpage for Geospatial Creator in a browser.");
+            if (GUILayout.Button(openQuickstartContent))
+            {
+                Application.OpenURL(GeospatialCreatorHelper.QuickstartUrl);
+            }
+        }
+
         // Draw the GUI when there's no Georeference attached to the target Origin.
         private void GUIForMissingReference(ARGeospatialCreatorOrigin origin)
         {
             GUILayout.BeginVertical();
-            EditorGUILayout.Space();
             GUILayout.BeginHorizontal();
 
             GUIContent addGeoreferenceContent = new GUIContent(
@@ -168,22 +112,22 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         private void GUIForCesiumGeoreference(ARGeospatialCreatorOrigin origin)
         {
+#if ARCORE_INTERNAL_USE_CESIUM
             EditorGUILayout.BeginVertical();
-            EditorGUILayout.Space();
-            GUIContent openQuickstartContent = new GUIContent(
-                "Open Geospatial Creator Quickstart",
-                "Open the Quickstart webpage for Geospatial Creator in a browser.");
-            if (GUILayout.Button(openQuickstartContent))
+            Cesium3DTileset tileset = GeospatialCreatorCesiumAdapter.GetTilesetComponent(origin);
+            if (tileset == null)
             {
-                Application.OpenURL(GeospatialCreatorHelper.QuickstartUrl);
+                Debug.LogError(
+                    "There is no Cesium3DTileset component associated with Origin " + origin.name);
+                return;
             }
 
             // We don't persist the API Key directly in this component. Instead, it is always read
             // from and written to the tiles child.
-            string oldApiKey = Get3DTilesApiKey(origin);
+            string oldApiKey = string.IsNullOrEmpty(tileset.url) ? "" :
+                GeospatialCreatorCesiumAdapter.GetMapTilesApiKey(tileset);
             string newApiKey = EditorGUILayout.DelayedTextField(
-                "Google Map Tiles API Key",
-                oldApiKey);
+                "Google Map Tiles API Key", oldApiKey);
             if (String.IsNullOrEmpty(newApiKey))
             {
                 EditorGUILayout.HelpBox(
@@ -194,10 +138,15 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             if (newApiKey != oldApiKey)
             {
-                Set3DTileApiKey(origin, newApiKey);
+                Undo.RecordObject(tileset, "Update Map Tiles API key");
+                tileset.url = MapTilesUtils.CreateMapTilesUrl(newApiKey);
+                EditorUtility.SetDirty(tileset);
             }
 
             EditorGUILayout.EndVertical();
+#else // !ARCORE_INTERNAL_USE_CESIUM
+            throw new Exception("Cannot get Map Tiles API key; Cesium dependency is missing.");
+#endif
         }
 
         private void AddGeoreference(ARGeospatialCreatorOrigin origin)
@@ -205,26 +154,9 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             // Only Cesium anchors are supported so far
 #if !ARCORE_INTERNAL_USE_CESIUM
             throw new Exception("Cesium dependency is missing.");
-#else // need to use #else block to avoid unreachable code failures
-
+#else
             CesiumGeoreference georeference =
-                origin.gameObject.AddComponent(typeof(CesiumGeoreference)) as CesiumGeoreference;
-
-            GameObject tilesetObject = new GameObject("Cesium3DTileset");
-            tilesetObject.transform.SetParent(georeference.gameObject.transform);
-
-            // Since this is an AR app, it is likely using the camera instead of a scene
-            // so default to the tiles only being visible in the Editor. Developers can
-            // manually change the tag in the Inspector, if desired.
-            Cesium3DTileset tileset =
-                tilesetObject.AddComponent(typeof(Cesium3DTileset)) as Cesium3DTileset;
-            tileset.name = tilesetObject.name;
-            tileset.tilesetSource = CesiumDataSource.FromUrl;
-            tileset.showCreditsOnScreen = true;
-            tileset.createPhysicsMeshes = false;
-
-            georeference.tag = "EditorOnly";
-            tilesetObject.tag = "EditorOnly";
+                GeospatialCreatorCesiumAdapter.AddGeoreferenceAndTileset(origin);
             Undo.RegisterCreatedObjectUndo(georeference, "Create Cesium Georeference");
 #endif
         }

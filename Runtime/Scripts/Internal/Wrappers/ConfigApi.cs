@@ -36,16 +36,23 @@ namespace Google.XR.ARCoreExtensions.Internal
 #else
     using EarthImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
 #endif
+#if GEOSPATIAL_IOS_SUPPORT
+    using FacadeImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using FacadeImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+#if SEMANTICS_IOS_SUPPORT
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using SemanticsImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
 #else // UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
     using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
     using EarthImport = System.Runtime.InteropServices.DllImportAttribute;
-#endif
-#if UNITY_IOS && !GEOSPATIAL_IOS_SUPPORT
-    using FacadeImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
-#else
     using FacadeImport = System.Runtime.InteropServices.DllImportAttribute;
-#endif // UNITY_IOS && !GEOSPATIAL_IOS_SUPPORT
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
+#endif
 
     internal class ConfigApi
     {
@@ -81,11 +88,12 @@ namespace Google.XR.ARCoreExtensions.Internal
             ExternApi.ArConfig_setStreetscapeGeometryMode(sessionHandle, configHandle,
                 apiStreetscapeGeometryMode);
 #endif // !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
-#if UNITY_ANDROID
-
+#if !UNITY_IOS || SEMANTICS_IOS_SUPPORT
             ApiSemanticMode semanticMode = config.SemanticMode.ToApiSemanticMode();
             ExternApi.ArConfig_setSemanticMode(
                 sessionHandle, configHandle, semanticMode);
+#endif // !UNITY_IOS || SEMANTICS_IOS_SUPPORT
+#if UNITY_ANDROID
 #endif // UNITY_ANDROID
         }
 
@@ -121,11 +129,11 @@ namespace Google.XR.ARCoreExtensions.Internal
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_setGeospatialMode(
                 IntPtr sessionHandle, IntPtr config, ApiGeospatialMode mode);
-#if UNITY_ANDROID
 
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [SemanticsImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArConfig_setSemanticMode(
                 IntPtr session, IntPtr config, ApiSemanticMode mode);
+#if UNITY_ANDROID
 #endif // UNITY_ANDROID
         }
     }

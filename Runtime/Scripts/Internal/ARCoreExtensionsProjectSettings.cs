@@ -140,6 +140,15 @@ namespace Google.XR.ARCoreExtensions.Internal
         [DynamicHelp("GetGeospatialCreatorHelpInfo")]
         public bool GeospatialEditorEnabled;
 
+        /// <summary>
+        /// Indicates whether the project is built with the ARCore Semantics API for iOS. When this
+        /// is checked, includes libraries required for the Scene Semantics API to function in your
+        /// build.
+        /// </summary>
+        [DisplayName("Semantics on iOS")]
+        [DisplayCondition("IsSemanticsIosFieldDisplayed")]
+        public bool SemanticsIosEnabled;
+
         private const string _projectSettingsPath =
             "ProjectSettings/ARCoreExtensionsProjectSettings.json";
 
@@ -173,6 +182,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 { "CLOUDANCHOR_IOS_SUPPORT", CloudAnchorEnabled },
                 { "GEOSPATIAL_IOS_SUPPORT", GeospatialEnabled },
+                { "SEMANTICS_IOS_SUPPORT", SemanticsIosEnabled },
             };
         }
 
@@ -187,6 +197,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             {
                 { "ARCoreiOSCloudAnchorDependencies", CloudAnchorEnabled },
                 { "ARCoreiOSGeospatialDependencies", GeospatialEnabled },
+                { "ARCoreiOSSemanticsDependencies", SemanticsIosEnabled },
             };
         }
 
@@ -311,6 +322,16 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IOSCloudServicesApiKey = string.Empty;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Reflection function used by <see cref="DisplayConditionAttribute"/> for property
+        /// <see cref="SemanticsIosEnabled"/>.
+        /// </summary>
+        /// <returns>Display condition for <see cref="SemanticsIosEnabled"/>.</returns>
+        public bool IsSemanticsIosFieldDisplayed()
+        {
+            return IsIOSSupportEnabled;
         }
 
         /// <summary>

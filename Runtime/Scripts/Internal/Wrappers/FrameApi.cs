@@ -27,8 +27,14 @@ namespace Google.XR.ARCoreExtensions.Internal
 
 #if UNITY_IOS
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
-#elif UNITY_ANDROID
+#if SEMANTICS_IOS_SUPPORT
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using SemanticsImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
+#else // UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class FrameApi
@@ -58,7 +64,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static IntPtr AcquireSemanticImage(IntPtr sessionHandle, IntPtr frameHandle)
         {
             IntPtr semanticImageHandle = IntPtr.Zero;
-#if UNITY_ANDROID
+#if UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             // Get the current semantic image.
             ApiArStatus status = ExternApi.ArFrame_acquireSemanticImage(
                 sessionHandle, frameHandle, ref semanticImageHandle);
@@ -70,8 +76,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                     status.ToString());
                 return IntPtr.Zero;
             }
-#endif
-
+#endif //  UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             return semanticImageHandle;
         }
 
@@ -79,7 +84,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, IntPtr frameHandle)
         {
             IntPtr confidenceImageHandle = IntPtr.Zero;
-#if UNITY_ANDROID
+#if  UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             // Get the current confidence depth image.
             ApiArStatus status = ExternApi.ArFrame_acquireSemanticConfidenceImage(
                 sessionHandle, frameHandle, ref confidenceImageHandle);
@@ -92,8 +97,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                     status.ToString());
                 return IntPtr.Zero;
             }
-#endif
-
+#endif //  UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             return confidenceImageHandle;
         }
 
@@ -101,7 +105,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, IntPtr frameHandle, ApiSemanticLabel queryLabel)
         {
             float fraction = 0.0f;
-#if UNITY_ANDROID
+#if  UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             // Get semantic label fraction from current semantic label.
             ApiArStatus status = ExternApi.ArFrame_getSemanticLabelFraction(
                 sessionHandle, frameHandle, queryLabel, ref fraction);
@@ -114,7 +118,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                     status.ToString());
                 return 0.0f;
             }
-#endif
+#endif //  UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
 
             return fraction;
         }
@@ -187,24 +191,24 @@ namespace Google.XR.ARCoreExtensions.Internal
 
         private struct ExternApi
         {
+            [SemanticsImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_acquireSemanticImage(
+                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
+
+            [SemanticsImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_acquireSemanticConfidenceImage(
+                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
+
+            [SemanticsImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_getSemanticLabelFraction(
+                IntPtr sessionHandle, IntPtr frameHandle, ApiSemanticLabel queryLabel,
+                ref float fraction);
+
 #if UNITY_ANDROID
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArFrame_transformCoordinates2d(IntPtr session, IntPtr frame,
                 ApiCoordinates2dType inputType, int numVertices, ref Vector2 uvsIn,
                 ApiCoordinates2dType outputType, ref Vector2 uvsOut);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern ApiArStatus ArFrame_acquireSemanticImage(
-                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern ApiArStatus ArFrame_acquireSemanticConfidenceImage(
-                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageHandle);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern ApiArStatus ArFrame_getSemanticLabelFraction(
-                IntPtr sessionHandle, IntPtr frameHandle, ApiSemanticLabel queryLabel,
-                ref float fraction);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArFrame_recordTrackData(

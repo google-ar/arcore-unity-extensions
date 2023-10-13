@@ -25,25 +25,31 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using UnityEngine;
 
     [CustomEditor(typeof(ARGeospatialCreatorAnchor))]
+    [CanEditMultipleObjects]
     internal class ARGeospatialCreatorAnchorEditor : Editor
     {
+        private SerializedProperty _altitudeOffset;
+
         private SerializedProperty _altitudeType;
         private SerializedProperty _latitude;
         private SerializedProperty _longitude;
         private SerializedProperty _altitude;
-        private SerializedProperty _altitudeOffset;
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            var anchor = serializedObject.targetObject as ARGeospatialCreatorAnchor;
+            // don't use targetObject just use SerializedProperty
+            // SerializedProperty will use the 0th in the array of targets in some cases
+            // and can then support multi object edit with undo
             GUIStyle titleStyle = new GUIStyle(EditorStyles.boldLabel);
             titleStyle.fontSize = 20;
             GUILayout.Label("Geospatial Creator Anchor", titleStyle);
 
             // Start a code block to check for GUI changes
             EditorGUI.BeginChangeCheck();
+
+
             _latitude.doubleValue =
                 EditorGUILayout.DoubleField("Latitude", _latitude.doubleValue);
             _longitude.doubleValue =
@@ -51,14 +57,31 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             GUIContent altitudeTypeLabel = new GUIContent("Altitude Type");
             EditorGUILayout.PropertyField(_altitudeType, altitudeTypeLabel);
-            ARGeospatialCreatorAnchor.AltitudeType altitudeType;
+            AnchorAltitudeType altitudeType;
 
-            altitudeType = anchor.AltType;
+            Enum.TryParse(
+                _altitudeType.enumNames[_altitudeType.enumValueIndex], out altitudeType);
 
+            GUIForAltitude(altitudeType);
+
+            if (GUILayout.Button("Search for Location"))
+            {
+                PlaceSearchWindow.ShowPlaceSearchWindow();
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void GUIForAltitude(AnchorAltitudeType altitudeType)
+        {
             using (new EditorGUI.IndentLevelScope())
             {
-                if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Terrain ||
-                    altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
+                // Draw the custom GUI for the legacy _altitudeOffset field
+                if (altitudeType == AnchorAltitudeType.Terrain ||
+                    altitudeType == AnchorAltitudeType.Rooftop)
                 {
                     _altitudeOffset.doubleValue = EditorGUILayout.DoubleField(
                         "Altitude Offset",
@@ -67,7 +90,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
                 _altitude.doubleValue =
                     EditorGUILayout.DoubleField("WGS84 Altitude", _altitude.doubleValue);
-                if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Terrain)
+                if (altitudeType == AnchorAltitudeType.Terrain)
                 {
                     EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
                         "display altitude of the anchored object. At runtime Altitude Offset is " +
@@ -75,7 +98,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                         MessageType.Info,
                         wide: true);
                 }
-                else if (altitudeType == ARGeospatialCreatorAnchor.AltitudeType.Rooftop)
+                else if (altitudeType == AnchorAltitudeType.Rooftop)
                 {
                     EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
                         "display altitude of the anchored object. At runtime Altitude Offset is " +
@@ -84,22 +107,16 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                         wide: true);
                 }
             }
-
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-            }
         }
 
         private void OnEnable()
         {
             // Fetch the objects from the GameObject script to display in the inspector
-            _altitudeType = serializedObject.FindProperty("AltType");
+            _altitudeType = serializedObject.FindProperty("_altitudeType");
+            _altitudeOffset = serializedObject.FindProperty("_altitudeOffset");
             _latitude = serializedObject.FindProperty("_latitude");
             _longitude = serializedObject.FindProperty("_longitude");
             _altitude = serializedObject.FindProperty("_altitude");
-            _altitudeOffset = serializedObject.FindProperty("_altitudeOffset");
         }
     }
 }

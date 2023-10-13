@@ -22,9 +22,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     using System;
     using System.Collections;
+
     using Google.XR.ARCoreExtensions;
     using Google.XR.ARCoreExtensions.Internal;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
     using UnityEngine;
+    using UnityEngine.Serialization;
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
 
@@ -35,11 +40,34 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
     /// </summary>
     [AddComponentMenu("XR/AR Geospatial Creator Anchor")]
     [ExecuteInEditMode]
+#if !UNITY_EDITOR
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "StyleCop.CSharp.DocumentationRules",
+        "SA1624:PropertySummaryDocumentationMustOmitSetAccessorWithRestrictedAccess",
+        Justification = "Many of the properties have setters that are only available in Editor " +
+            "mode, so the documentation should read \"Gets and sets...\". Because the setters " +
+            "are excluded from Runtime, the SA1624 style check will fail for non-Editor builds.",
+        Scope = "type")]
+#endif // !UNITY_EDITOR
     public class ARGeospatialCreatorAnchor : ARGeospatialCreatorObject
     {
-        /// <summary>Gets or sets the AltitudeType used for resolution of this anchor.</summary>
-        public AltitudeType AltType = AltitudeType.ManualAltitude;
+        // Message logged when no AnchorManagers are present. This is internal so it can be checked
+        // during testing.
+        internal const string _noAnchorManagersMessage =
+            "No ARAnchorManagers were found in the scene.";
 
+        // TODO (b/298042491) This can be private & editor-only when the GEOSPATIAL_CREATOR_API
+        // flag is permanently enabled. It cannot be removed entirely because we need to be able to
+        // migrate the value for customers upgrading from older versions of ARCore Extensions.
+        [SerializeField]
+        internal double _altitudeOffset;
+
+#if !UNITY_EDITOR
+#pragma warning disable CS0649
+        // Disable "Field 'field' is never assigned to..." error. The following fields are all
+        // read-only at runtime, so disable the error about them not being written except for in
+        // Editor mode.
+#endif
         [SerializeField]
         private double _latitude;
 
@@ -50,37 +78,33 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         private double _altitude;
 
         [SerializeField]
-        private double _altitudeOffset;
+        [field: FormerlySerializedAs("AltType")]
+        private AnchorAltitudeType _altitudeType = AnchorAltitudeType.WGS84;
+
+#if UNITY_EDITOR
+
+        internal bool _unityPositionUpdateRequired = false;
+#endif // UNITY_EDITOR
+
+#if !UNITY_EDITOR
+#pragma warning restore CS0649
+#endif
+
+#if UNITY_EDITOR
+        // The _anchorManager is never accessed in Editor mode when the API feature flag is off. It
+        // is still used at runtime so we'll suppress this error rather than exclude the field.
+        // This warning can be re-enabled for all builds once the feature flag is permanently true.
+#pragma warning disable CS0414
+#endif // UNITY_EDITOR
+        [SerializeField]
+        private ARAnchorManager _anchorManager = null;
+#if UNITY_EDITOR
+#pragma warning restore CS0414
+#endif // UNITY_EDITOR
 
 #if !UNITY_EDITOR
         private AnchorResolutionState _anchorResolution = AnchorResolutionState.NotStarted;
-#endif
 
-        /// <summary>
-        /// Determines how the Altitude and AlttudeOffset fields are interpreted.
-        /// </summary>
-        public enum AltitudeType
-        {
-            /// <summary>
-            /// Altitude specifies the altitude of the anchor in meters for WGS84. AltitudeOffset
-            /// is not used.
-            /// </summary>
-            ManualAltitude,
-
-            /// <summary>
-            /// AltitudeOffset specifies the relative altitude above/below the terrain, in meters.
-            /// Altitude is used only in the Editor for visualizing the anchor in the scene view.
-            /// </summary>
-            Terrain,
-
-            /// <summary>
-            /// AltitudeOffset specifies the relative altitude above/below the rooftop, in meters.
-            /// Altitude is used only in the Editor for visualizing the anchor in the scene view.
-            /// </summary>
-            Rooftop
-        }
-
-#if !UNITY_EDITOR
         private enum AnchorResolutionState
         {
             NotStarted,
@@ -89,42 +113,69 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         }
 #endif
 
+
         /// <summary>Gets or sets the latitude of this anchor.</summary>
         public double Latitude
         {
             get => this._latitude;
-            set { this._latitude = value; }
+#if UNITY_EDITOR
+            set
+            {
+                if (_latitude != value)
+                {
+                    _latitude = value;
+                    _unityPositionUpdateRequired = true;
+                }
+            }
+#endif
         }
 
         /// <summary>Gets or sets the longitude of this anchor.</summary>
         public double Longitude
         {
             get => this._longitude;
-            set { this._longitude = value; }
+#if UNITY_EDITOR
+            set
+            {
+                if (_longitude != value)
+                {
+                    _longitude = value;
+                    _unityPositionUpdateRequired = true;
+                }
+            }
+#endif
         }
 
         /// <summary>
-        /// Gets or sets the altitude. When AltType is ManualAltitude, this value is the altitude
-        ///  of the anchor, in meters according to WGS84. When AltType is Terrain or Rooftop, this
+        /// Gets or sets the altitude. When AltitudeType is WSG84, this value is the altitude of
+        /// the anchor, in meters according to WGS84. When AltitudeType is Terrain or Rooftop, this
         /// value is ONLY used in Editor mode, to determine the altitude at which to render the
-        /// anchor in the Editor's Scene View. If AltType is Terrain or Rooftop, this value is
-        /// ignored in the Player.
-        /// </summary>
+        /// anchor in the Editor's Scene View. If AltitudeType is Terrain or Rooftop, this value is
+        /// ignored in the Player.</summary>
         public double Altitude
         {
             get => this._altitude;
-            set { this._altitude = value; }
+#if UNITY_EDITOR
+            set
+            {
+                if (_altitude != value)
+                {
+                    _altitude = value;
+                    _unityPositionUpdateRequired = true;
+                }
+            }
+#endif
         }
 
-        /// <summary>
-        /// Gets or sets the altitude offset of the anchor, in meters relative to the resolved
-        /// terrain or rooftop. This value is ignored when AltType is ManualAltitude.
-        /// </summary>
-        public double AltitudeOffset
+        /// <summary>Gets or sets the AltitudeType used for resolution of this anchor.</summary>
+        public AnchorAltitudeType AltitudeType
         {
-            get => this._altitudeOffset;
-            set { this._altitudeOffset = value; }
+            get => _altitudeType;
+#if UNITY_EDITOR
+            set => _altitudeType = value;
+#endif
         }
+
 
 #if !UNITY_EDITOR
         private void Update()
@@ -164,32 +215,31 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
                 return;
             }
 
-            // :TODO (b/278071434): Make the anchor manager a settable property
-            ARAnchorManager anchorManager =
-                ARCoreExtensions._instance.SessionOrigin.GetComponent<ARAnchorManager>();
+            _anchorManager =
+                ARCoreExtensions._instance.SessionOrigin?.GetComponent<ARAnchorManager>();
 
-            if (anchorManager == null)
+            if (_anchorManager == null)
             {
-                Debug.LogError(
-                    "The Session Origin has no Anchor Manager. " +
-                    "Unable to place Geospatial Creator Anchor " +
-                    name);
+                string errorReason =
+                    "The Session Origin's AnchorManager is null.";
+                Debug.LogError("Unable to place ARGeospatialCreatorAnchor " + name + ": " +
+                    errorReason);
                 _anchorResolution = AnchorResolutionState.Complete;
                 return;
             }
 
             _anchorResolution = AnchorResolutionState.InProgress;
-            switch (this.AltType)
+            switch (this.AltitudeType)
             {
-                case AltitudeType.Terrain:
-                    StartCoroutine(ResolveTerrainAnchor(anchorManager));
+                case AnchorAltitudeType.Terrain:
+                    StartCoroutine(ResolveTerrainAnchor());
                     break;
-                case AltitudeType.Rooftop:
-                    StartCoroutine(ResolveRooftopAnchor(anchorManager));
+                case AnchorAltitudeType.Rooftop:
+                    StartCoroutine(ResolveRooftopAnchor());
                     break;
-                case AltitudeType.ManualAltitude:
-                    // Manual altitude anchors don't use async APIs, so there's no coroutine
-                    ResolveManualAltitudeAnchor(anchorManager);
+                case AnchorAltitudeType.WGS84:
+                    // WGS84 altitude anchors don't use async APIs, so there's no coroutine
+                    ResolveWGS84AltitudeAnchor();
                     break;
             }
         }
@@ -216,19 +266,25 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
             Debug.Log("Geospatial Anchor resolved: " + name);
         }
 
-        private void ResolveManualAltitudeAnchor(ARAnchorManager anchorManager)
+        // Synchronously resolves this anchor at (Latitude, Longitude, Altitude). Assumes
+        // _anchorManager is not null and configured properly for creating geospatial anchors.
+        private void ResolveWGS84AltitudeAnchor()
         {
-            ARGeospatialAnchor anchor = anchorManager.AddAnchor(
+            ARGeospatialAnchor anchor = _anchorManager.AddAnchor(
                 Latitude, Longitude, Altitude, transform.rotation);
             FinishAnchor(anchor);
         }
 
-        private IEnumerator ResolveTerrainAnchor(ARAnchorManager anchorManager)
+        // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
+        // of the local terrain. Assumes _anchorManager is not null and configured properly for
+        // creating geospatial anchors.
+        private IEnumerator ResolveTerrainAnchor()
         {
+            double altitudeAboveTerrain = _altitudeOffset;
             ARGeospatialAnchor anchor = null;
             ResolveAnchorOnTerrainPromise promise =
-                        anchorManager.ResolveAnchorOnTerrainAsync(
-                            Latitude, Longitude, AltitudeOffset, transform.rotation);
+                _anchorManager.ResolveAnchorOnTerrainAsync(
+                    Latitude, Longitude, altitudeAboveTerrain, transform.rotation);
 
             yield return promise;
             var result = promise.Result;
@@ -241,12 +297,16 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
             yield break;
         }
 
-        private IEnumerator ResolveRooftopAnchor(ARAnchorManager anchorManager)
+       // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
+        // of the local skyline. Assumes _anchorManager is not null and configured properly for
+        // creating geospatial anchors.
+        private IEnumerator ResolveRooftopAnchor()
         {
+            double altitudeAboveRooftop = _altitudeOffset;
             ARGeospatialAnchor anchor = null;
             ResolveAnchorOnRooftopPromise promise =
-                        anchorManager.ResolveAnchorOnRooftopAsync(
-                            Latitude, Longitude, AltitudeOffset, transform.rotation);
+                _anchorManager.ResolveAnchorOnRooftopAsync(
+                    Latitude, Longitude, altitudeAboveRooftop, transform.rotation);
 
             yield return promise;
             var result = promise.Result;

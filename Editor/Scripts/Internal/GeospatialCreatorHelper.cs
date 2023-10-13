@@ -64,7 +64,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static void ConfigureScriptingSymbols(bool enabled)
         {
 #if !UNITY_2021_3_OR_NEWER
-            Debug.LogError("Geospatial Creator requires Unity 2021.3 or later.");
+            if (enabled)
+            {
+                Debug.LogWarning("Geospatial Creator requires Unity 2021.3 or later.");
+            }
 #endif
             bool currentlyEnabled = CheckForSymbolsInProject();
             if (currentlyEnabled == enabled)
@@ -107,8 +110,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 // scene? Could log a warning, or force an error and not allow the feature to be
                 // disabled if they are present.
             }
-#else // Error state because this is an invalid version of Unity
-            throw new Exception("Geospatial Creator requires Unity 2021.3 or later.");
+#else // Unsupported version of Unity is being used
+            if (toggleChecked)
+            {
+                // Don't allow the feature to be enabled.
+                ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled = false;
+                throw new Exception("Geospatial Creator requires Unity 2021.3 or later.");
+            }
+            else
+            {
+                // The previous toggled-on state was invalid, but could have occurred if the
+                // project was downgraded to an older version of Unity. It is safe to remove the
+                // symbols.
+                ConfigureScriptingSymbols(false);
+            }
 #endif
         }
 

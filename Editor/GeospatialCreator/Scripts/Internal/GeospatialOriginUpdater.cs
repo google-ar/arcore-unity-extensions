@@ -28,18 +28,17 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using UnityEngine;
 
     /// <summary>
-    /// Handles Editor Updates for ARGeospatialCreatorOrigin objects. Specifically, it ensures
-    /// the Origin's GeoCoordinate point is in sync with the CesiumGeoreference location. This
-    /// class is used instead of implementing ARGeospatialCreatorOrigin's Update() method to
-    /// avoid requiring the Cesium dependency in the GeospatialCreator's runtime assembly
-    /// references.
+    /// Handles Editor Updates for ARGeospatialCreatorOrigin objects. Specifically, it ensures the
+    /// Origin's GeoCoordinate point is in sync with the CesiumGeoreference location. This class is
+    /// used instead of implementing ARGeospatialCreatorOrigin's Update() method to avoid requiring
+    /// the Cesium dependency in the GeospatialCreator's runtime assembly references.
     /// </summary>
     [InitializeOnLoad]
     internal class GeospatialOriginUpdater
     {
         private static GeospatialObjectTracker<ARGeospatialCreatorOrigin> tracker;
 
-        private ARGeospatialCreatorOrigin _origin;
+        private readonly ARGeospatialCreatorOrigin _origin;
 
         // Use a static initializer, plus the InitializeOnLoad attribute, to ensure objects in the
         // scene are always being tracked.
@@ -55,24 +54,55 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         public GeospatialOriginUpdater(ARGeospatialCreatorOrigin origin)
         {
             _origin = origin;
+#if ARCORE_INTERNAL_USE_CESIUM
+            _origin._originComponentAdapter = new CesiumOriginAdapter(origin);
+            _origin.UpdateOriginFromComponent();
+#endif
         }
 
         private void EditorUpdate()
         {
+            _origin.UpdateOriginFromComponent();
+        }
+
 #if ARCORE_INTERNAL_USE_CESIUM
-            // :TODO b/276777888: Handle invalid case where there's multiple origin points.
-            // A missing CesiumGeoreference is not an error, for example if the
-            // ARGeospatialCreatorOrigin was recently created.
-            CesiumForUnity.CesiumGeoreference geoRef =
-                _origin.gameObject.GetComponent<CesiumForUnity.CesiumGeoreference>();
-            if (geoRef != null)
+        private class CesiumOriginAdapter : IOriginComponentAdapter
+        {
+            private readonly ARGeospatialCreatorOrigin _origin;
+
+            public CesiumOriginAdapter(ARGeospatialCreatorOrigin origin)
             {
-                _origin.OriginPoint =
+                _origin = origin;
+            }
+
+            public GeoCoordinate GetOriginFromComponent()
+            {
+                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
+                return (geoRef == null) ? null :
                     new GeoCoordinate(geoRef.latitude, geoRef.longitude, geoRef.height);
             }
-#endif
+
+            public void SetComponentOrigin(GeoCoordinate newOrigin)
+            {
+                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
+                if (geoRef == null)
+                {
+                    Debug.LogWarning("Origin location updated for " + _origin.gameObject.name +
+                        ", but there is no Cesium Georeference subcomponent.");
+                    return;
+                }
+
+                geoRef.latitude = newOrigin.Latitude;
+                geoRef.longitude = newOrigin.Longitude;
+                geoRef.height = newOrigin.Altitude;
+            }
+
+            private CesiumForUnity.CesiumGeoreference GetCesiumGeoreference()
+            {
+                return _origin.gameObject.GetComponent<CesiumForUnity.CesiumGeoreference>();
+            }
         }
+#endif //ARCORE_INTERNAL_USE_CESIUM
     }
 }
-
 #endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED

@@ -24,63 +24,49 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System.Runtime.InteropServices;
     using UnityEngine;
 
-#if UNITY_ANDROID
-    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-#endif
-
+#if UNITY_IOS
+    using ImageImport = System.Runtime.InteropServices.DllImportAttribute;
+#else // UNITY_IOS
+    using ImageImport = System.Runtime.InteropServices.DllImportAttribute;
+#endif // UNITY_IOS
     internal class ImageApi
     {
         public static void GetPlaneData(IntPtr sessionHandle, IntPtr imageHandle, int planeIndex,
             ref IntPtr surfaceData, ref int dataLength)
         {
-#if UNITY_ANDROID
             ExternApi.ArImage_getPlaneData(sessionHandle, imageHandle, planeIndex,
                 ref surfaceData, ref dataLength);
-#endif
         }
 
         public static int GetWidth(IntPtr sessionHandle, IntPtr imageHandle)
         {
-#if UNITY_ANDROID
-            ExternApi.ArImage_getWidth(sessionHandle, imageHandle, out int width);
-
+            int width = 0;
+            ExternApi.ArImage_getWidth(sessionHandle, imageHandle, out width);
             return width;
-#else
-            return 0;
-#endif
         }
 
         public static int GetHeight(IntPtr sessionHandle, IntPtr imageHandle)
         {
-#if UNITY_ANDROID
-            ExternApi.ArImage_getHeight(sessionHandle, imageHandle, out int height);
+            int height = 0;
+            ExternApi.ArImage_getHeight(sessionHandle, imageHandle, out height);
             return height;
-#else
-            return 0;
-#endif
         }
 
         public static long GetTimestamp(IntPtr sessionHandle, IntPtr imageHandle)
         {
-#if UNITY_ANDROID
-            ExternApi.ArImage_getTimestamp(sessionHandle, imageHandle, out long timestamp);
+            long timestamp = 0;
+            ExternApi.ArImage_getTimestamp(sessionHandle, imageHandle, out timestamp);
             return timestamp;
-#else
-            return 0;
-#endif
         }
 
         public static void Release(IntPtr imageHandle)
         {
-#if UNITY_ANDROID
             ExternApi.ArImage_release(imageHandle);
-#endif
         }
 
         public static void UpdateTexture(
             IntPtr sessionHandle, IntPtr imageHandle, TextureFormat format, ref Texture2D texture)
         {
-#if UNITY_ANDROID
             int width = GetWidth(sessionHandle, imageHandle);
             int height = GetHeight(sessionHandle, imageHandle);
             IntPtr planeDataHandle = IntPtr.Zero;
@@ -97,7 +83,6 @@ namespace Google.XR.ARCoreExtensions.Internal
 
             texture.LoadRawTextureData(planeDataHandle, planeSize);
             texture.Apply();
-#endif
         }
 
         public static Vector2Int UpdateRawData(
@@ -105,7 +90,6 @@ namespace Google.XR.ARCoreExtensions.Internal
         {
             int width = GetWidth(sessionHandle, imageHandle);
             int height = GetHeight(sessionHandle, imageHandle);
-#if UNITY_ANDROID
             IntPtr planeDataHandle = IntPtr.Zero;
             int planeSize = 0;
             GetPlaneData(sessionHandle, imageHandle, 0, ref planeDataHandle, ref planeSize);
@@ -115,33 +99,30 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
 
             Marshal.Copy(planeDataHandle, imageBuffer, 0, planeSize);
-#endif
             return new Vector2Int(width, height);
         }
 
         private struct ExternApi
         {
-#if UNITY_ANDROID
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [ImageImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_release(IntPtr imageHandle);
 
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [ImageImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_getWidth(
                 IntPtr sessionHandle, IntPtr imageHandle, out int width);
 
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [ImageImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_getHeight(
                 IntPtr sessionHandle, IntPtr imageHandle, out int height);
 
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [ImageImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_getTimestamp(
                 IntPtr sessionHandle, IntPtr imageHandle, out long timestamp);
 
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            [ImageImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_getPlaneData(
                 IntPtr sessionHandle, IntPtr imageHandle, int planeIndex, ref IntPtr surfaceData,
                 ref int dataLength);
-#endif
         }
     }
 }

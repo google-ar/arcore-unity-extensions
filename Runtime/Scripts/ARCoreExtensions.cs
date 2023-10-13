@@ -340,11 +340,12 @@ namespace Google.XR.ARCoreExtensions
             }
 #if UNITY_IOS
             if (ARCoreExtensionsConfig != null &&
+                CameraManager.requestedFacingDirection != CameraFacingDirection.World &&
                 ARCoreExtensionsConfig.SemanticMode == SemanticMode.Enabled)
             {
-                Debug.LogWarnFormat(
-                    "Semantic Mode {0} is currently incompatible with iOS devices. " +
-                    "Enabling this for the iOS target platform will have no effect.",
+                Debug.LogErrorFormat(
+                    "Semantic Mode {0} is incompatible with user-facing (selfie) camera. " +
+                    "Choose 'World' camera in ARCameraManager instead.",
                     ARCoreExtensionsConfig.SemanticMode);
             }
 #else // UNITY_IOS

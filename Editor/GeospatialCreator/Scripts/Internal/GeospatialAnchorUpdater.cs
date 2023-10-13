@@ -43,12 +43,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         private ARGeospatialCreatorAnchor _anchor;
 
-        private bool shouldPosition = true;
-
-        private Vector3 _previousPosition = Vector3.zero;
+        // The default is positiveInfinity so it won't match the default transform.position value
+        // for a new object. This forces the geospatial coordinate to update on the next frame.
+        private Vector3 _previousPosition = Vector3.positiveInfinity;
         private Quaternion _previousRotation = Quaternion.identity;
-        private Vector3 _previousScale = Vector3.one;
         private GeoCoordinate _previousCoor = new GeoCoordinate(Mathf.Infinity, Mathf.Infinity, 0);
+        private Vector3 _previousScale = Vector3.one;
 
         // Use a static initializer, plus the InitializeOnLoad attribute, to ensure objects in the
         // scene are always being tracked.
@@ -61,24 +61,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             tracker.StartTracking();
         }
 
-        // :TODO b/278071434: Make the Origin a property of the anchor instead of finding it. This
-        // implementation is inefficient to do on each Editor Update, but will be replaced soon.
-        public static GeoCoordinate FindOriginPoint()
-        {
-            ARGeospatialCreatorOrigin[] origins =
-                GameObject.FindObjectsOfType<ARGeospatialCreatorOrigin>();
-            if (origins.Length == 0)
-            {
-                Debug.LogError("No valid ARGeospatialCreatorOrigin found in scene");
-                return null;
-            }
-            if (origins.Length > 1)
-            {
-                Debug.LogWarning("Multiple ARGeospatialCreatorOrigin objects found in scene.");
-            }
-            return origins[0].OriginPoint;
-        }
-
         public GeospatialAnchorUpdater(ARGeospatialCreatorAnchor anchor)
         {
             _anchor = anchor;
@@ -86,21 +68,38 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         private void EditorUpdate()
         {
-            if (_previousPosition != _anchor.transform.position ||
+            // The anchor maintains a flag to indicate if the Unity world coordinates (i.e., the
+            // GameObject's transform.position values) need to be updated to match the anchor's
+            // recently-changed geodetic coordinate properties. If the geodetic coordinate
+            // properties have not changed, then check if the Unity world coordinates were modified
+            // and update the geodetic coordinates to match, if necessary.
+            if (_anchor._unityPositionUpdateRequired)
+            {
+                UpdateUnityPosition();
+            }
+            else if (
+                _previousPosition != _anchor.transform.position ||
                 _previousRotation != _anchor.transform.rotation ||
                 _previousScale != _anchor.transform.localScale)
             {
-                // Update lat/lon/alt to match the changed game coordinates
                 UpdateGeospatialCoordinate();
             }
-            else if (_previousCoor.Latitude != _anchor.Latitude ||
-                _previousCoor.Longitude != _anchor.Longitude ||
-                _previousCoor.Altitude != _anchor.Altitude)
+            else if (
+                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Latitude, _anchor.Latitude) ||
+                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Longitude, _anchor.Longitude) ||
+                !GeoMath.ApproximatelyEqualsMeters(_previousCoor.Altitude, _anchor.Altitude))
             {
-                // update the game coordinates to match the changed lat/lon/alt
+                // This is a special lower-priority check for the explicit geodetic values, in case
+                // the Anchor's lat/lon/alt fields were updated directly (not via the property
+                // setters) which prevents the _unityPositionUpdateRequired flag from being set.
+                // This will happen when serialization-based state modifications occur, such as
+                // SerializedObject.ApplyModifiedProperties or the Undo/Redo system. We check this
+                // last because any change to the transform has a higher priority. See b/302310301
+                // for additional context.
                 UpdateUnityPosition();
             } else
             {
+                // No change since either position was last updated.
                 return;
             }
 
@@ -111,9 +110,30 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 _anchor.Latitude,
                 _anchor.Longitude,
                 _anchor.Altitude);
+            _anchor._unityPositionUpdateRequired = false;
         }
 
-        // :TODO: b/277365140 Automated testing for these two methods
+        // returns the GeoCoordinate of the Origin assigned to this Anchor. If the Anchor does not
+        // have an Origin assigned, the method logs a message and returns a suitable default, or
+        // null if no Origins exist in the scene.
+        private GeoCoordinate FindOriginPoint()
+        {
+            ARGeospatialCreatorOrigin origin = ARGeospatialCreatorOrigin.FindDefaultOrigin();
+            if (origin == null)
+            {
+                Debug.LogError("Cannot update the location for " + _anchor.gameObject.name + ": " +
+                    "The Origin field is unassigned.");
+            }
+            else if(origin._originPoint == null)
+            {
+                Debug.LogError("Cannot update the location for " + _anchor.gameObject.name + ": " +
+                    "The Origin " + origin.gameObject.name + " has no Georeference.");
+            }
+
+            return origin?._originPoint;
+        }
+
+        // :TODO: b/295547447 Automated testing for these two methods
         private void UpdateGeospatialCoordinate()
         {
             GeoCoordinate originPoint = FindOriginPoint();
@@ -134,6 +154,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             _anchor.Longitude = llh.x;
             _anchor.Latitude = llh.y;
+
             _anchor.Altitude = llh.z;
         }
 
@@ -146,11 +167,13 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 return;
             }
 
+            double alt = _anchor.Altitude;
+
             double4x4 ECEFToENU = GeoMath.CalculateEcefToEnuTransform(originPoint);
             GeoCoordinate coor = new GeoCoordinate(
                 _anchor.Latitude,
                 _anchor.Longitude,
-                _anchor.Altitude);
+                alt);
             double3 localInECEF = GeoMath.GeoCoordinateToECEF(coor);
             double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
             // Unity is EUN not ENU so swap z and y

@@ -8,7 +8,11 @@
         "Unity.XR.ARFoundation",
         "Unity.XR.CoreUtils"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Android",
+        "Editor",
+        "iOS"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
@@ -18,3 +22,4 @@
     "versionDefines": [],
     "noEngineReferences": false
 }
+

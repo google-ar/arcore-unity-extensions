@@ -47,9 +47,6 @@ namespace Google.XR.ARCoreExtensions
         public FeatureSupported IsSemanticModeSupported(SemanticMode mode)
         {
 #if UNITY_IOS
-            Debug.LogWarning("The Semantic API isn't available on iOS.");
-            return FeatureSupported.Unsupported;
-#else
             if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
             {
                 return FeatureSupported.Unknown;
@@ -57,7 +54,15 @@ namespace Google.XR.ARCoreExtensions
 
             return SessionApi.IsSemanticModeSupported(
                 ARCoreExtensions._instance.currentARCoreSessionHandle, mode);
-#endif
+#else // UNITY_IOS
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return FeatureSupported.Unknown;
+            }
+
+            return SessionApi.IsSemanticModeSupported(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, mode);
+#endif // UNITY_IOS
         }
 
         /// <summary>
@@ -76,8 +81,6 @@ namespace Google.XR.ARCoreExtensions
         /// The width of the semantic image is currently 256 pixels. The height of the
         /// image depends on the device and will match its display aspect ratio.
         ///
-        /// Scene Semantics is currently not supported on the iOS platform. Calling this
-        /// on an iOS device will return false.
         /// </summary>
         /// <param name="texture">
         /// The semantic image <c><see cref="Texture2D"/></c> to be filled.</param>
@@ -85,9 +88,6 @@ namespace Google.XR.ARCoreExtensions
         public bool TryGetSemanticTexture(ref Texture2D texture)
         {
 #if UNITY_IOS
-            Debug.LogWarning("The Semantic API isn't available on iOS.");
-            return false;
-#else
             if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
                 SemanticMode.Enabled)
             {
@@ -117,7 +117,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             IntPtr imageHandle = FrameApi.AcquireSemanticImage(
-                ARCoreExtensions._instance.currentARCoreSessionHandle, frame.FrameHandle());
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                IOSSupportManager.Instance.ARCoreFrameHandle);
 
             if (imageHandle == IntPtr.Zero)
             {
@@ -132,7 +133,53 @@ namespace Google.XR.ARCoreExtensions
             CachedData.SetCachedData(CachedData.SemanticsTimestamp, frame.timestampNs);
 
             return true;
-#endif
+#else // UNITY_IOS
+            if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
+                SemanticMode.Enabled)
+            {
+                Debug.LogWarning(
+                    "Semantic image texture is not available when SemanticMode is not enabled.");
+                return false;
+            }
+
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                ARCoreExtensions._instance.CameraManager == null)
+            {
+                return false;
+            }
+
+            if (!ARCoreExtensions.TryGetLatestFrame(out XRCameraFrame frame))
+            {
+                return false;
+            }
+
+            if (CachedData.TryGetCachedData(
+                    CachedData.SemanticsTexture, out texture) &&
+                CachedData.TryGetCachedData(
+                    CachedData.SemanticsTimestamp, out long timestamp) &&
+                texture != null && timestamp == frame.timestampNs)
+            {
+                return true;
+            }
+
+            IntPtr imageHandle = FrameApi.AcquireSemanticImage(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                frame.FrameHandle());
+
+            if (imageHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            ImageApi.UpdateTexture(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, imageHandle,
+                TextureFormat.R8, ref texture);
+            ImageApi.Release(imageHandle);
+            CachedData.SetCachedData(CachedData.SemanticsTexture, texture);
+            CachedData.SetCachedData(CachedData.SemanticsTimestamp, frame.timestampNs);
+
+            return true;
+#endif // UNITY_IOS
         }
 
         /// <summary>
@@ -155,8 +202,6 @@ namespace Google.XR.ARCoreExtensions
         /// The size of the semantic confidence image is the same size as the image
         /// obtained by <c><see cref="ARSemanticManager.TryGetSemanticTexture(ref Texture2D)"/></c>.
         ///
-        /// Scene Semantics is currently not supported on the iOS platform. Calling this
-        /// on an iOS device will return false.
         /// </summary>
         /// <param name="texture">
         /// The semantic confidence image <c><see cref="Texture2D"/></c> to be filled.</param>
@@ -165,9 +210,53 @@ namespace Google.XR.ARCoreExtensions
         public bool TryGetSemanticConfidenceTexture(ref Texture2D texture)
         {
 #if UNITY_IOS
-            Debug.LogWarning("The Semantic API isn't available on iOS.");
-            return false;
-#else
+            if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
+                SemanticMode.Enabled)
+            {
+                Debug.LogWarning(
+                    "Semantic confidence image texture is not available when" +
+                    " SemanticMode is not enabled.");
+                return false;
+            }
+
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                ARCoreExtensions._instance.CameraManager == null)
+            {
+                return false;
+            }
+
+            if (!ARCoreExtensions.TryGetLatestFrame(out XRCameraFrame frame))
+            {
+                return false;
+            }
+
+            if (CachedData.TryGetCachedData(
+                    CachedData.SemanticsConfidenceTexture, out texture) &&
+                CachedData.TryGetCachedData(
+                    CachedData.SemanticsConfidenceTimestamp, out long timestamp) &&
+                texture != null && timestamp == frame.timestampNs)
+            {
+                return true;
+            }
+
+            IntPtr imageHandle = FrameApi.AcquireSemanticConfidenceImage(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                IOSSupportManager.Instance.ARCoreFrameHandle);
+
+            if (imageHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            ImageApi.UpdateTexture(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, imageHandle,
+                TextureFormat.Alpha8, ref texture);
+            ImageApi.Release(imageHandle);
+            CachedData.SetCachedData(CachedData.SemanticsConfidenceTexture, texture);
+            CachedData.SetCachedData(CachedData.SemanticsConfidenceTimestamp, frame.timestampNs);
+
+            return true;
+#else // UNITY_IOS
             if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
                 SemanticMode.Enabled)
             {
@@ -214,7 +303,7 @@ namespace Google.XR.ARCoreExtensions
             CachedData.SetCachedData(CachedData.SemanticsConfidenceTimestamp, frame.timestampNs);
 
             return true;
-#endif
+#endif // UNITY_IOS
         }
 
         /// <summary>
@@ -222,8 +311,6 @@ namespace Google.XR.ARCoreExtensions
         /// @p queryLabel. This call is more efficient than retrieving the image and
         /// performing a pixel-wise search for the detected label.
         ///
-        /// Scene Semantics is currently not supported on the iOS platform. Calling this
-        /// on an iOS device will return 0.0.
         /// </summary>
         /// <param name="queryLabel">The <c><see cref="SemanticLabel"/></c> to search for
         /// within the semantic image for this frame.</param>
@@ -236,9 +323,31 @@ namespace Google.XR.ARCoreExtensions
         public float GetSemanticLabelFraction(SemanticLabel queryLabel)
         {
 #if UNITY_IOS
-            Debug.LogWarning("The Semantic API isn't available on iOS.");
-            return 0.0f;
-#else
+            if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
+                SemanticMode.Enabled)
+            {
+                Debug.LogWarning(
+                    "Get semantic label fraction is not available when" +
+                    " SemanticMode is not enabled.");
+                return 0.0f;
+            }
+
+            if (ARCoreExtensions._instance.currentARCoreSessionHandle == IntPtr.Zero ||
+                ARCoreExtensions._instance.CameraManager == null)
+            {
+                return 0.0f;
+            }
+
+            if (!ARCoreExtensions.TryGetLatestFrame(out XRCameraFrame frame))
+            {
+                return 0.0f;
+            }
+
+            return FrameApi.GetSemanticLabelFraction(
+                ARCoreExtensions._instance.currentARCoreSessionHandle,
+                IOSSupportManager.Instance.ARCoreFrameHandle,
+                queryLabel.ToApiSemanticLabel());
+#else // UNITY_IOS
             if (ARCoreExtensions._instance.ARCoreExtensionsConfig.SemanticMode !=
                 SemanticMode.Enabled)
             {
@@ -262,7 +371,7 @@ namespace Google.XR.ARCoreExtensions
             return FrameApi.GetSemanticLabelFraction(
                 ARCoreExtensions._instance.currentARCoreSessionHandle,
                 frame.FrameHandle(), queryLabel.ToApiSemanticLabel());
-#endif
+#endif // UNITY_IOS
         }
     }
 }

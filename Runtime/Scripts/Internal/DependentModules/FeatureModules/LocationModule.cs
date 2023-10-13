@@ -201,7 +201,7 @@ namespace Google.XR.ARCoreExtensions.Internal
             ARCoreExtensionsProjectSettings settings)
         {
             return new JarArtifact[]{
-                new JarArtifact( "com.google.android.gms", "play-services-location", "16+")};
+                new JarArtifact( "com.google.android.gms", "play-services-location", "17+")};
         }
 #endif // UNITY_EDITOR
 

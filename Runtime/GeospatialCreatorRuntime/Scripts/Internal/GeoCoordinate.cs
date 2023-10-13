@@ -26,9 +26,9 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
     /// <summary> Immutable class representing a specific lat/lon/altitude.</summary>
     internal sealed class GeoCoordinate
     {
-        private double _latitude;
-        private double _longitude;
-        private double _altitude;
+        private readonly double _latitude;
+        private readonly double _longitude;
+        private readonly double _altitude;
 
         public GeoCoordinate(double latitude, double longitude, double altitude)
         {

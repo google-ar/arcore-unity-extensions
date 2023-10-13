@@ -31,6 +31,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     // :TODO: b/277365140 Automated testing
     internal static class GeoMath
     {
+        // sub-centimeter tollerance according to https://en.wikipedia.org/wiki/Decimal_degrees
+        private const double _epsilon_degrees = 0.00000001d;
+        private const double _epsilon_meters = 0.0001d;
+
         public static double3 EarthCenteredEarthFixedToLongitudeLatitudeHeight(double3 ecef)
         {
 #if ARCORE_INTERNAL_USE_CESIUM && ARCORE_INTERNAL_USE_UNITY_MATH
@@ -164,6 +168,25 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         public static double4x4 CalculateEnuToEcefTransform(GeoCoordinate originPoint)
         {
             return math.inverse(CalculateEcefToEnuTransform(originPoint));
+        }
+
+        // Compares two values as decimal degrees, and returns true if they are equal within
+        // a sub-centimeter tolerance, which is sufficient accuracy for Geospatial Creator.
+        public static bool ApproximatelyEqualsDegrees(double d1, double d2)
+        {
+            return ApproximatelyEquals(d1, d2, _epsilon_degrees);
+        }
+
+        // Compares two values as meters, and returns true if they are equal within a
+        // sub-centimeter tollerance, which is sufficient accuracy for Geospatial Creator.
+        public static bool ApproximatelyEqualsMeters(double m1, double m2)
+        {
+            return ApproximatelyEquals(m1, m2, _epsilon_meters);
+        }
+
+        private static bool ApproximatelyEquals(double a, double b, double epsilon)
+        {
+            return (Math.Abs(a - b) < epsilon);
         }
     }
 }

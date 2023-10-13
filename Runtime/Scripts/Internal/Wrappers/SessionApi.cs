@@ -37,10 +37,16 @@ namespace Google.XR.ARCoreExtensions.Internal
 #else
     using EarthImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
 #endif
+#if SEMANTICS_IOS_SUPPORT
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using SemanticsImport = Google.XR.ARCoreExtensions.Internal.DllImportNoop;
+#endif
 #else // UNITY_ANDROID
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
     using CloudAnchorImport = System.Runtime.InteropServices.DllImportAttribute;
     using EarthImport = System.Runtime.InteropServices.DllImportAttribute;
+    using SemanticsImport = System.Runtime.InteropServices.DllImportAttribute;
 #endif
 
     internal class SessionApi
@@ -259,13 +265,13 @@ namespace Google.XR.ARCoreExtensions.Internal
             IntPtr sessionHandle, SemanticMode mode)
         {
             FeatureSupported supported = FeatureSupported.Unknown;
-#if UNITY_ANDROID
+#if UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             int isSupported = 0;
             ExternApi.ArSession_isSemanticModeSupported(
                 sessionHandle, mode.ToApiSemanticMode(), ref isSupported);
             supported = isSupported == 0 ?
                 FeatureSupported.Unsupported : FeatureSupported.Supported;
-#endif
+#endif // UNITY_ANDROID || SEMANTICS_IOS_SUPPORT
             return supported;
         }
 
@@ -331,6 +337,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             public static extern void ArSession_getAllTrackables(
                 IntPtr sessionHandle, ApiTrackableType filterType, IntPtr trackableList);
 
+            [SemanticsImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_isSemanticModeSupported(
+                IntPtr sessionHandle, ApiSemanticMode mode, ref int out_is_supported);
+
 #if UNITY_IOS
 #if ARCORE_EXTENSIONS_IOS_SUPPORT
             [IOSImport(ApiConstants.ARCoreNativeApi)]
@@ -367,10 +377,6 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArSession_setPlaybackDatasetUri(
                 IntPtr sessionHandle, string encodedDatasetUri);
-
-            [AndroidImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_isSemanticModeSupported(
-                IntPtr sessionHandle, ApiSemanticMode mode, ref int out_is_supported);
 #endif // UNITY_ANDROID
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
