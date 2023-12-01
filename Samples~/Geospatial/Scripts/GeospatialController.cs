@@ -24,6 +24,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using Unity.XR.CoreUtils;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
@@ -45,9 +46,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         [Header("AR Components")]
 
         /// <summary>
-        /// The ARSessionOrigin used in the sample.
+        /// The XROrigin used in the sample.
         /// </summary>
-        public ARSessionOrigin SessionOrigin;
+        public XROrigin SessionOrigin;
 
         /// <summary>
         /// The ARSession used in the sample.
@@ -432,7 +433,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             if (SessionOrigin == null)
             {
-                Debug.LogError("Cannot find ARSessionOrigin.");
+                Debug.LogError("Cannot find XROrigin.");
             }
 
             if (Session == null)
