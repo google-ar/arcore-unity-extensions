@@ -3,7 +3,8 @@
     "references": [
         "Unity.XR.ARFoundation",
         "Unity.XR.ARSubsystems",
-        "Unity.XR.ARCore"
+        "Unity.XR.ARCore",
+        "Unity.XR.CoreUtils"
     ],
     "includePlatforms": [
         "Android",

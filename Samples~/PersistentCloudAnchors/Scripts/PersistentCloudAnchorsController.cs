@@ -22,6 +22,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
     using System;
     using System.Collections.Generic;
+    using Unity.XR.CoreUtils;
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
 
@@ -33,9 +34,9 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         [Header("AR Foundation")]
 
         /// <summary>
-        /// The active ARSessionOrigin used in the example.
+        /// The active XROrigin used in the example.
         /// </summary>
-        public ARSessionOrigin SessionOrigin;
+        public XROrigin SessionOrigin;
 
         /// <summary>
         /// The ARSession used in the example.
@@ -141,7 +142,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         {
             get
             {
-                return SessionOrigin.camera;
+                return SessionOrigin.GetComponent<Camera>();
             }
         }
 
