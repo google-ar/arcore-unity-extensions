@@ -23,6 +23,7 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
+    using Google.XR.ARCoreExtensions.GeospatialCreator;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
     using Unity.Mathematics;
@@ -47,8 +48,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         // for a new object. This forces the geospatial coordinate to update on the next frame.
         private Vector3 _previousPosition = Vector3.positiveInfinity;
         private Quaternion _previousRotation = Quaternion.identity;
-        private GeoCoordinate _previousCoor = new GeoCoordinate(Mathf.Infinity, Mathf.Infinity, 0);
         private Vector3 _previousScale = Vector3.one;
+        private GeoCoordinate _previousCoor = new GeoCoordinate(Mathf.Infinity, Mathf.Infinity, 0);
+        private double _previousEditorAltitudeOverride = Mathf.Infinity;
+        private bool? _previousUseEditorAltitudeOverride = null;
 
         // Use a static initializer, plus the InitializeOnLoad attribute, to ensure objects in the
         // scene are always being tracked.
@@ -73,6 +76,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             // recently-changed geodetic coordinate properties. If the geodetic coordinate
             // properties have not changed, then check if the Unity world coordinates were modified
             // and update the geodetic coordinates to match, if necessary.
+            // TODO: b/306151548 - Unity position needs update when Origin's Unity coords change.
             if (_anchor._unityPositionUpdateRequired)
             {
                 UpdateUnityPosition();
@@ -84,10 +88,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             {
                 UpdateGeospatialCoordinate();
             }
-            else if (
-                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Latitude, _anchor.Latitude) ||
-                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Longitude, _anchor.Longitude) ||
-                !GeoMath.ApproximatelyEqualsMeters(_previousCoor.Altitude, _anchor.Altitude))
+            else if (HasGeodeticPositionChanged())
             {
                 // This is a special lower-priority check for the explicit geodetic values, in case
                 // the Anchor's lat/lon/alt fields were updated directly (not via the property
@@ -110,24 +111,57 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 _anchor.Latitude,
                 _anchor.Longitude,
                 _anchor.Altitude);
+            _previousEditorAltitudeOverride = _anchor.EditorAltitudeOverride;
+            _previousUseEditorAltitudeOverride = _anchor.UseEditorAltitudeOverride;
             _anchor._unityPositionUpdateRequired = false;
+        }
+
+        private bool HasGeodeticPositionChanged()
+        {
+            if (!GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Latitude, _anchor.Latitude) ||
+                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Longitude, _anchor.Longitude) ||
+                !GeoMath.ApproximatelyEqualsMeters(_previousCoor.Altitude, _anchor.Altitude))
+            {
+                return true;
+            }
+
+            if (!_previousUseEditorAltitudeOverride.HasValue ||
+                _previousUseEditorAltitudeOverride.Value != _anchor.UseEditorAltitudeOverride)
+            {
+                return true;
+            }
+
+            // Only check the override values if the flag is enabled. When the flag is disabled,
+            // we care about the Altitude value instead, which was already checked.
+            if (_anchor.UseEditorAltitudeOverride &&
+                !GeoMath.ApproximatelyEqualsMeters(
+                    _previousEditorAltitudeOverride, _anchor.EditorAltitudeOverride))
+            {
+                return true;
+            }
+            return false;
         }
 
         // returns the GeoCoordinate of the Origin assigned to this Anchor. If the Anchor does not
         // have an Origin assigned, the method logs a message and returns a suitable default, or
         // null if no Origins exist in the scene.
-        private GeoCoordinate FindOriginPoint()
+        private GeoCoordinate FindOriginPoint(out Vector3 originUnityCoords)
         {
-            ARGeospatialCreatorOrigin origin = ARGeospatialCreatorOrigin.FindDefaultOrigin();
+            ARGeospatialCreatorOrigin origin = _anchor.Origin;
             if (origin == null)
             {
+                originUnityCoords = Vector3.zero;
                 Debug.LogError("Cannot update the location for " + _anchor.gameObject.name + ": " +
                     "The Origin field is unassigned.");
             }
-            else if(origin._originPoint == null)
+            else
             {
-                Debug.LogError("Cannot update the location for " + _anchor.gameObject.name + ": " +
-                    "The Origin " + origin.gameObject.name + " has no Georeference.");
+                originUnityCoords = origin.gameObject.transform.position;
+                if (origin._originPoint == null)
+                {
+                    Debug.LogError("Cannot update the location for " + _anchor.gameObject.name +
+                        ": " + "The Origin " + origin.gameObject.name + " has no Georeference.");
+                }
             }
 
             return origin?._originPoint;
@@ -136,50 +170,56 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         // :TODO: b/295547447 Automated testing for these two methods
         private void UpdateGeospatialCoordinate()
         {
-            GeoCoordinate originPoint = FindOriginPoint();
+            Vector3 originUnityCoords;
+            GeoCoordinate originPoint = FindOriginPoint(out originUnityCoords);
             if (originPoint == null)
             {
                 // An error message was already printed (if needed) in FindOriginPoint()
                 return;
             }
 
-            double4x4 ENUToECEF = GeoMath.CalculateEnuToEcefTransform(originPoint);
-            double3 EUN = new double3(
-                _anchor.transform.position.x,
-                _anchor.transform.position.y,
-                _anchor.transform.position.z);
-            double3 ENU = new double3(EUN.x, EUN.z, EUN.y);
-            double3 ECEF = MatrixStack.MultPoint(ENUToECEF, ENU);
-            double3 llh = GeoMath.EarthCenteredEarthFixedToLongitudeLatitudeHeight(ECEF);
+            GeoCoordinate anchorGeoCoord = GeoMath.UnityWorldToGeoCoordinate(
+                _anchor.transform.position,
+                originPoint,
+                originUnityCoords);
 
-            _anchor.Longitude = llh.x;
-            _anchor.Latitude = llh.y;
+            _anchor.Longitude = anchorGeoCoord.Longitude;
+            _anchor.Latitude = anchorGeoCoord.Latitude;
 
-            _anchor.Altitude = llh.z;
+            if (_anchor.UseEditorAltitudeOverride)
+            {
+                _anchor.EditorAltitudeOverride = anchorGeoCoord.Altitude;
+            } else
+            {
+                _anchor.Altitude = anchorGeoCoord.Altitude;
+            }
         }
 
         private void UpdateUnityPosition()
         {
-            GeoCoordinate originPoint = FindOriginPoint();
+            Vector3 originUnityCoords;
+            GeoCoordinate originPoint = FindOriginPoint(out originUnityCoords);
             if (originPoint == null)
             {
                 // An error message was already printed (if needed) in FindOriginPoint()
                 return;
             }
 
-            double alt = _anchor.Altitude;
+            // At runtime, an anchor's position is resolved exclusively using the geodetic
+            // coordinates; the unity world position doesn't matter. In Editor mode, the unity
+            // world position determies where it actually appears in the SceneView, so we honor the
+            // EditorAltitudeOverride value, if it is used.
+            double alt = _anchor.UseEditorAltitudeOverride ?
+                _anchor.EditorAltitudeOverride : _anchor.Altitude;
 
-            double4x4 ECEFToENU = GeoMath.CalculateEcefToEnuTransform(originPoint);
             GeoCoordinate coor = new GeoCoordinate(
                 _anchor.Latitude,
                 _anchor.Longitude,
                 alt);
-            double3 localInECEF = GeoMath.GeoCoordinateToECEF(coor);
-            double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
-            // Unity is EUN not ENU so swap z and y
-            Vector3 EUN = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
-
-            _anchor.transform.position = EUN;
+            _anchor.transform.position = GeoMath.GeoCoordinateToUnityWorld(
+                coor,
+                originPoint,
+                originUnityCoords);
         }
     }
 }

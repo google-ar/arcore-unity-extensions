@@ -18,7 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
+namespace Google.XR.ARCoreExtensions.GeospatialCreator
 {
     /// <summary>
     /// Specifies how the ARGeospatialCreatorAnchor's Altitude and AlttudeOffset fields will be

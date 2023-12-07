@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="AssemblyInfo.cs" company="Google LLC">
+// <copyright file="GeospatialCreatorRuntimeAssemblyInfo.cs" company="Google LLC">
 //
 // Copyright 2023 Google LLC
 //
@@ -20,3 +20,4 @@
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(
     "Google.XR.ARCoreExtensions.GeospatialCreator.Editor")]
+

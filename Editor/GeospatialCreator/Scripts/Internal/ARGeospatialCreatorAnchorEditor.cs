@@ -20,7 +20,7 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
-    using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
+    using Google.XR.ARCoreExtensions.GeospatialCreator;
     using UnityEditor;
     using UnityEngine;
 
@@ -28,7 +28,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     [CanEditMultipleObjects]
     internal class ARGeospatialCreatorAnchorEditor : Editor
     {
-        private SerializedProperty _altitudeOffset;
+        private SerializedProperty _anchorManager;
+        private SerializedProperty _origin;
+        private SerializedProperty _useEditorAltitudeOverride;
+        private SerializedProperty _editorAltitudeOverride;
 
         private SerializedProperty _altitudeType;
         private SerializedProperty _latitude;
@@ -49,6 +52,17 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             // Start a code block to check for GUI changes
             EditorGUI.BeginChangeCheck();
 
+            GUIContent originLabel = new GUIContent("Geospatial Origin");
+            originLabel.tooltip  = "The Origin is the reference point for converting real-world" +
+                " latitude, longitude, and altitude values to & from Unity game coordinates." +
+                " There should be exactly one ARGeospatialCreatorOrigin in your scene.";
+            EditorGUILayout.PropertyField(_origin, originLabel);
+
+            GUIContent anchorManagerLabel = new GUIContent("Anchor Manager",
+                "The ARAnchorManager used to resolve this anchor at runtime.");
+            EditorGUILayout.PropertyField(_anchorManager, anchorManagerLabel);
+
+            EditorGUILayout.Space();
 
             _latitude.doubleValue =
                 EditorGUILayout.DoubleField("Latitude", _latitude.doubleValue);
@@ -79,33 +93,50 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         {
             using (new EditorGUI.IndentLevelScope())
             {
-                // Draw the custom GUI for the legacy _altitudeOffset field
-                if (altitudeType == AnchorAltitudeType.Terrain ||
-                    altitudeType == AnchorAltitudeType.Rooftop)
+                string altitudeLabel = string.Empty;
+                switch (altitudeType)
                 {
-                    _altitudeOffset.doubleValue = EditorGUILayout.DoubleField(
-                        "Altitude Offset",
-                        _altitudeOffset.doubleValue);
+                    case AnchorAltitudeType.WGS84:
+                        altitudeLabel = "WGS84 altitude";
+                        break;
+                    case AnchorAltitudeType.Terrain:
+                        altitudeLabel = "Altitude relative to terrain";
+                        break;
+                    case AnchorAltitudeType.Rooftop:
+                        altitudeLabel = "Altitude relative to rooftop";
+                        break;
                 }
 
                 _altitude.doubleValue =
-                    EditorGUILayout.DoubleField("WGS84 Altitude", _altitude.doubleValue);
-                if (altitudeType == AnchorAltitudeType.Terrain)
+                    EditorGUILayout.DoubleField(altitudeLabel, _altitude.doubleValue);
+
+                GUILayout.BeginHorizontal();
+
+                _useEditorAltitudeOverride.boolValue = EditorGUILayout.Toggle(
+                        "Override altitude in Editor Scene View",
+                        _useEditorAltitudeOverride.boolValue);
+
+                // Allow the override value to be edited only if the flag is enabled.
+                EditorGUI.BeginDisabledGroup(!_useEditorAltitudeOverride.boolValue);
+                _editorAltitudeOverride.doubleValue = EditorGUILayout.DoubleField(
+                    _editorAltitudeOverride.doubleValue);
+                EditorGUI.EndDisabledGroup();
+
+                GUILayout.EndHorizontal();
+
+                if (_useEditorAltitudeOverride.boolValue)
                 {
-                    EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
-                        "display altitude of the anchored object. At runtime Altitude Offset is " +
-                        "used to position the anchor relative to the terrain.",
+                    EditorGUILayout.HelpBox(
+                        "The Editor-only altitude override sets the altitude used in the Scene " +
+                        "View to position the anchor, in meters according to WGS84. This is " +
+                        "useful to vizualize the anchor relative to the scene geometry in cases " +
+                        "where the scene geometry altitude is not fully aligned with the real " +
+                        "world. This is an Editor-only property; the " + altitudeLabel + " is " +
+                        "always used at runtime.",
                         MessageType.Info,
                         wide: true);
                 }
-                else if (altitudeType == AnchorAltitudeType.Rooftop)
-                {
-                    EditorGUILayout.HelpBox("WGS84 Altitude is only used in the editor to " +
-                        "display altitude of the anchored object. At runtime Altitude Offset is " +
-                        "used to position the anchor relative to rooftops.",
-                        MessageType.Info,
-                        wide: true);
-                }
+
             }
         }
 
@@ -113,7 +144,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         {
             // Fetch the objects from the GameObject script to display in the inspector
             _altitudeType = serializedObject.FindProperty("_altitudeType");
-            _altitudeOffset = serializedObject.FindProperty("_altitudeOffset");
+            _anchorManager = serializedObject.FindProperty("_anchorManager");
+            _origin = serializedObject.FindProperty("Origin");
+            _useEditorAltitudeOverride =
+                serializedObject.FindProperty("_useEditorAltitudeOverride");
+            _editorAltitudeOverride = serializedObject.FindProperty("_editorAltitudeOverride");
             _latitude = serializedObject.FindProperty("_latitude");
             _longitude = serializedObject.FindProperty("_longitude");
             _altitude = serializedObject.FindProperty("_altitude");

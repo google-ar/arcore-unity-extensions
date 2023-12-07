@@ -25,7 +25,7 @@
     "SA1649:FileHeaderFileNameDocumentationMustMatchTypeName",
     Justification = "Must match names in Unity.Mathematics")]
 
-namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
+namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "UnityRules.UnityStyleRules",

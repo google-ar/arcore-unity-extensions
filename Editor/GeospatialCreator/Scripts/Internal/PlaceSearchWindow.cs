@@ -21,6 +21,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
     using System.Collections;
+    using Google.XR.ARCoreExtensions.GeospatialCreator;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
     using Unity.Mathematics;
@@ -47,6 +48,17 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         public static void ShowPlaceSearchWindow()
         {
+            // Ensure we have a valid Places API Key to show the window
+            ARGeospatialCreatorOrigin origin = GetOrigin();
+            string apiKey = GetPlacesApiKey(origin);
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Debug.LogError(
+                        "To perform a search, the Origin must have a Cesium3DTileset child object"
+                            + " with a valid API key.");
+                return;
+            }
+
             if (_window == null)
             {
                 _window = ScriptableObject.CreateInstance(typeof(PlaceSearchWindow))
@@ -78,7 +90,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 return;
             }
 
-            GeoCoordinate originPoint = GetOrigin()?._originPoint;
+            ARGeospatialCreatorOrigin origin = GetOrigin();
+            GeoCoordinate originPoint = origin?._originPoint;
             if (originPoint == null)
             {
                 Debug.LogWarning(
@@ -88,13 +101,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 return;
             }
 
-            // TODO (b/300087328) simplify and make this testable
-            double4x4 ECEFToENU = GeoMath.CalculateEcefToEnuTransform(originPoint);
-            double3 localInECEF = GeoMath.GeoCoordinateToECEF(location);
-            double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
-
-            // Unity is EUN not ENU so swap z and y
-            _previewPinLocation = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
+            Vector3 originUnityCoords = origin.gameObject.transform.position;
+            _previewPinLocation = GeoMath.GeoCoordinateToUnityWorld(
+                location,
+                originPoint,
+                originUnityCoords);
         }
 
         // :TODO b/278071434: Make the Origin a property of the anchor instead of finding it. This
@@ -105,11 +116,21 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 GameObject.FindObjectsOfType<ARGeospatialCreatorOrigin>();
             if (origins.Length == 0)
             {
-                Debug.LogError("No valid ARGeospatialCreatorOrigin found in scene");
                 return null;
             }
 
             return origins[0];
+        }
+
+        private static string GetPlacesApiKey(ARGeospatialCreatorOrigin origin)
+        {
+            string apiKey = null;
+#if ARCORE_INTERNAL_USE_CESIUM
+            // The same API key is used for both Map Tiles and Places search.
+            apiKey = GeospatialCreatorCesiumAdapter.GetMapTilesApiKey(origin);
+#endif
+
+            return apiKey;
         }
 
         private void Awake()
@@ -216,7 +237,22 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         private void OnGUI()
         {
             ARGeospatialCreatorOrigin origin = GetOrigin();
+            if (origin == null)
+            {
+                Debug.LogError("Closing Search window due to no valid"
+                    + " ARGeospatialCreatorOrigin found in scene.");
+                _window.Close();
+                return;
+            }
+
             string apiKey = GetPlacesApiKey(origin);
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Debug.LogError("Closing Search window due to no valid Places API key found. Please"
+                    + " refer to the Geospatial Creator documentation for more information.");
+                _window.Close();
+                return;
+            }
 
             int anchorCount = CountObjectWithComponent<ARGeospatialCreatorAnchor>();
             int originCount = CountObjectWithComponent<ARGeospatialCreatorOrigin>();
@@ -260,22 +296,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         private void OnInspectorUpdate()
         {
             Repaint();
-        }
-
-        private string GetPlacesApiKey(ARGeospatialCreatorOrigin origin)
-        {
-            string apiKey = null;
-#if ARCORE_INTERNAL_USE_CESIUM
-            // The same API key is used for both Map Tiles and Places search.
-            apiKey = GeospatialCreatorCesiumAdapter.GetMapTilesApiKey(origin);
-#endif
-            if (apiKey == null)
-            {
-                throw new Exception("No valid Places API key found. Please refer to the " +
-                    "Geospatial Creator documentation for more information.");
-            }
-
-            return apiKey;
         }
     }
 }

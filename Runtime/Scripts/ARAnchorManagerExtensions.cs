@@ -22,6 +22,9 @@ namespace Google.XR.ARCoreExtensions
 {
     using System;
     using Google.XR.ARCoreExtensions.Internal;
+#if ARCORE_USE_ARF_5 // use ARF 5
+    using Unity.XR.CoreUtils;
+#endif
     using UnityEngine;
 
     using UnityEngine.XR.ARFoundation;
@@ -161,8 +164,15 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
+#if ARCORE_USE_ARF_5 // use ARF 5
+            cloudAnchor.transform.SetParent(
+                ARCoreExtensions._instance.Origin.TrackablesParent, false);
+#elif ARCORE_USE_ARF_4 // use ARF 4
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+#else // ARF error
+#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
+#endif
 
             return cloudAnchor;
         }
@@ -221,8 +231,15 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
+#if ARCORE_USE_ARF_5 // use ARF 5
+            cloudAnchor.transform.SetParent(
+                ARCoreExtensions._instance.Origin.TrackablesParent, false);
+#elif ARCORE_USE_ARF_4 // use ARF 4
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+#else // ARF error
+#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
+#endif
 
             return cloudAnchor;
         }
@@ -336,47 +353,6 @@ namespace Google.XR.ARCoreExtensions
         }
 
         /// <summary>
-        /// Creates a new cloud reference point using an existing local Reference Point.
-        /// </summary>
-        /// <param name="referencePointManager">The <c><see cref="ARAnchorManager"/></c>
-        /// instance.</param>
-        /// <param name="referencePoint">The local <c><see cref="ARAnchor"/></c> to be used as the
-        /// basis to host a new cloud reference point.</param>
-        /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
-        /// otherwise <c>null</c>.</returns>
-        ///
-        /// @deprecated Use <c><see
-        /// cref="ARAnchorManagerExtensions.HostCloudAnchorAsync(this ARAnchorManager, ARAnchor,
-        /// int)"/></c> instead.
-        [Obsolete("This method is deprecated. Use HostCloudAnchorAsync(ARAnchor, int) instead.")]
-        public static ARCloudReferencePoint AddCloudReferencePoint(
-            this ARAnchorManager referencePointManager, ARAnchor referencePoint)
-        {
-            // Create the underlying ARCore Cloud Anchor.
-            IntPtr cloudAnchorHandle = SessionApi.HostCloudAnchor(
-                ARCoreExtensions._instance.currentARCoreSessionHandle,
-                referencePoint.AnchorHandle());
-            if (cloudAnchorHandle == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            // Create the GameObject that is the cloud reference point.
-            ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudReferencePoint>();
-            if (cloudReferencePoint)
-            {
-                cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
-            }
-
-            // Parent the new cloud reference point to the session origin.
-            cloudReferencePoint.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-
-            return cloudReferencePoint;
-        }
-
-        /// <summary>
         /// Creates a new local Cloud Anchor from the provided Id.
         /// A session can be resolving up to 40 Cloud Anchors at a given time.
         /// If resolving fails, the anchor will be automatically removed from the session.
@@ -417,8 +393,15 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
+#if ARCORE_USE_ARF_5 // use ARF 5
+            cloudAnchor.transform.SetParent(
+                ARCoreExtensions._instance.Origin.TrackablesParent, false);
+#elif ARCORE_USE_ARF_4 // use ARF 4
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+#else // ARF error
+#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
+#endif
 
             return cloudAnchor;
         }
@@ -469,46 +452,6 @@ namespace Google.XR.ARCoreExtensions
                 ARCoreExtensions._instance.currentARCoreSessionHandle, cloudAnchorId);
 
             return new ResolveCloudAnchorPromise(future);
-        }
-
-        /// <summary>
-        /// Creates a new local cloud reference point from the provided Id.
-        /// </summary>
-        /// <param name="referencePointManager">The <c>ARAnchorManager</c> instance.</param>
-        /// <param name="cloudReferenceId">String representing the cloud reference.</param>
-        /// <returns>If successful, a <c><see cref="ARCloudReferencePoint"/></c>,
-        /// otherwise <c>null</c>.</returns>
-        /// @deprecated Use <c><see
-        /// cref="ARAnchorManagerExtensions.ResolveCloudAnchorAsync(this ARAnchorManager,
-        /// string)"/></c> instead.
-        [Obsolete("This method has been deprecated. " +
-            "Please use ResolveCloudAnchorAsync(ARAnchor, string) instead.")]
-        public static ARCloudReferencePoint ResolveCloudReferenceId(
-            this ARAnchorManager referencePointManager,
-            string cloudReferenceId)
-        {
-            // Create the underlying ARCore Cloud Anchor.
-            IntPtr cloudAnchorHandle = SessionApi.ResolveCloudAnchor(
-                ARCoreExtensions._instance.currentARCoreSessionHandle,
-                cloudReferenceId);
-            if (cloudAnchorHandle == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            // Create the GameObject that is the cloud reference point.
-            ARCloudReferencePoint cloudReferencePoint =
-                (new GameObject(_cloudAnchorName)).AddComponent<ARCloudReferencePoint>();
-            if (cloudReferencePoint)
-            {
-                cloudReferencePoint.SetAnchorHandle(cloudAnchorHandle);
-            }
-
-            // Parent the new cloud reference point to the session origin.
-            cloudReferencePoint.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-
-            return cloudReferencePoint;
         }
 
         /// <summary>
@@ -611,8 +554,15 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Geospatial Anchor to the session origin.
+#if ARCORE_USE_ARF_5 // use ARF 5
+            anchor.transform.SetParent(
+                ARCoreExtensions._instance.Origin.TrackablesParent, false);
+#elif ARCORE_USE_ARF_4 // use ARF 4
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+#else // ARF error
+#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
+#endif
             return anchor;
         }
 
@@ -727,8 +677,15 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Geospatial Terrain anchor to the session origin.
+#if ARCORE_USE_ARF_5 // use ARF 5
+            anchor.transform.SetParent(
+                ARCoreExtensions._instance.Origin.TrackablesParent, false);
+#elif ARCORE_USE_ARF_4 // use ARF 4
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
+#else // ARF error
+#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
+#endif
             return anchor;
         }
 

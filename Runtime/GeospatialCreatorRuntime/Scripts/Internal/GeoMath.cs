@@ -18,11 +18,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
+namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     using System;
 
-    using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
     using Unity.Mathematics;
 #endif
@@ -31,84 +30,53 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     // :TODO: b/277365140 Automated testing
     internal static class GeoMath
     {
+        // Equatorial radius in meters
+        private const double _wgs84EllipsoidSemiMajorAxis = 6378137.0;
+
+        // Polar radius in meters
+        private const double _wgs84EllipsoidSemiMinorAxis = 6356752.314245;
+
         // sub-centimeter tollerance according to https://en.wikipedia.org/wiki/Decimal_degrees
         private const double _epsilon_degrees = 0.00000001d;
         private const double _epsilon_meters = 0.0001d;
 
-        public static double3 EarthCenteredEarthFixedToLongitudeLatitudeHeight(double3 ecef)
+        public static double3 ECEFToLongitudeLatitudeHeight(double3 ecef)
         {
-#if ARCORE_INTERNAL_USE_CESIUM && ARCORE_INTERNAL_USE_UNITY_MATH
-            return CesiumForUnity.CesiumWgs84Ellipsoid.EarthCenteredEarthFixedToLongitudeLatitudeHeight(ecef);
-#else
-            throw new Exception("Missing dependencies: Cesium 1.0.0+");
-#endif
+            double latitude, longitude, altitude;
+            ECEFToGeodetic(ecef, out latitude, out longitude, out altitude);
+            return new double3(longitude, latitude, altitude);
         }
 
-        /// <summary>
-        /// Conversion between geodetic and earth-centered, earth-fixed (ECEF) coordinates
-        /// https://en.wikipedia.org/wiki/Geographic_coordinate_conversion.
-        /// </summary>
-        /// <param name="ecef">Vector in earth centered, earth fixed coordinates.</param>
-        /// <returns>The GeoCoordinate that corresponds to the ecef location.</returns>
         public static GeoCoordinate ECEFToGeoCoordinate(double3 ecef)
         {
-            var A = 6378137.0; // equatorial radius in meters
-            var B = 6356752.314245179; // Polar radius in meters
-            var p = Math.Sqrt(ecef.x * ecef.x + ecef.y * ecef.y); // Temporary value
-            var q = Math.Atan2((ecef.z * A), (p * B)); // Temporary value
-
-            // special case of north/south pole
-            var epsilon = 1e-10;
-            if (p < epsilon)
-            {
-                var lng = 0.0;
-                var zSign = (ecef.z < 0) ? -1 : 1;
-                var lat = (Math.PI / 2.0) * zSign;
-                var alt = Math.Sqrt(ecef.z * ecef.z) - B;
-                return new GeoCoordinate(lat * 180.0 / Math.PI, lng * 180.0 / Math.PI, alt);
-            }
-
-            var longitude = Math.Atan2(ecef.y, ecef.x);
-            var latitude = Math.Atan2(
-                (ecef.z + ((A * A - B * B) / B) * Math.Pow(Math.Sin(q), 3.0)),
-                (p - ((A * A - B * B) / A) * Math.Pow(Math.Cos(q), 3.0)));
-
-            var N =
-                A
-                / Math.Sqrt(
-                    1.0 - (1.0 - (B * B) / (A * A)) * Math.Sin(latitude) * Math.Sin(latitude));
-            var altitude = Math.Sqrt(ecef.x * ecef.x + ecef.y * ecef.y) / Math.Cos(latitude) - N;
-
-            return new GeoCoordinate(
-                latitude * 180.0 / Math.PI,
-                longitude * 180.0 / Math.PI,
-                altitude);
+            double latitude, longitude, altitude;
+            ECEFToGeodetic(ecef, out latitude, out longitude, out altitude);
+            return new GeoCoordinate(latitude, longitude, altitude);
         }
 
         public static double3 GeoCoordinateToECEF(GeoCoordinate coor)
         {
             double3 ret = new double3();
 
-            // a and b are from from WGS84
-            // https://en.wikipedia.org/wiki/World_Geodetic_System
-            var a = 6378137.0; // equatorial radius in meters
-            var b = 6356752.314245179; // Polar radius in meters
+            const double a = _wgs84EllipsoidSemiMajorAxis;
+            const double b = _wgs84EllipsoidSemiMinorAxis;
+            const double a2 = a * a;
+            const double b2 = b * b;
+            const double f = 1 - (b / a);
+            const double e2 = 1 - (b2 / a2);
+            const double neg1f2 = (1 - f) * (1 - f);
+            const double neg1e2 = 1 - e2;
+
             var rlong = Math.PI * coor.Longitude / 180.0;
             var rlat = Math.PI * coor.Latitude / 180.0;
             var coslong = Math.Cos(rlong);
             var sinlong = Math.Sin(rlong);
             var coslat = Math.Cos(rlat);
             var sinlat = Math.Sin(rlat);
-            var a2 = a * a;
-            var b2 = b * b;
-            var f = 1 - (b / a);
-            var e2 = 1 - (b2 / a2);
             var n_2 = a2 / Math.Sqrt((a2 * (coslat * coslat)) + ((b2) * (sinlat * sinlat)));
             var n = a / Math.Sqrt(1 - (e2 * sinlat * sinlat));
             var x = (n + coor.Altitude) * coslat * coslong;
             var y = (n + coor.Altitude) * coslat * sinlong;
-            var neg1f2 = (1 - f) * (1 - f);
-            var neg1e2 = 1 - e2;
             var z = (neg1f2 * n + coor.Altitude) * sinlat;
             var z_2 = (neg1e2 * n + coor.Altitude) * sinlat;
 
@@ -174,6 +142,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         // a sub-centimeter tolerance, which is sufficient accuracy for Geospatial Creator.
         public static bool ApproximatelyEqualsDegrees(double d1, double d2)
         {
+            // TODO: b/305998580 - Take into account that angles wrap around every 360 degrees.
             return ApproximatelyEquals(d1, d2, _epsilon_degrees);
         }
 
@@ -184,9 +153,75 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             return ApproximatelyEquals(m1, m2, _epsilon_meters);
         }
 
+        public static GeoCoordinate UnityWorldToGeoCoordinate(
+            Vector3 unityPosition, GeoCoordinate originGeoCoordinate, Vector3 originUnityPosition)
+        {
+            double4x4 ENUToECEF = GeoMath.CalculateEnuToEcefTransform(originGeoCoordinate);
+            Vector3 EUN = unityPosition - originUnityPosition;
+            double3 ENU = new double3(EUN.x, EUN.z, EUN.y);
+            double3 ECEF = MatrixStack.MultPoint(ENUToECEF, ENU);
+            return ECEFToGeoCoordinate(ECEF);
+        }
+
+        public static Vector3 GeoCoordinateToUnityWorld(
+            GeoCoordinate geoCoordinate,
+            GeoCoordinate originGeoCoordinate,
+            Vector3 originUnityPosition)
+        {
+            double4x4 ECEFToENU = GeoMath.CalculateEcefToEnuTransform(originGeoCoordinate);
+            double3 localInECEF = GeoMath.GeoCoordinateToECEF(geoCoordinate);
+            double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
+
+            // Unity is EUN not ENU so swap z and y
+            Vector3 EUN = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
+
+            // Add the origin's world displacement to convert from EUN to Unity World Position.
+            Vector3 unityWorldPosition = EUN + originUnityPosition;
+            return unityWorldPosition;
+        }
+
         private static bool ApproximatelyEquals(double a, double b, double epsilon)
         {
             return (Math.Abs(a - b) < epsilon);
+        }
+
+        // Conversion between geodetic decimal degrees and earth-centered, earth-fixed (ECEF)
+        // coordinates. Ref https://en.wikipedia.org/wiki/Geographic_coordinate_conversion.
+        private static void ECEFToGeodetic(
+            double3 ecef, out double latitude, out double longitude, out double altitude)
+        {
+            const double a = _wgs84EllipsoidSemiMajorAxis;
+            const double b = _wgs84EllipsoidSemiMinorAxis;
+            const double a2 = a * a;
+            const double b2 = b * b;
+
+            var p = Math.Sqrt(ecef.x * ecef.x + ecef.y * ecef.y); // Temporary value
+            var q = Math.Atan2((ecef.z * a), (p * b)); // Temporary value
+
+            // special case of north/south pole
+            const double epsilon = 1e-9;
+            double latRad, lonRad;
+            if (p < epsilon)
+            {
+                lonRad = 0.0;
+                var zSign = (ecef.z < 0) ? -1 : 1;
+                latRad = (Math.PI / 2.0) * zSign;
+                altitude = Math.Sqrt(ecef.z * ecef.z) - b;
+            }
+            else
+            {
+                lonRad = Math.Atan2(ecef.y, ecef.x);
+                latRad = Math.Atan2(
+                    (ecef.z + ((a2 - b2) / b) * Math.Pow(Math.Sin(q), 3.0)),
+                    (p - ((a2 - b2) / a) * Math.Pow(Math.Cos(q), 3.0)));
+                var n = a /
+                    Math.Sqrt(1.0 - (1.0 - b2 / a2) * Math.Sin(latRad) * Math.Sin(latRad));
+
+                altitude = Math.Sqrt(ecef.x * ecef.x + ecef.y * ecef.y) / Math.Cos(latRad) - n;
+            }
+
+            latitude = latRad * 180.0 / Math.PI;
+            longitude = lonRad * 180.0 / Math.PI;
         }
     }
 }

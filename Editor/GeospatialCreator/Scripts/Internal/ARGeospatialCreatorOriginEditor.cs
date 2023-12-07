@@ -25,7 +25,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using CesiumForUnity;
 #endif
     using Google.XR.ARCoreExtensions.Editor.Internal;
-    using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
+    using Google.XR.ARCoreExtensions.GeospatialCreator;
     using UnityEditor;
     using UnityEngine;
 

@@ -31,8 +31,36 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor
     using UnityEditor;
     using UnityEngine;
 
-    internal class GeospatialCreatorCesiumAdapter
+    public class GeospatialCreatorCesiumAdapter
     {
+        /// <summary>
+        /// Static factory method to create an ARGeospatialCreatorOrigin at the given
+        /// latitude/longitude/altitude in the current Unity Scene. The Unity world coordinates
+        /// will be (0, 0, 0) and can be modified by accessing the returned object's transform.
+        /// </summary>
+        /// <remarks>
+        // This method is available only if the Cesium dependency is present in the project.
+        /// </remarks>
+        /// <param name = "latitude">The latitude at which to create the new origin, in decimal
+        /// degrees.</param>
+        /// <param name = "longitude">The longitude at which to create the new origin, in decimal
+        /// degrees.</param>
+        /// <param name = "altitude">The altitude at which to create the new origin, in meters
+        /// according to WGS84. </param>
+        public static ARGeospatialCreatorOrigin CreateOriginWithCesiumGeoreference(
+            double latitude, double longitude, double altitude, string mapTilesApiKey)
+        {
+            ARGeospatialCreatorOrigin origin =
+                new GameObject("GeospatialOrigin").AddComponent<ARGeospatialCreatorOrigin>();
+            origin.gameObject.tag = "EditorOnly";
+            origin.SetOriginPoint(latitude, longitude, altitude);
+
+            AddGeoreferenceAndTileset(origin);
+            Cesium3DTileset tileset = GetTilesetComponent(origin);
+            SetMapTileApiKeyForCesium3DTileset(tileset, mapTilesApiKey);
+
+            return origin;
+        }
 
         internal static Cesium3DTileset GetTilesetComponent(ARGeospatialCreatorOrigin origin)
         {
@@ -69,13 +97,31 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor
             return georeference;
         }
 
+        /// <summary>
+        /// Returns the Map Tiles API Key from the Cesium3DTileset in the Origin.
+        /// </summary>
+        /// <param name="origin"> A ARGeospatialCreatorOrigin that has a Cesium3DTileset child.
+        /// </param>
+        /// <returns> The Map Tiles API Key if the origin and its tileset aren't null,
+        ///  else returns null. </returns>
         internal static string GetMapTilesApiKey(ARGeospatialCreatorOrigin origin)
         {
+            if (origin == null)
+            {
+                return null;
+            }
             return GetMapTilesApiKey(GetTilesetComponent(origin));
         }
 
+        /// <summary> Returns the Map Tiles API Key from the Cesium3DTileset.</summary>
+        /// <param name="tileset"> The Cesium3DTileset with a Map tiles API Key.</param>
+        /// <returns> The Map Tiles API Key if the tileset isn't null, else returns null. </returns>
         internal static string GetMapTilesApiKey(Cesium3DTileset tileset)
         {
+            if (tileset == null)
+            {
+                return null;
+            }
             return MapTilesUtils.ExtractMapTilesApiKey(tileset.url);
         }
 

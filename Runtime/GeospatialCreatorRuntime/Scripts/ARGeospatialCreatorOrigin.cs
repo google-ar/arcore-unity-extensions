@@ -18,10 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
+namespace Google.XR.ARCoreExtensions.GeospatialCreator
 {
     using System;
 
+    using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEngine;
 
@@ -50,6 +51,32 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         internal static readonly GeoCoordinate _defaultOriginPoint =
             new GeoCoordinate(37.422098, -122.08286, 11.5);
 
+        /// <summary>
+        /// Gets the latitude of this origin, in decimal degrees. Will return Double.NaN if the
+        /// origin point has not been initialized.
+        /// </summary>
+        public double Latitude
+        {
+            get => _originPoint.Latitude;
+        }
+
+        /// <summary>
+        /// Gets the longitude of this origin, in decimal degrees. Will return Double.NaN if the
+        /// origin point has not been initialized.
+        /// </summary>
+        public double Longitude
+        {
+            get => _originPoint.Longitude;
+        }
+
+        /// <summary>
+        /// Gets the altiude of this origin, in meters according to WGS84. Will return Double.NaN
+        /// if the origin point has not been initialized.
+        /// </summary>
+        public double Altitude
+        {
+            get => _originPoint.Altitude;
+        }
 
         // Read-only access to the origin location, for convenience of internal classes which use
         // the GeoCoordinate class.
@@ -82,7 +109,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
         /// <param name="latitude">Latitude for the origin, in decimal degrees.</param>
         /// <param name="longitude">Longitude for the origin, in decimal degrees.</param>
         /// <param name="altitude">Altitude for the origin, meters according to WGS84.</param>
-        internal void SetOriginPoint(double latitude, double longitude, double altitude)
+        public void SetOriginPoint(double latitude, double longitude, double altitude)
         {
             _originPoint = new GeoCoordinate(latitude, longitude, altitude);
             if (_originComponentAdapter != null)

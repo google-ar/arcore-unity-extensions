@@ -18,10 +18,22 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+
+#if UNITY_2022_3_OR_NEWER && !ARCORE_USE_ARF_5
+// For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5
+// symbol, see https://docs.unity3d.com/Manual/CustomScriptingSymbols.html
+// You can define ARCORE_USE_ARF_5 for Unity 2021.x or higher but you have
+// to define it after 2022.x
+#warning For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5 symbol
+#endif
+
 namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
     using System;
     using System.Collections.Generic;
+#if ARCORE_USE_ARF_5 // use ARF 5
+    using Unity.XR.CoreUtils;
+#endif
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
 
@@ -32,10 +44,17 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
     {
         [Header("AR Foundation")]
 
+#if ARCORE_USE_ARF_5 // use ARF 5
+        /// <summary>
+        /// The active XROrigin used in the example.
+        /// </summary>
+        public XROrigin Origin;
+#else // use ARF 4
         /// <summary>
         /// The active ARSessionOrigin used in the example.
         /// </summary>
         public ARSessionOrigin SessionOrigin;
+#endif
 
         /// <summary>
         /// The ARSession used in the example.
@@ -141,7 +160,11 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         {
             get
             {
+#if ARCORE_USE_ARF_5 // use ARF 5
+                return Origin.Camera;
+#else // use ARF 4
                 return SessionOrigin.camera;
+#endif
             }
         }
 
@@ -316,7 +339,11 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
         private void SetPlatformActive(bool active)
         {
+#if ARCORE_USE_ARF_5 // use ARF 5
+            Origin.gameObject.SetActive(active);
+#else // use ARF 4
             SessionOrigin.gameObject.SetActive(active);
+#endif
             SessionCore.gameObject.SetActive(active);
             Extensions.gameObject.SetActive(active);
         }

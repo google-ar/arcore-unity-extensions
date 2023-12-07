@@ -17,6 +17,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+#if UNITY_2022_3_OR_NEWER && !ARCORE_USE_ARF_5
+// For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5
+// symbol, see https://docs.unity3d.com/Manual/CustomScriptingSymbols.html
+// You can define ARCORE_USE_ARF_5 for Unity 2021.x or higher but you have
+// to define it after 2022.x
+#warning For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5 symbol
+#endif
+
 namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 {
     using System;
@@ -24,6 +32,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+#if ARCORE_USE_ARF_5 // use ARF 5
+    using Unity.XR.CoreUtils;
+#endif
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
@@ -44,10 +55,17 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     {
         [Header("AR Components")]
 
+#if ARCORE_USE_ARF_5 // use ARF 5
+        /// <summary>
+        /// The XROrigin used in the sample.
+        /// </summary>
+        public XROrigin Origin;
+#else // use ARF 4
         /// <summary>
         /// The ARSessionOrigin used in the sample.
         /// </summary>
         public ARSessionOrigin SessionOrigin;
+#endif
 
         /// <summary>
         /// The ARSession used in the sample.
@@ -430,10 +448,17 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
 
+#if ARCORE_USE_ARF_5 // use ARF 5
+            if (Origin == null)
+            {
+                Debug.LogError("Cannot find XROrigin.");
+            }
+#else // use ARF 4
             if (SessionOrigin == null)
             {
                 Debug.LogError("Cannot find ARSessionOrigin.");
             }
+#endif
 
             if (Session == null)
             {
@@ -1223,7 +1248,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private void SwitchToARView(bool enable)
         {
             _isInARView = enable;
+#if ARCORE_USE_ARF_5 // use ARF 5
+            Origin.gameObject.SetActive(enable);
+#else // use ARF 4
             SessionOrigin.gameObject.SetActive(enable);
+#endif
             Session.gameObject.SetActive(enable);
             ARCoreExtensions.gameObject.SetActive(enable);
             ARViewCanvas.SetActive(enable);
@@ -1375,7 +1404,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     "Geospatial sample failed to start location service.\n" +
                     "Please restart the app and grant the fine location permission.";
             }
+#if ARCORE_USE_ARF_5 // use ARF 5
+            else if (Origin == null || Session == null || ARCoreExtensions == null)
+#else // use ARF 4
             else if (SessionOrigin == null || Session == null || ARCoreExtensions == null)
+#endif
             {
                 returningReason = string.Format(
                     "Geospatial sample failed due to missing AR Components.");

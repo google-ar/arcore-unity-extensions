@@ -188,9 +188,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             double objectAlt, bool animate, SetPreviewPinLocationDelegate setPreviewPinFunc)
         {
             // hack the alt so it is above the point we place other things
+            Vector3 originUnityCoords = Vector3.zero;
 #if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
-            GeoCoordinate originPoint =
-                ARGeospatialCreatorOrigin.FindDefaultOrigin()?._originPoint;
+            ARGeospatialCreatorOrigin origin = ARGeospatialCreatorOrigin.FindDefaultOrigin();
+            GeoCoordinate originPoint = origin?._originPoint;
+            originUnityCoords = origin ? origin.gameObject.transform.position: Vector3.zero;
 #else // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
             // just quick out if we creator is not enabled so can't get lat lng.
             GeoCoordinate originPoint = null;
@@ -198,27 +200,23 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             if (originPoint == null)
             {
-                // An error message was already printed (if needed) in FindOriginPoint()
+                // An error message was already printed (if needed) in FindDefaultOrigin()
                 return;
             }
 
-            double4x4 ECEFToENU = GeoMath.CalculateEcefToEnuTransform(originPoint);
-
             // Make a high point where the camera will be
-            GeoCoordinate coor = new GeoCoordinate(lat, lng, cameraAlt);
-            double3 localInECEF = GeoMath.GeoCoordinateToECEF(coor);
-            double3 ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
-
-            // Unity is EUN not ENU so swap z and y
-            Vector3 EUNHigh = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
+            GeoCoordinate cameraCoord = new GeoCoordinate(lat, lng, cameraAlt);
+            Vector3 EUNHigh = GeoMath.GeoCoordinateToUnityWorld(
+                cameraCoord,
+                originPoint,
+                originUnityCoords);
 
             // Make a low point where the object is
-            coor = new GeoCoordinate(lat, lng, objectAlt);
-            localInECEF = GeoMath.GeoCoordinateToECEF(coor);
-            ENU = MatrixStack.MultPoint(ECEFToENU, localInECEF);
-
-            // Unity is EUN not ENU so swap z and y
-            Vector3 EUNLow = new Vector3((float)ENU.x, (float)ENU.z, (float)ENU.y);
+            GeoCoordinate objectCoord = new GeoCoordinate(lat, lng, objectAlt);
+            Vector3 EUNLow = GeoMath.GeoCoordinateToUnityWorld(
+                objectCoord,
+                originPoint,
+                originUnityCoords);
 
             // make a vector from that points from high to low.
             // So the vector that points down to earth

@@ -18,7 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
+namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
 {
     using System;
     using System.Collections.Generic;

@@ -4,7 +4,8 @@
         "Google.XR.ARCoreExtensions",
         "Unity.XR.Management",
         "Unity.XR.Management.Editor",
-        "Unity.XR.ARCore"
+        "Unity.XR.ARCore",
+        "Unity.XR.CoreUtils"
     ],
     "includePlatforms": [
         "Editor"
@@ -15,6 +16,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.arfoundation",
+            "expression": "[5.0,6.0)",
+            "define": "ARCORE_USE_ARF_4"
+        },
+        {
+            "name": "com.unity.xr.arfoundation",
+            "expression": "[4.0,5.0)",
+            "define": "ARCORE_USE_ARF_4"
+        }
+    ],
     "noEngineReferences": false
 }
