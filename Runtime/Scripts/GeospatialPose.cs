@@ -142,7 +142,7 @@ namespace Google.XR.ARCoreExtensions
         public double HorizontalAccuracy;
 
         /// <summary>
-        /// Estimated horizontal accuracy in meters.
+        /// Estimated vertical accuracy in meters.
         ///
         /// We define vertical accuracy as the radius of the 68th percentile confidence level around
         /// the estimated altitude. In other words, there is a 68% probability that the true

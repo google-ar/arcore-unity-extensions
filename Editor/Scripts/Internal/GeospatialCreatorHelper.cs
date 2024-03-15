@@ -48,6 +48,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         public static readonly string CreatorEnabledSymbol =
             "ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED";
 
+        /// <summary> Single cast delegate used to bind function that returns the number of
+        /// Geospatial Creator Anchors in a scene. </summary>
+        public static Func<uint> CountGeospatialCreatorAnchorsDelegate;
+
         private static readonly BuildTargetGroup[] _buildTargets = new BuildTargetGroup[]
         {
             BuildTargetGroup.Android,
@@ -145,6 +149,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 RemoveSymbol(CreatorEnabledSymbol, target);
             }
+        }
+
+        /// <summary> Counts the number of Geospatial Creator Anchors in the scene. </summary>
+        /// <returns> The anchor count returned by CountGeospatialCreatorAnchorsDelegate() if
+        /// it was set, otherwise 0. </returns>
+        public static uint CountGeospatialCreatorAnchors()
+        {
+            uint geospatialCreatorAnchorCount = 0;
+            if (CountGeospatialCreatorAnchorsDelegate != null)
+            {
+                geospatialCreatorAnchorCount = CountGeospatialCreatorAnchorsDelegate();
+            }
+
+            return geospatialCreatorAnchorCount;
         }
 
         private static void AddSymbol(string symbol, BuildTargetGroup target)

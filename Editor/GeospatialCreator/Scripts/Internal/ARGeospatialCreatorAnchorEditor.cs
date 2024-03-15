@@ -89,6 +89,52 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             }
         }
 
+        private void GUIForSnapToTile()
+        {
+            string snapToTileTooltip = "Visually position the anchor within the editor so it " +
+                "aligns with the top of the tile. This override in the editor does not impact " +
+                "the position at runtime.";
+
+            if (GUILayout.Button(new GUIContent("Snap to Tile", snapToTileTooltip)))
+            {
+                ARGeospatialCreatorOrigin origin =
+                    _origin.objectReferenceValue as ARGeospatialCreatorOrigin;
+                if (origin == null)
+                {
+                    Debug.LogError("An ARGeospatialCreatorOrigin object must be present in the " +
+                        "scene and assigned to the anchor to use the Snap to Tile feature.");
+                    return;
+                }
+
+                var tileset = origin._origin3DTilesetAdapter;
+                if (tileset.GetPhysicsMeshesEnabled() == false)
+                {
+#if ARCORE_INTERNAL_USE_CESIUM
+                    Debug.LogError("Physics Meshes must be enabled on the tileset to use " +
+                        "the Snap to Tile feature. Please enable the \"Create Physics Meshes\" " +
+                        "setting in the Cesium3DTileset component owned by the Origin.",
+                    GeospatialCreatorCesiumAdapter.GetTilesetComponent(origin));
+#else
+                    Debug.LogError("Physics Meshes must be enabled on the tileset to use " +
+                        "the Snap to Tile feature.");
+#endif
+                    return;
+                }
+
+                (bool success, double tileAltitude) =
+                    tileset.CalcTileAltitudeWGS84(_latitude.doubleValue, _longitude.doubleValue);
+                if (success)
+                {
+                    _editorAltitudeOverride.doubleValue = tileAltitude;
+                }
+                else
+                {
+                    Debug.LogWarning("Could not Snap to Tile at Latitude: " +
+                    _latitude.doubleValue + " and Longitude: " + _longitude.doubleValue);
+                }
+            }
+        }
+
         private void GUIForAltitude(AnchorAltitudeType altitudeType)
         {
             using (new EditorGUI.IndentLevelScope())
@@ -112,14 +158,16 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
                 GUILayout.BeginHorizontal();
 
+                string overrideAltitudeLabel = "Override altitude in Editor Scene View";
                 _useEditorAltitudeOverride.boolValue = EditorGUILayout.Toggle(
-                        "Override altitude in Editor Scene View",
+                        overrideAltitudeLabel,
                         _useEditorAltitudeOverride.boolValue);
 
                 // Allow the override value to be edited only if the flag is enabled.
                 EditorGUI.BeginDisabledGroup(!_useEditorAltitudeOverride.boolValue);
                 _editorAltitudeOverride.doubleValue = EditorGUILayout.DoubleField(
                     _editorAltitudeOverride.doubleValue);
+                GUIForSnapToTile();
                 EditorGUI.EndDisabledGroup();
 
                 GUILayout.EndHorizontal();
@@ -127,7 +175,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 if (_useEditorAltitudeOverride.boolValue)
                 {
                     EditorGUILayout.HelpBox(
-                        "The Editor-only altitude override sets the altitude used in the Scene " +
+                        "\"" + overrideAltitudeLabel + "\" sets the altitude used in the Scene " +
                         "View to position the anchor, in meters according to WGS84. This is " +
                         "useful to vizualize the anchor relative to the scene geometry in cases " +
                         "where the scene geometry altitude is not fully aligned with the real " +
@@ -136,7 +184,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                         MessageType.Info,
                         wide: true);
                 }
-
             }
         }
 

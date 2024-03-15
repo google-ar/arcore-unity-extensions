@@ -22,6 +22,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Text;
+    using System.Threading.Tasks;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
     using Unity.Mathematics;
@@ -34,6 +35,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
     {
         private const string _searchFieldDefaultText =
             "Type the name of a place and press \"Enter\"";
+
+        // Desired relative height (meters) from SceneView camera to target lat/lng's highest point
+        // (ie. Rooftop, or Terrain if no building)
+        private const double _sceneViewHeightAboveTile = 200;
 
         private static readonly string[] _waitAnimation = new string[] { "/", "-", "\\", "|" };
 
@@ -115,8 +120,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                     PlaceSearchResponse.Location loc = _response.GetLocation(_selectedPlaceIndex);
                     if (loc != null)
                     {
-                        SetSceneViewPreview(loc.lat, loc.lng, _request.CameraAltitude,
-                            _request.CameraAltitude - 3500.0f, animate: true, setPreviewPinFunc);
+                        SetSceneViewPreview(loc.lat, loc.lng, animate: true, setPreviewPinFunc);
                     }
                 }
 
@@ -136,8 +140,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 PlaceSearchResponse.Location loc = _response.GetLocation(_selectedPlaceIndex);
                 if (loc != null)
                 {
-                    SetSceneViewPreview(loc.lat, loc.lng, _request.CameraAltitude,
-                    _request.CameraAltitude - 3500.0f, animate: true, setPreviewPinFunc);
+                    SetSceneViewPreview(loc.lat, loc.lng, animate: true, setPreviewPinFunc);
                 }
             }
 
@@ -150,8 +153,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 if (loc != null)
                 {
                     setLatLongAltFunc(loc.lat, loc.lng, 0.0);
-                    SetSceneViewPreview(loc.lat, loc.lng, _request.CameraAltitude,
-                        _request.CameraAltitude - 3500.0f, animate: false, setPreviewPinFunc);
+                    SetSceneViewPreview(loc.lat, loc.lng, animate: false, setPreviewPinFunc);
 
                     // remove the preview pin since the object is there now
                     setPreviewPinFunc(null);
@@ -160,6 +162,60 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndVertical();
+        }
+
+        // Move the SceneView camera to a given lat/lng/alt and have it face the tiles.
+        internal static void MoveSceneViewCamera(
+            double lat,
+            double lng,
+            double cameraAltitude,
+            bool animate)
+        {
+            ARGeospatialCreatorOrigin origin = ARGeospatialCreatorOrigin.FindDefaultOrigin();
+            GeoCoordinate originPoint = origin?._originPoint;
+            Vector3 originUnityCoord =
+                origin ? origin.gameObject.transform.position : Vector3.zero;
+            if (originPoint == null)
+            {
+                return;
+            }
+
+            // Make a high point where the camera will be
+            GeoCoordinate cameraGeoCoord = new GeoCoordinate(lat, lng, cameraAltitude);
+            Vector3 cameraViewPosition = GeoMath.GeoCoordinateToUnityWorld(
+                cameraGeoCoord, originPoint, originUnityCoord);
+
+            // Make a low point at a low altitude where the camera will pivot around
+            // This altitude should be lower than any possible terrain since the camera
+            // will not be able to easily zoom down to terrain below the pivot point
+            GeoCoordinate targetGeoCoord =
+                new GeoCoordinate(lat, lng, GeoMath.LowestElevationOnEarth);
+            Vector3 targetTerrainPosition = GeoMath.GeoCoordinateToUnityWorld(
+                targetGeoCoord, originPoint, originUnityCoord);
+
+            // Get the direction vector
+            Vector3 viewDirection = Vector3.Normalize(targetTerrainPosition - cameraViewPosition);
+
+            SceneView sceneView = SceneView.lastActiveSceneView;
+
+            // Compute the size parameter based on the desired distance from the camera.
+            float desiredDistanceCameraToTarget =
+                Vector3.Distance(cameraViewPosition, targetTerrainPosition);
+            float size = desiredDistanceCameraToTarget *
+                Mathf.Sin(sceneView.camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+
+            if (animate)
+            {
+                sceneView.LookAt(targetTerrainPosition,
+                    Quaternion.LookRotation(viewDirection), size);
+            }
+            else
+            {
+                sceneView.LookAtDirect(targetTerrainPosition,
+                    Quaternion.LookRotation(viewDirection), size);
+            }
+
+            sceneView.Repaint();
         }
 
         private void StartNewRequest(string searchString, GeoCoordinate originPoint, string apiKey)
@@ -184,63 +240,48 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             _selectedPlaceIndex = 0;
         }
 
-        private void SetSceneViewPreview(double lat, double lng, double cameraAlt,
-            double objectAlt, bool animate, SetPreviewPinLocationDelegate setPreviewPinFunc)
+        private void SetSceneViewPreview(
+            double lat, double lng, bool animate, SetPreviewPinLocationDelegate setPreviewPinFunc)
         {
-            // hack the alt so it is above the point we place other things
-            Vector3 originUnityCoords = Vector3.zero;
 #if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
             ARGeospatialCreatorOrigin origin = ARGeospatialCreatorOrigin.FindDefaultOrigin();
-            GeoCoordinate originPoint = origin?._originPoint;
-            originUnityCoords = origin ? origin.gameObject.transform.position: Vector3.zero;
-#else // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
-            // just quick out if we creator is not enabled so can't get lat lng.
-            GeoCoordinate originPoint = null;
-#endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
-
-            if (originPoint == null)
+            if (origin == null)
             {
-                // An error message was already printed (if needed) in FindDefaultOrigin()
                 return;
             }
 
-            // Make a high point where the camera will be
-            GeoCoordinate cameraCoord = new GeoCoordinate(lat, lng, cameraAlt);
-            Vector3 EUNHigh = GeoMath.GeoCoordinateToUnityWorld(
-                cameraCoord,
-                originPoint,
-                originUnityCoords);
-
-            // Make a low point where the object is
-            GeoCoordinate objectCoord = new GeoCoordinate(lat, lng, objectAlt);
-            Vector3 EUNLow = GeoMath.GeoCoordinateToUnityWorld(
-                objectCoord,
-                originPoint,
-                originUnityCoords);
-
-            // make a vector from that points from high to low.
-            // So the vector that points down to earth
-            Vector3 earthDownVec = Vector3.Normalize(EUNLow - EUNHigh);
-            if (animate)
-            {
-                // position the camera at EUNHigh
-                // Rotate from forward to earth down
-                SceneView.lastActiveSceneView.LookAt(EUNLow,
-                    Quaternion.FromToRotation(Vector3.forward, earthDownVec));
-                SceneView.lastActiveSceneView.pivot = EUNHigh;
-            }
-            else
-            {
-                // position the camera at EUNHigh
-                // Rotate from forward to earth down
-                SceneView.lastActiveSceneView.LookAtDirect(EUNLow,
-                    Quaternion.FromToRotation(Vector3.forward, earthDownVec));
-                SceneView.lastActiveSceneView.pivot = EUNHigh;
-            }
+            MoveSceneViewCameraAboveTerrainAsync(
+                origin._origin3DTilesetAdapter, lat, lng, animate);
+#endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
 
             // The altitude value can be zero, because we're using the location for a 2D icon that
             // will be drawn over the scene view.
             setPreviewPinFunc(new GeoCoordinate(lat, lng, 0.0));
+        }
+
+        // Calculates the terrain altitude at the given lat/lng and moves the SceneView camera
+        // at a reasonable height above it.
+        private async void MoveSceneViewCameraAboveTerrainAsync(
+            Origin3DTilesetAdapter tileset, double lat, double lng, bool animate)
+        {
+            // Move the camera high above the target location to begin loading the tiles
+            MoveSceneViewCamera(lat, lng, GeoMath.HighestElevationOnEarth, animate);
+
+            var (success, terrainAltitude) = await tileset.CalcTileAltitudeWGS84Async(lat, lng);
+            double cameraAltitude;
+            if (success)
+            {
+                cameraAltitude = terrainAltitude + _sceneViewHeightAboveTile;
+            }
+            else
+            {
+                // If terrain sampling failed then set the camera to an altitude above all terrain.
+                Debug.Log("Could not get Terrain height. Setting camera at an altitude of " +
+                GeoMath.HighestElevationOnEarth + " meters.");
+                return;
+            }
+
+            MoveSceneViewCamera(lat, lng, cameraAltitude, animate);
         }
     }
 
@@ -250,7 +291,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         public bool LocationBias = false;
         public double Latitude;
         public double Longitude;
-        public float CameraAltitude = 3500.0f;
         public int Radius = 50000;
         public string NextPageToken = string.Empty;
         public string SearchText = string.Empty;

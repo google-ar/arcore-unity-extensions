@@ -27,6 +27,13 @@
 #warning For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5 symbol
 #endif
 
+#if !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER) && ARCORE_USE_ARF_5
+// The camera's pose driver in ARF5 needs Input System (New) but sample has not been ported to
+// support new input so make sure Settings > Player > Other Settings > Active Input Handling
+// is set to Both
+#error The cloud anchores sample needs Active Input Handling set to Both
+#endif
+
 namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
     using System;

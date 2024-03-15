@@ -30,6 +30,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Internal
     // :TODO: b/277365140 Automated testing
     internal static class GeoMath
     {
+        // This value is higher than any terrain altitude on Earth (ie. Mt. Everest at 8848m)
+        public const double HighestElevationOnEarth = 9000;
+
+        // This value is lower than any terrain altitude on Earth (ie. Dead  Sea shore at -420m)
+        public const double LowestElevationOnEarth = -420;
+
         // Equatorial radius in meters
         private const double _wgs84EllipsoidSemiMajorAxis = 6378137.0;
 

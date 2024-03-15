@@ -56,8 +56,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         {
             _origin = origin;
 #if ARCORE_INTERNAL_USE_CESIUM
-            _origin._originComponentAdapter = new CesiumOriginAdapter(origin);
+            _origin._originComponentAdapter =
+                new GeospatialCreatorCesiumAdapter.OriginComponentCesiumAdapter(origin);
             _origin.UpdateOriginFromComponent();
+            _origin._origin3DTilesetAdapter =
+                new GeospatialCreatorCesiumAdapter.Origin3DTilesetCesiumAdapter(origin);
 #endif
         }
 
@@ -66,44 +69,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             _origin.UpdateOriginFromComponent();
         }
 
-#if ARCORE_INTERNAL_USE_CESIUM
-        private class CesiumOriginAdapter : IOriginComponentAdapter
-        {
-            private readonly ARGeospatialCreatorOrigin _origin;
-
-            public CesiumOriginAdapter(ARGeospatialCreatorOrigin origin)
-            {
-                _origin = origin;
-            }
-
-            public GeoCoordinate GetOriginFromComponent()
-            {
-                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
-                return (geoRef == null) ? null :
-                    new GeoCoordinate(geoRef.latitude, geoRef.longitude, geoRef.height);
-            }
-
-            public void SetComponentOrigin(GeoCoordinate newOrigin)
-            {
-                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
-                if (geoRef == null)
-                {
-                    Debug.LogWarning("Origin location updated for " + _origin.gameObject.name +
-                        ", but there is no Cesium Georeference subcomponent.");
-                    return;
-                }
-
-                geoRef.latitude = newOrigin.Latitude;
-                geoRef.longitude = newOrigin.Longitude;
-                geoRef.height = newOrigin.Altitude;
-            }
-
-            private CesiumForUnity.CesiumGeoreference GetCesiumGeoreference()
-            {
-                return _origin.gameObject.GetComponent<CesiumForUnity.CesiumGeoreference>();
-            }
-        }
-#endif //ARCORE_INTERNAL_USE_CESIUM
     }
 }
 #endif // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED

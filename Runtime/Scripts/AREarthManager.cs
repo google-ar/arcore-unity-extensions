@@ -157,9 +157,6 @@ namespace Google.XR.ARCoreExtensions
                 (sessionHandle == IntPtr.Zero)
                     ? IntPtr.Zero
                     : FutureApi.CheckVpsAvailabilityAsync(sessionHandle, latitude, longitude);
-#if UNITY_ANDROID
-            ARPrestoApi.SetSessionRequired(false);
-#endif
             return new VpsAvailabilityPromise(future);
         }
 

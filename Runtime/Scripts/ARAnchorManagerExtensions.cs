@@ -776,5 +776,19 @@ namespace Google.XR.ARCoreExtensions
 
             return new ResolveAnchorOnTerrainPromise(future);
         }
+
+        /// <summary>
+        /// Logs that a Geospatial Creator Anchor has been resolved into a Geospatial Anchor.
+        /// This call only serves to log the anchor creation for analytics and debugging purposes.
+        /// It does not run any logic related to creating the anchor.
+        /// </summary>
+        /// <param name="anchorManager">The <c><see cref="ARAnchorManager"/></c> instance.</param>
+        /// <param name="anchorType"> The type of anchor that was created.</param>
+        internal static void ReportCreateGeospatialCreatorAnchor(
+            this ARAnchorManager anchorManager, ApiGeospatialAnchorType anchorType)
+        {
+            EarthApi.ReportCreateGeospatialCreatorAnchor(
+                ARCoreExtensions._instance.currentARCoreSessionHandle, anchorType);
+        }
     }
 }

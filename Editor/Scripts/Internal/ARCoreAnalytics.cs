@@ -43,7 +43,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private UnityWebRequest _webRequest;
 
         /// <summary>
-        /// Static constructor permits a once-on-load analytics collection event.
+        /// Static constructor permits a once-after-editor-load analytics collection event.
         /// </summary>
         static ARCoreAnalytics()
         {
@@ -51,8 +51,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             Instance = new ARCoreAnalytics();
             Instance.Load();
 
-            // Send analytics immediately.
-            Instance.SendAnalytics(_googleAnalyticsHost, LogRequestUtils.BuildLogRequest());
+            // Schedule the first analytics data to be sent after Editor Inspectors have updated.
+            // Otherwise, we might query the scene for analytics data before it is available.
+            Instance._lastUpdateTicks = DateTime.Now.Ticks;
+            EditorApplication.delayCall += OnEditorInspectorsUpdatedOnce;
 
             // Use the Editor Update callback to monitor the communication to the server.
             EditorApplication.update +=
@@ -139,6 +141,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 Instance.SendAnalytics(
                     _googleAnalyticsHost, LogRequestUtils.BuildLogRequest());
             }
+        }
+
+        /// <summary>
+        /// Callback function to send analytics data after Editor Inspectors are ready.
+        /// </summary>
+        private static void OnEditorInspectorsUpdatedOnce()
+        {
+            Instance.SendAnalytics(
+                    _googleAnalyticsHost, LogRequestUtils.BuildLogRequest());
         }
     }
 }

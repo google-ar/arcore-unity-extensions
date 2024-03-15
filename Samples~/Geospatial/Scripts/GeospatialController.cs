@@ -25,6 +25,22 @@
 #warning For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5 symbol
 #endif
 
+#if !ENABLE_LEGACY_INPUT_MANAGER
+// Input.location will not work at runtime with out the old input system.
+// Given that sample has not been ported to support new input
+// Check that Project Settings > Player > Other Settings > Active Input Handling
+// is set to Both or Input Manager (Old)
+#error Input.location API requires Active Input Handling to be set to Input Manager (Old) or Both
+#endif
+
+#if !ENABLE_INPUT_SYSTEM && ARCORE_USE_ARF_5
+// The camera's pose driver in ARF5 needs Input System (New) but given we need Input Manager
+// (Old) for Input.location (see above) ARF5 needs both.
+// Check that Project Settings > Player > Other Settings > Active Input Handling
+// is set to Both
+#error The camera's pose driver needs Input System (New) so set Active Input Handling to Both
+#endif
+
 namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 {
     using System;

@@ -27,6 +27,7 @@
 namespace Google.XR.ARCoreExtensions
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
@@ -123,6 +124,11 @@ namespace Google.XR.ARCoreExtensions
             List<XRCameraConfiguration> supportedConfigurations);
 
 #if UNITY_ANDROID
+        // The max number of frames we will wait for a valid session handle to report analytics.
+        internal const int _frameTimeoutForSessionHandle = 60;
+
+        private bool _geospatialCreatorPlatformLoggedOnce = false;
+
         internal const int _androidSSDKVersion = 31;
         private static AndroidJavaClass _versionInfo;
 
@@ -227,9 +233,16 @@ namespace Google.XR.ARCoreExtensions
             {
                 _arCoreCameraSubsystem.beforeGetCameraConfiguration += BeforeGetCameraConfiguration;
             }
-#endif // UNITY_ANDROID
+            // TODO: (b/308463770) - Support Geospatial Creator Platform analytics on iOS.
+            if (_geospatialCreatorPlatformLoggedOnce == false)
+            {
+              StartCoroutine(ReportGeospatialCreatorPlatformWithDelay());
+              _geospatialCreatorPlatformLoggedOnce = true;
+            }
+#endif  // UNITY_ANDROID
 #if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
 
+            // TODO: (b/308163258) - EngineType isn't set bc session handle is usually invalid here
             if (Session != null && currentARCoreSessionHandle != IntPtr.Zero && !_engineTypeLogged)
             {
                 SessionApi.ReportEngineType(currentARCoreSessionHandle);
@@ -539,6 +552,32 @@ namespace Google.XR.ARCoreExtensions
 
                 CameraManager.currentConfiguration = configurations[configIndex];
             }
+        }
+
+        private IEnumerator ReportGeospatialCreatorPlatformWithDelay()
+        {
+            // TODO: (b/308463770) - Support Geospatial Creator Platform analytics on iOS.
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            // Wait a few frames until the session handle is valid
+            int frameCount = 0;
+            while (currentARCoreSessionHandle == IntPtr.Zero &&
+                   frameCount < _frameTimeoutForSessionHandle)
+            {
+                yield return null;
+                frameCount++;
+            }
+
+            ApiGeospatialCreatorPlatform geospatialCreatorPlatform =
+#if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
+                ApiGeospatialCreatorPlatform.ArCoreExtensionsUnity;
+#else
+                ApiGeospatialCreatorPlatform.Disabled;
+#endif  // ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
+
+            EarthApi.ReportGeospatialCreatorPlatform(currentARCoreSessionHandle,
+                                                     geospatialCreatorPlatform);
+#endif  // !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            yield return null;
         }
 #endif // UNITY_ANDROID
     }

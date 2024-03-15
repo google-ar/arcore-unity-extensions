@@ -25,8 +25,8 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.Security.Cryptography;
     using System.Text;
     using Google.Protobuf;
-    using Google.XR.ARCoreExtensions;
     using Google.XR.ARCoreExtensions.Editor.Internal.Proto;
+    using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
     using UnityEngine;
 
@@ -57,6 +57,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 EditionType = editionType,
             };
 
+            // Determine Geospatial Creator information.
+            ArCoreSdkLog.Types.GeospatialCreator geospatialCreatorMessage =
+                new ArCoreSdkLog.Types.GeospatialCreator()
+            {
+                IsGeospatialCreatorEnabled =
+                ARCoreExtensionsProjectSettings.Instance.GeospatialEditorEnabled,
+                NumAnchors = GeospatialCreatorHelper.CountGeospatialCreatorAnchors(),
+            };
+
             // Collect the set of information to be sent to Google.
             ArCoreSdkLog logSDK = new ArCoreSdkLog()
             {
@@ -66,6 +75,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 SdkType = ArCoreSdkLog.Types.SDKType.ArfoundationExtensionsSdk,
                 Unity = engine,     // Unity engine version.
                 SdkSessionId = SessionId(),
+                GeospatialCreator = geospatialCreatorMessage,
             };
 
             // Assemble the Clearcut log event data.

@@ -144,6 +144,122 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor
             EditorUtility.SetDirty(tileset);
             return true;
         }
+
+        internal class Origin3DTilesetCesiumAdapter : Origin3DTilesetAdapter
+        {
+            // The parent ARGeospatialCreatorOrigin object that owns this instance of the Adapter
+            private readonly ARGeospatialCreatorOrigin _origin;
+
+            internal Origin3DTilesetCesiumAdapter(ARGeospatialCreatorOrigin origin)
+            {
+                _origin = origin;
+            }
+
+            /// <summary> Gets the parent ARGeospatialCreatorOrigin object.</summary>
+            public override ARGeospatialCreatorOrigin Origin
+            {
+                get
+                {
+                    return _origin;
+                }
+            }
+
+            /// <summary> Sets the Cesium tileset's "Create Physics Meshes" setting.</summary>
+            /// <param name="enable"> Specifies whether to enable the setting or not.</param>
+            public override void SetPhysicsMeshesEnabled(bool enable)
+            {
+                Cesium3DTileset tileset = GetTilesetComponent(Origin);
+                if (tileset == null)
+                {
+                    Debug.LogError(
+                        "No Cesium3DTileset component associated with Origin " + Origin.name);
+                        return;
+                }
+
+                if (tileset.createPhysicsMeshes != enable)
+                {
+                    tileset.createPhysicsMeshes = enable;
+                }
+            }
+
+            /// <summary> Gets the Cesium tileset's "Create Physics Meshes" setting.</summary>
+            public override bool GetPhysicsMeshesEnabled()
+            {
+                Cesium3DTileset tileset = GetTilesetComponent(Origin);
+                if (tileset == null)
+                {
+                    Debug.LogError(
+                        "No Cesium3DTileset component associated with Origin " + Origin.name);
+                        return false;
+                }
+
+                return tileset.createPhysicsMeshes;
+            }
+
+            /// <summary> Retrieves percentage of tiles loaded for current view.</summary>
+            /// <returns> Percentage (0.0 to 100.0) of tiles loaded for current view.</returns>
+            public override float ComputeTilesetLoadProgress()
+            {
+                Cesium3DTileset tileset = GetTilesetComponent(Origin);
+                if (tileset == null)
+                {
+                    Debug.LogError(
+                        "No Cesium3DTileset component associated with Origin " + Origin.name);
+                    return 0;
+                }
+                return tileset.ComputeLoadProgress();
+            }
+
+            /// <summary> Returns true if the collider belongs to a tile in this tileset.</summary>
+            /// <param name="collider"> The collider to be checked.</param>
+            public override bool IsTileCollider(Collider collider)
+            {
+                if ((collider != null) &&
+                    (collider.gameObject.GetComponent<CesiumGlobeAnchor>() != null))
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        internal class OriginComponentCesiumAdapter : IOriginComponentAdapter
+        {
+            // The parent ARGeospatialCreatorOrigin object that owns this instance of the Adapter
+            private readonly ARGeospatialCreatorOrigin _origin;
+
+            public OriginComponentCesiumAdapter(ARGeospatialCreatorOrigin origin)
+            {
+                _origin = origin;
+            }
+
+            public GeoCoordinate GetOriginFromComponent()
+            {
+                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
+                return (geoRef == null) ? null :
+                    new GeoCoordinate(geoRef.latitude, geoRef.longitude, geoRef.height);
+            }
+
+            public void SetComponentOrigin(GeoCoordinate newOrigin)
+            {
+                CesiumForUnity.CesiumGeoreference geoRef = GetCesiumGeoreference();
+                if (geoRef == null)
+                {
+                    Debug.LogWarning("Origin location updated for " + _origin.gameObject.name +
+                        ", but there is no Cesium Georeference subcomponent.");
+                    return;
+                }
+
+                geoRef.latitude = newOrigin.Latitude;
+                geoRef.longitude = newOrigin.Longitude;
+                geoRef.height = newOrigin.Altitude;
+            }
+
+            private CesiumForUnity.CesiumGeoreference GetCesiumGeoreference()
+            {
+                return _origin.gameObject.GetComponent<CesiumForUnity.CesiumGeoreference>();
+            }
+        }
     }
 }
 #endif // ARCORE_INTERNAL_USE_CESIUM

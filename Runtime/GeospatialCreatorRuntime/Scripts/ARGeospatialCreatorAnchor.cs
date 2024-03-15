@@ -36,7 +36,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 
     /// <summary>
     /// A representation of a Geospatial Anchor that was created using the Geospatial Creator tool.
-    /// This object is responsible for creating a proper ARGeospatialAnchor at runtime at the
+    /// This object is responsible for creating a proper <c>ARGeospatialAnchor</c> at runtime at the
     /// latitude, longitude, and altitude specified.
     /// </summary>
     [AddComponentMenu("XR/AR Geospatial Creator Anchor")]
@@ -57,13 +57,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         internal const string _noAnchorManagersMessage =
             "No ARAnchorManagers were found in the scene.";
 
-        // TODO (b/298042491) This can be private & editor-only when the GEOSPATIAL_CREATOR_API
-        // flag is permanently enabled. It cannot be removed entirely because we need to be able to
+#if UNITY_EDITOR
+        // This field is deprecated, but cannot be removed entirely because we need to be able to
         // migrate the value for customers upgrading from older versions of ARCore Extensions.
         [SerializeField]
         [Obsolete("Superseded by EditorAltitudeOverride. See MigrateAltitudeOffset() comments.",
             false)]
         internal double _altitudeOffset;
+#endif // UNITY_EDITOR
 
 #if !UNITY_EDITOR
 #pragma warning disable CS0649
@@ -112,26 +113,40 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         }
 #endif
 
-
         /// <summary>
-        /// Gets and sets the ARAnchorManager used for resolving this anchor at runtime. The
-        /// property is read-only at runtime.
-        /// </summary>
-        /// <remarks> If null, this property will be given a default value during the Awake()
+        /// Gets and sets the <c><see cref="ARAnchorManager"/></c> used for resolving this anchor
+        /// at runtime. The property is read-only at runtime.
+        ///
+        /// If <c>null</c>, this property will be given a default value during the
+        /// <c>Awake()</c> message execution, as follows:
+        /// <list type="bullet">
+        /// <item>
 #if ARCORE_USE_ARF_5 // use ARF 5
-        /// message execution, as follows: If the XROrigin has an AnchorManager
+        /// If the <c><see cref="XROrigin"/></c> has an <c><see cref="AnchorManager"/></c>
 #elif ARCORE_USE_ARF_4 // use ARF 4
-        /// message execution, as follows: If the ARSessionOrigin has an AnchorManager
+        /// If the <c><see cref="ARSessionOrigin"/></c> has an <c><see cref="AnchorManager"/></c>
 #else // ARF error
 #error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
 #endif
-        /// subcomponent, that AnchorManager will be used; otherwise the first active and enabled
-        /// ARAnchorManager object returned by Resources.FindObjectsOfTypeAll will be used. If
-        /// there are no active and enabled ARAnchorManager components in the scene, the first
-        /// inactive / disabled ARAnchorManager is used. If there are no ARAnchorManagers in the
-        /// scene, an error will be logged and this property will remain null.
-        /// GeospatialCreatorAnchors will not be resolved at runtime if the property remains null.
-        /// </remarks>
+        /// subcomponent, that <c><see cref="ARAnchorManager"/></c> will be used;
+        /// </item>
+        /// <item>
+        /// otherwise the first active and enabled <c><see cref="ARAnchorManager"/></c> object
+        /// returned by <c><see cref="Resources.FindObjectsOfTypeAll()"/></c> will be used.
+        /// </item>
+        /// <item>
+        /// If there are no
+        /// active and enabled <c><see cref="ARAnchorManager"/></c> components in the scene, the
+        /// first inactive / disabled <c><see cref="ARAnchorManager"/></c> is used.
+        /// </item>
+        /// <item>
+        /// If there are no <c><see cref="ARAnchorManager"/></c> objects in the scene, an error will
+        /// be logged and this property will remain <c>null</c>.
+        /// </item>
+        /// </list>
+        /// <c><see cref="ARGeospatialCreatorAnchor"/></c> objects will not be resolved at runtime
+        /// if the property remains <c>null</c>.
+        /// </summary>
         public ARAnchorManager AnchorManager
         {
             get => _anchorManager;
@@ -144,23 +159,33 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         /// <summary>
         /// Gets or sets the Geospatial Creator Origin used to resolve the location of this anchor.
         /// This property only exists in Editor mode.
+        ///
+        /// This property will be given a default value in the Editor's <c>Awake()</c> message
+        /// execution, as follows:
+        /// <list type="bullet">
+        /// <item>
+        /// If there are no objects of type <c><see cref="ARGeospatialCreatorOrigin"/></c> in the
+        /// scene, it will remain <c>null</c> and a warning will be logged.
+        /// </item>
+        /// <item>
+        /// If there is exactly one object of type <c><see cref="ARGeospatialCreatorOrigin"/></c>
+        /// in the scene, that origin will be assigned to this property.
+        /// </item>
+        /// <item>
+        /// If more than one object of type <c><see cref="ARGeospatialCreatorOrigin"/></c> are in
+        /// the scene, a warning is logged and the property will remain <c>null</c>. A default
+        /// origin in the scene will be used to resolve the Anchor's location.
+        /// </item>
+        /// </list>
         /// </summary>
-        /// <remarks> This property will be given a default value in the Editor's Awake() message
-        /// execution, as follows:<br/>
-        /// If there no object of type ARGeospatialCreatorOrigin in the scene, it will remain null
-        /// and a warning will be logged.<br/>
-        /// If there is exactly one object of type ARGeospatialCreatorOrigin in the scene, that
-        /// origin will be assigned to this property.<br/>
-        /// If more than one objects of type ARGeospatialCreatorOrigin are in the scene, a warning
-        /// is logged and the property will remain null. A default origin in the scene will be used
-        /// to resolve the Anchor's location.
-        /// </remarks>
         public ARGeospatialCreatorOrigin Origin;
 
         /// <summary>
         /// Indicates if the anchor should be rendered in the Editor's Scene view at the default
-        /// Altitude, or at the altitude specified by EditorAltitudeOverride. If false,
-        /// EditorAltitudeOverride is ignored. UseEditorAltitudeOverride is not available runtime.
+        /// <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c>, or at the altitude specified by
+        /// <c><see cref="EditorAltitudeOverride"/></c>. If <c>false</c>,
+        /// <c><see cref="EditorAltitudeOverride"/></c> is ignored.
+        /// <c>UseEditorAltitudeOverride</c> is not available at runtime.
         /// </summary>
         public bool UseEditorAltitudeOverride
         {
@@ -177,10 +202,13 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 
         /// <summary>
         /// Gets and sets the altitude (in WGS84 meters) at which the Anchor should be rendered in
-        /// the Editor's scene view. This value is ignored when UseEditorAltitudeOverride is true.
-        /// EditorAltitudeOverride is useful if the default altitude rooftop or terrain anchors is
-        /// inaccurate, or if using WGS84 altitude and the scene geometry does not line up exactly
-        /// with the real world. EditorAltitudeOverride is not used at runtime.
+        /// the Editor's scene view. This value is ignored when
+        /// <c><see cref="UseEditorAltitudeOverride"/></c> is <c>true</c>.
+        ///
+        /// <c><see cref="EditorAltitudeOverride"/></c> is useful if the default altitude rooftop or
+        /// terrain anchor is inaccurate, or if using WGS84 altitude and the scene geometry does not
+        /// line up exactly with the real world. <c><see cref="EditorAltitudeOverride"/></c> is not
+        /// used at runtime.
         /// </summary>
         public double EditorAltitudeOverride
         {
@@ -233,11 +261,15 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         }
 
         /// <summary>
-        /// Gets or sets the altitude. When AltitudeType is WSG84, this value is the altitude of
-        /// the anchor, in meters according to WGS84. When AltitudeType is Terrain or Rooftop, this
-        /// value is ONLY used in Editor mode, to determine the altitude at which to render the
-        /// anchor in the Editor's Scene View. If AltitudeType is Terrain or Rooftop, this value is
-        /// ignored in the Player.</summary>
+        /// Gets or sets the altitude. When <c><see cref="AltitudeType"/></c> is
+        /// <c><see cref="AltitudeType.WGS84"/></c>, this value is the altitude of
+        /// the anchor, in meters according to WGS84.
+        ///
+        /// When <c><see cref="AltitudeType"/></c> is <c><see cref="AltitudeType.Terrain"/></c> or
+        /// <c><see cref="AltitudeType.Rooftop"/></c>, this value is ONLY used in Editor mode, to
+        /// determine the altitude at which to render the anchor in the Editor's Scene View, and it
+        /// is ignored in the Player.
+        /// </summary>
         public double Altitude
         {
             get => this._altitude;
@@ -253,7 +285,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 #endif
         }
 
-        /// <summary>Gets or sets the AltitudeType used for resolution of this anchor.</summary>
+        /// <summary>
+        /// Gets or sets the <c><see cref="AnchorAltitudeType"/></c> used for resolution of this
+        /// anchor.
+        /// </summary>
         public AnchorAltitudeType AltitudeType
         {
             get => _altitudeType;
@@ -423,7 +458,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 
         }
 #pragma warning restore CS0618
-#endif // UINITY_EDITOR
+#endif // UNITY_EDITOR
 
 #if !UNITY_EDITOR
         private void Update()
@@ -470,13 +505,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 return;
             }
 
-
             if (_anchorManager == null)
             {
-                string errorReason =
-                    "The AnchorManager property for " + name + " is null";
-                Debug.LogError("Unable to place ARGeospatialCreatorAnchor " + name + ": " +
-                    errorReason);
+                Debug.LogError("Unable to place ARGeospatialCreatorAnchor " + name + ": The " +
+                    "AnchorManager property is null");
                 _anchorResolution = AnchorResolutionState.Complete;
                 return;
             }
@@ -525,6 +557,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         {
             ARGeospatialAnchor anchor = _anchorManager.AddAnchor(
                 Latitude, Longitude, Altitude, transform.rotation);
+
+            _anchorManager.ReportCreateGeospatialCreatorAnchor(ApiGeospatialAnchorType.WGS84);
             FinishAnchor(anchor);
         }
 
@@ -533,11 +567,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         // creating geospatial anchors.
         private IEnumerator ResolveTerrainAnchor()
         {
-            double altitudeAboveTerrain = Altitude;
             ARGeospatialAnchor anchor = null;
             ResolveAnchorOnTerrainPromise promise =
                 _anchorManager.ResolveAnchorOnTerrainAsync(
-                    Latitude, Longitude, altitudeAboveTerrain, transform.rotation);
+                    Latitude, Longitude, Altitude, transform.rotation);
 
             yield return promise;
             var result = promise.Result;
@@ -546,6 +579,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 anchor = result.Anchor;
             }
 
+            _anchorManager.ReportCreateGeospatialCreatorAnchor(ApiGeospatialAnchorType.Terrain);
             FinishAnchor(anchor);
             yield break;
         }
@@ -561,11 +595,10 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         // creating geospatial anchors.
         private IEnumerator ResolveRooftopAnchor()
         {
-            double altitudeAboveRooftop = Altitude;
             ARGeospatialAnchor anchor = null;
             ResolveAnchorOnRooftopPromise promise =
                 _anchorManager.ResolveAnchorOnRooftopAsync(
-                    Latitude, Longitude, altitudeAboveRooftop, transform.rotation);
+                    Latitude, Longitude, Altitude, transform.rotation);
 
             yield return promise;
             var result = promise.Result;
@@ -574,6 +607,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 anchor = result.Anchor;
             }
 
+            _anchorManager.ReportCreateGeospatialCreatorAnchor(ApiGeospatialAnchorType.Rooftop);
             FinishAnchor(anchor);
             yield break;
         }

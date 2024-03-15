@@ -27,8 +27,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
     using UnityEngine;
 
     /// <summary>
-    /// Provides a Geospatial Creator Origin that has both a lat/lon and gamespace coordinates. This is
-    /// the reference point used by AR Anchors made in the Geospatial Creator to resolve their
+    /// Provides a Geospatial Creator Origin that has both a lat/lon and gamespace coordinates. This
+    /// is the reference point used by AR Anchors made in the Geospatial Creator to resolve their
     /// location in gamespace.
     /// </summary>
 #if ARCORE_INTERNAL_GEOSPATIAL_CREATOR_ENABLED
@@ -52,8 +52,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             new GeoCoordinate(37.422098, -122.08286, 11.5);
 
         /// <summary>
-        /// Gets the latitude of this origin, in decimal degrees. Will return Double.NaN if the
-        /// origin point has not been initialized.
+        /// Gets the latitude of this origin, in decimal degrees. Will return
+        /// <c><see cref="Double.NaN"/></c> if the origin point has not been initialized.
         /// </summary>
         public double Latitude
         {
@@ -61,8 +61,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         }
 
         /// <summary>
-        /// Gets the longitude of this origin, in decimal degrees. Will return Double.NaN if the
-        /// origin point has not been initialized.
+        /// Gets the longitude of this origin, in decimal degrees. Will return
+        /// <c><see cref="Double.NaN"/></c> if the origin point has not been initialized.
         /// </summary>
         public double Longitude
         {
@@ -70,8 +70,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         }
 
         /// <summary>
-        /// Gets the altiude of this origin, in meters according to WGS84. Will return Double.NaN
-        /// if the origin point has not been initialized.
+        /// Gets the altiude of this origin, in meters according to WGS84. Will return
+        /// <c><see cref="Double.NaN"/></c> if the origin point has not been initialized.
         /// </summary>
         public double Altitude
         {
@@ -100,6 +100,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         // GeospatialOriginUpdater when the updater for this Origin is initialized. See the
         // comments in IOriginComponentAdapter for more details.
         internal IOriginComponentAdapter _originComponentAdapter;
+
+        // An adapter to access the 3DTileset maintained by this GameObject's subcomponent.
+        // This property is set in the Editor assembly from the  GeospatialOriginUpdater
+        // when the updater for this Origin is initialized. See the comments in
+        // Origin3DTilesetAdapter for more details.
+        internal Origin3DTilesetAdapter _origin3DTilesetAdapter;
 
         /// <summary>
         /// Sets the geospatial location for this origin, including updating the location for any

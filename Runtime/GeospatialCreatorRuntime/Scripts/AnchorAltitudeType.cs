@@ -21,24 +21,58 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator
 {
     /// <summary>
-    /// Specifies how the ARGeospatialCreatorAnchor's Altitude and AlttudeOffset fields will be
+    /// Specifies how the <c><see cref="ARGeospatialCreatorAnchor"/></c>'s
+    /// <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> and
+    /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c> properties will be
     /// interpreted.</summary>
     public enum AnchorAltitudeType
     {
         /// <summary>
-        /// Altitude specifies the altitude of the anchor in meters for WGS84. AltitudeOffset is
-        /// not used.</summary>
+        /// The anchor represents a <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/anchors#wgs84_anchors">WGS84
+        /// anchor</a>.
+        /// The anchor's <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> specifies the
+        /// altitude of the anchor in meters for WGS84.
+        ///
+        /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c> is not used.
+        /// </summary>
         WGS84,
 
         /// <summary>
-        /// Altitude specifies the relative altitude above/below the terrain, in meters. If the
-        /// anchor does not appear to render at the correct height in the Editor, adjust the
-        /// anchor's EditorAltitude property.</summary>
+        /// The anchor represents a <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/anchors#terrain_anchors">Terrain
+        /// anchor</a>.
+        /// The anchor's <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> specifies the
+        /// relative altitude above or below the terrain, in meters.
+        ///
+        /// If the anchor does not appear to render at the correct height in the Editor, set the
+        /// anchor's
+        /// <c><see cref="ARGeospatialCreatorAnchor.UseEditorAltitudeOverride"/></c> property to
+        /// <c>true</c> and use
+        /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c>
+        /// to adjust the anchor's visual altitude in the Editor. At runtime, the anchor will ignore
+        /// these values and use an altitude relative to the terrain at that anchor's horizontal
+        /// location.
+        /// </summary>
         Terrain,
 
-        /// <summary> Altitude specifies the relative altitude above/below the rooftop, in meters.
-        /// If the anchor does not appear to render at the correct height in the Editor, adjust the
-        /// anchor's EditorAltitude property.</summary>
+        /// <summary>
+        /// The anchor represents a <a
+        /// href="https://developers.google.com/ar/develop/unity-arf/geospatial/anchors#rooftop_anchors">Rooftop
+        /// anchor</a>.
+        /// The anchor's <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> specifies the
+        /// relative altitude above or below to a rooftop at that anchor's horizontal location, in
+        /// meters.
+        ///
+        /// If the anchor does not appear to render at the correct height in the Editor, set the
+        /// anchor's
+        /// <c><see cref="ARGeospatialCreatorAnchor.UseEditorAltitudeOverride"/></c> property to
+        /// <c>true</c> and use
+        /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c>
+        /// to adjust the anchor's visual altitude in the Editor. At runtime, the anchor will ignore
+        /// these values and use an altitude relative to a rooftop at that anchor's horizontal
+        /// location.
+        /// </summary>
         Rooftop
     }
 }

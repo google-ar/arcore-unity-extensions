@@ -23,6 +23,7 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
+    using Google.XR.ARCoreExtensions.Editor.Internal;
     using Google.XR.ARCoreExtensions.GeospatialCreator;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
 #if ARCORE_INTERNAL_USE_UNITY_MATH
@@ -62,6 +63,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             var tracker = new GeospatialObjectTracker<ARGeospatialCreatorAnchor>(actionFactory);
             tracker.StartTracking();
+            GeospatialCreatorHelper.CountGeospatialCreatorAnchorsDelegate =
+                tracker.GetTrackedObjectsCount;
         }
 
         public GeospatialAnchorUpdater(ARGeospatialCreatorAnchor anchor)
@@ -139,6 +142,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             {
                 return true;
             }
+
             return false;
         }
 
@@ -211,7 +215,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             // EditorAltitudeOverride value, if it is used.
             double alt = _anchor.UseEditorAltitudeOverride ?
                 _anchor.EditorAltitudeOverride : _anchor.Altitude;
-
             GeoCoordinate coor = new GeoCoordinate(
                 _anchor.Latitude,
                 _anchor.Longitude,

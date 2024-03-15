@@ -92,6 +92,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             _trackedObjects.Clear();
         }
 
+        public uint GetTrackedObjectsCount()
+        {
+            return Convert.ToUInt32(_trackedObjects.Count);
+        }
+
         /// <summary>
         /// Handles EditorApplication.Update() events to check if GameObjects of type T have been
         /// added to or removed from the scene. For new objects, a a new update Action is created

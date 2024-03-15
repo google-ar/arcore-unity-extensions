@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ARCoreSdkLog.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,24 +44,29 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
     static ArcoreSdkLogReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChRhcmNvcmVfc2RrX2xvZy5wcm90bxIRY29tLmdvb2dsZS5hcmNvcmUi/QMK",
+            "ChRhcmNvcmVfc2RrX2xvZy5wcm90bxIRY29tLmdvb2dsZS5hcmNvcmUinQUK",
             "DEFyQ29yZVNka0xvZxIXCg9zZGtfaW5zdGFuY2VfaWQYASABKAkSFgoOc2Rr",
             "X3Nlc3Npb25faWQYBSABKAkSGgoSYXJjb3JlX3Nka192ZXJzaW9uGAIgASgJ",
             "EjkKCHNka190eXBlGAYgASgOMicuY29tLmdvb2dsZS5hcmNvcmUuQXJDb3Jl",
             "U2RrTG9nLlNES1R5cGUSEgoKb3NfdmVyc2lvbhgDIAEoCRI8CgV1bml0eRgE",
             "IAEoCzIrLmNvbS5nb29nbGUuYXJjb3JlLkFyQ29yZVNka0xvZy5Vbml0eUVu",
-            "Z2luZUgAGrYBCgtVbml0eUVuZ2luZRIPCgd2ZXJzaW9uGAEgASgJEk0KDGVk",
-            "aXRpb25fdHlwZRgCIAEoDjI3LmNvbS5nb29nbGUuYXJjb3JlLkFyQ29yZVNk",
-            "a0xvZy5Vbml0eUVuZ2luZS5FZGl0aW9uVHlwZSJHCgtFZGl0aW9uVHlwZRIY",
-            "ChRVTktOT1dOX0VESVRJT05fVFlQRRAAEgwKCFBFUlNPTkFMEAESEAoMUFJP",
-            "RkVTU0lPTkFMEAIiUAoHU0RLVHlwZRIUChBVTktOT1dOX1NES19UWVBFEAAS",
-            "DgoKQVJDT1JFX1NESxABEh8KG0FSRk9VTkRBVElPTl9FWFRFTlNJT05TX1NE",
-            "SxACQggKBmVuZ2luZUIzqgIwR29vZ2xlLlhSLkFSQ29yZUV4dGVuc2lvbnMu",
-            "RWRpdG9yLkludGVybmFsLlByb3RvYgZwcm90bzM="));
+            "Z2luZUgAEk0KEmdlb3NwYXRpYWxfY3JlYXRvchgHIAEoCzIxLmNvbS5nb29n",
+            "bGUuYXJjb3JlLkFyQ29yZVNka0xvZy5HZW9zcGF0aWFsQ3JlYXRvchq2AQoL",
+            "VW5pdHlFbmdpbmUSDwoHdmVyc2lvbhgBIAEoCRJNCgxlZGl0aW9uX3R5cGUY",
+            "AiABKA4yNy5jb20uZ29vZ2xlLmFyY29yZS5BckNvcmVTZGtMb2cuVW5pdHlF",
+            "bmdpbmUuRWRpdGlvblR5cGUiRwoLRWRpdGlvblR5cGUSGAoUVU5LTk9XTl9F",
+            "RElUSU9OX1RZUEUQABIMCghQRVJTT05BTBABEhAKDFBST0ZFU1NJT05BTBAC",
+            "Gk8KEUdlb3NwYXRpYWxDcmVhdG9yEiUKHWlzX2dlb3NwYXRpYWxfY3JlYXRv",
+            "cl9lbmFibGVkGAEgASgIEhMKC251bV9hbmNob3JzGAIgASgNIlAKB1NES1R5",
+            "cGUSFAoQVU5LTk9XTl9TREtfVFlQRRAAEg4KCkFSQ09SRV9TREsQARIfChtB",
+            "UkZPVU5EQVRJT05fRVhURU5TSU9OU19TREsQAkIICgZlbmdpbmVCM6oCMEdv",
+            "b2dsZS5YUi5BUkNvcmVFeHRlbnNpb25zLkVkaXRvci5JbnRlcm5hbC5Qcm90",
+            "b2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog), global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Parser, new[]{ "SdkInstanceId", "SdkSessionId", "ArcoreSdkVersion", "SdkType", "OsVersion", "Unity" }, new[]{ "Engine" }, new[]{ typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.SDKType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine), global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Parser, new[]{ "Version", "EditionType" }, null, new[]{ typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Types.EditionType) }, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog), global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Parser, new[]{ "SdkInstanceId", "SdkSessionId", "ArcoreSdkVersion", "SdkType", "OsVersion", "Unity", "GeospatialCreator" }, new[]{ "Engine" }, new[]{ typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.SDKType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine), global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Parser, new[]{ "Version", "EditionType" }, null, new[]{ typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Types.EditionType) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator), global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator.Parser, new[]{ "IsGeospatialCreatorEnabled", "NumAnchors" }, null, null, null)})
           }));
     }
     #endregion
@@ -72,7 +77,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
   /// Message with log extension for ARCore SDK within development engines, like
   /// Unity and Unreal.
   ///
-  /// Next ID: 7
+  /// Next ID: 8
   /// </summary>
   public sealed partial class ArCoreSdkLog : pb::IMessage<ArCoreSdkLog> {
     private static readonly pb::MessageParser<ArCoreSdkLog> _parser = new pb::MessageParser<ArCoreSdkLog>(() => new ArCoreSdkLog());
@@ -104,6 +109,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       arcoreSdkVersion_ = other.arcoreSdkVersion_;
       sdkType_ = other.sdkType_;
       osVersion_ = other.osVersion_;
+      geospatialCreator_ = other.geospatialCreator_ != null ? other.geospatialCreator_.Clone() : null;
       switch (other.EngineCase) {
         case EngineOneofCase.Unity:
           Unity = other.Unity.Clone();
@@ -205,6 +211,20 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       }
     }
 
+    /// <summary>Field number for the "geospatial_creator" field.</summary>
+    public const int GeospatialCreatorFieldNumber = 7;
+    private global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator geospatialCreator_;
+    /// <summary>
+    /// Data logged about the Geospatial Creator plugin usage in the project.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator GeospatialCreator {
+      get { return geospatialCreator_; }
+      set {
+        geospatialCreator_ = value;
+      }
+    }
+
     private object engine_;
     /// <summary>Enum of possible cases for the "engine" oneof.</summary>
     public enum EngineOneofCase {
@@ -242,6 +262,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       if (SdkType != other.SdkType) return false;
       if (OsVersion != other.OsVersion) return false;
       if (!object.Equals(Unity, other.Unity)) return false;
+      if (!object.Equals(GeospatialCreator, other.GeospatialCreator)) return false;
       if (EngineCase != other.EngineCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -255,6 +276,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       if (SdkType != 0) hash ^= SdkType.GetHashCode();
       if (OsVersion.Length != 0) hash ^= OsVersion.GetHashCode();
       if (engineCase_ == EngineOneofCase.Unity) hash ^= Unity.GetHashCode();
+      if (geospatialCreator_ != null) hash ^= GeospatialCreator.GetHashCode();
       hash ^= (int) engineCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -293,6 +315,10 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
         output.WriteRawTag(48);
         output.WriteEnum((int) SdkType);
       }
+      if (geospatialCreator_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(GeospatialCreator);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -319,6 +345,9 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       if (engineCase_ == EngineOneofCase.Unity) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Unity);
       }
+      if (geospatialCreator_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(GeospatialCreator);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -344,6 +373,12 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
       }
       if (other.OsVersion.Length != 0) {
         OsVersion = other.OsVersion;
+      }
+      if (other.geospatialCreator_ != null) {
+        if (geospatialCreator_ == null) {
+          GeospatialCreator = new global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator();
+        }
+        GeospatialCreator.MergeFrom(other.GeospatialCreator);
       }
       switch (other.EngineCase) {
         case EngineOneofCase.Unity:
@@ -391,7 +426,14 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
             break;
           }
           case 48: {
-            sdkType_ = (global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.SDKType) input.ReadEnum();
+            SdkType = (global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.SDKType) input.ReadEnum();
+            break;
+          }
+          case 58: {
+            if (geospatialCreator_ == null) {
+              GeospatialCreator = new global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.GeospatialCreator();
+            }
+            input.ReadMessage(GeospatialCreator);
             break;
           }
         }
@@ -572,7 +614,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
                 break;
               }
               case 16: {
-                editionType_ = (global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Types.EditionType) input.ReadEnum();
+                EditionType = (global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Types.UnityEngine.Types.EditionType) input.ReadEnum();
                 break;
               }
             }
@@ -595,6 +637,174 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal.Proto {
 
         }
         #endregion
+
+      }
+
+      /// <summary>
+      /// Message with data logged about Geospatial Creator usage.
+      ///
+      /// Next ID: 3
+      /// </summary>
+      public sealed partial class GeospatialCreator : pb::IMessage<GeospatialCreator> {
+        private static readonly pb::MessageParser<GeospatialCreator> _parser = new pb::MessageParser<GeospatialCreator>(() => new GeospatialCreator());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<GeospatialCreator> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Google.XR.ARCoreExtensions.Editor.Internal.Proto.ArCoreSdkLog.Descriptor.NestedTypes[1]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public GeospatialCreator() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public GeospatialCreator(GeospatialCreator other) : this() {
+          isGeospatialCreatorEnabled_ = other.isGeospatialCreatorEnabled_;
+          numAnchors_ = other.numAnchors_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public GeospatialCreator Clone() {
+          return new GeospatialCreator(this);
+        }
+
+        /// <summary>Field number for the "is_geospatial_creator_enabled" field.</summary>
+        public const int IsGeospatialCreatorEnabledFieldNumber = 1;
+        private bool isGeospatialCreatorEnabled_;
+        /// <summary>
+        /// Whether Geospatial Creator is enabled in the project settings.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool IsGeospatialCreatorEnabled {
+          get { return isGeospatialCreatorEnabled_; }
+          set {
+            isGeospatialCreatorEnabled_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "num_anchors" field.</summary>
+        public const int NumAnchorsFieldNumber = 2;
+        private uint numAnchors_;
+        /// <summary>
+        /// The number of Geosptial Creator Anchors in the project's active scene.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint NumAnchors {
+          get { return numAnchors_; }
+          set {
+            numAnchors_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as GeospatialCreator);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(GeospatialCreator other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (IsGeospatialCreatorEnabled != other.IsGeospatialCreatorEnabled) return false;
+          if (NumAnchors != other.NumAnchors) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (IsGeospatialCreatorEnabled != false) hash ^= IsGeospatialCreatorEnabled.GetHashCode();
+          if (NumAnchors != 0) hash ^= NumAnchors.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (IsGeospatialCreatorEnabled != false) {
+            output.WriteRawTag(8);
+            output.WriteBool(IsGeospatialCreatorEnabled);
+          }
+          if (NumAnchors != 0) {
+            output.WriteRawTag(16);
+            output.WriteUInt32(NumAnchors);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (IsGeospatialCreatorEnabled != false) {
+            size += 1 + 1;
+          }
+          if (NumAnchors != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(NumAnchors);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(GeospatialCreator other) {
+          if (other == null) {
+            return;
+          }
+          if (other.IsGeospatialCreatorEnabled != false) {
+            IsGeospatialCreatorEnabled = other.IsGeospatialCreatorEnabled;
+          }
+          if (other.NumAnchors != 0) {
+            NumAnchors = other.NumAnchors;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                IsGeospatialCreatorEnabled = input.ReadBool();
+                break;
+              }
+              case 16: {
+                NumAnchors = input.ReadUInt32();
+                break;
+              }
+            }
+          }
+        }
 
       }
 

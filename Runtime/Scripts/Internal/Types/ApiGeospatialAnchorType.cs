@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Google LLC">
+// <copyright file="ApiGeospatialAnchorType.cs" company="Google LLC">
 //
-// Copyright 2019 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Google.XR.ARCoreExtensions
+namespace Google.XR.ARCoreExtensions.Internal
 {
-    /// <summary>
-    /// Provides access to information about the current ARCore Extensions package runtime.
-    /// </summary>
-    public class VersionInfo
+    internal enum ApiGeospatialAnchorType
     {
-        /// <summary>
-        /// The current ARCore Extensions package version.
-        /// </summary>
-        public static readonly string Version = "1.42.0";
+        Unknown = 0,
+        WGS84 = 1,
+        Terrain = 2,
+        Rooftop = 3,
     }
 }
