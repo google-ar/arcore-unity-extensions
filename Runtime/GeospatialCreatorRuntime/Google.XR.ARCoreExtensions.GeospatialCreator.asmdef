@@ -29,7 +29,7 @@
         {
             "name": "com.unity.xr.arfoundation",
             "expression": "[5.0,6.0)",
-            "define": "ARCORE_USE_ARF_4"
+            "define": "ARCORE_USE_ARF_5"
         },
         {
             "name": "com.unity.xr.arfoundation",
