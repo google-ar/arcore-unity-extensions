@@ -124,6 +124,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             }
         }
 
+        internal void Update()
+        {
+            UpdateOriginFromComponent();
+        }
+
         // Updates the internal origin location using the value in the subcomponent, if available.
         // See the documentation for IOriginComponentAdapater for more information.
         internal void UpdateOriginFromComponent()
@@ -160,7 +165,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         internal static ARGeospatialCreatorOrigin FindDefaultOrigin()
         {
             ARGeospatialCreatorOrigin[] origins =
+#if UNITY_2023_1_OR_NEWER
+                GameObject.FindObjectsByType<ARGeospatialCreatorOrigin>(FindObjectsSortMode.None);
+#else
                 GameObject.FindObjectsOfType<ARGeospatialCreatorOrigin>();
+#endif
 
             if (origins.Length == 0)
             {

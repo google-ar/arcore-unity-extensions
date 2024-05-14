@@ -20,16 +20,11 @@
 namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Text;
-    using System.Threading.Tasks;
+    using System.Collections.Generic;
+    using System.Linq;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
-#if ARCORE_INTERNAL_USE_UNITY_MATH
-    using Unity.Mathematics;
-#endif
     using UnityEditor;
     using UnityEngine;
-    using UnityEngine.Networking;
 
     internal class PlaceSearchHelper
     {
@@ -42,18 +37,23 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
         private static readonly string[] _waitAnimation = new string[] { "/", "-", "\\", "|" };
 
+        private PlacesApi _placesApi;
+
+        // Array of results, with a corresponding array of display names. We don't use a
+        // Map<string, Place>, because we want to maintain the ordering returned by the API and
+        // we want random access to the elements.
+        private PlacesApi.Place[] _places = new PlacesApi.Place[0];
+        private string[] _placeNames = new string[0];
         private int _selectedPlaceIndex = 0;
-        private UnityWebRequest _placeApiRequest = null;
+
         private int _frameCount = 0;
-        private PlaceSearchRequest _request = new PlaceSearchRequest();
-        private PlaceSearchResponse _response = new PlaceSearchResponse();
 
         public delegate void SetLatLongAltDelegate(double lat, double lng, double Alt);
 
         public delegate void SetPreviewPinLocationDelegate(GeoCoordinate location);
 
         public void GUIForSearch(UnityEngine.Object targetObject, string targetTypeName,
-            string apiKey, GeoCoordinate originPoint,
+            string apiKey, ARGeospatialCreatorOrigin origin,
             SetPreviewPinLocationDelegate setPreviewPinFunc,
             SetLatLongAltDelegate setLatLongAltFunc)
         {
@@ -63,7 +63,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             // Search Bar, which shows gray prompt text until the user starts typing
             GUIStyle searchFieldStyle = new GUIStyle(EditorStyles.textField);
             string searchFieldText;
-            if (_request == null || string.IsNullOrEmpty(_request.SearchText))
+            if (string.IsNullOrEmpty(_placesApi?.SearchText))
             {
                 searchFieldStyle.normal.textColor = Color.gray;
                 searchFieldStyle.focused.textColor = EditorStyles.textField.normal.textColor;
@@ -71,25 +71,33 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             }
             else
             {
-                searchFieldText = _request.SearchText;
+                searchFieldText = _placesApi.SearchText;
             }
 
             // Send request if a new search text is entered.
             string newSearchText = EditorGUILayout.DelayedTextField(
                 "Search for a place", searchFieldText, searchFieldStyle).Trim();
             if (newSearchText != _searchFieldDefaultText &&
-                (_request == null || newSearchText != _request.SearchText))
+                (_placesApi == null || newSearchText != _placesApi.SearchText))
             {
-                StartNewRequest(newSearchText, originPoint, apiKey);
+                // Abort a running request, if there is one.
+                if (_placesApi != null)
+                {
+                    _placesApi.AbortRequest();
+                }
+
+                GeoCoordinate center = origin._originPoint;
+                _placesApi =
+                    new PlacesApi(newSearchText, center.Latitude, center.Longitude, apiKey);
+                origin.StartCoroutine(_placesApi.SendRequest());
             }
 
             // show an animated "Searching..." label only when the search is active
             string status = string.Empty;
-            if (_placeApiRequest != null && !_placeApiRequest.isDone)
+            if (_placesApi?.Status == PlacesApi.RequestStatus.InProgress)
             {
                 // force OnInspectorGUI to be called next frame faking a change to the target
-                // we need this as we are polling using _placeApiRequest.SendWebRequest with
-                // _placeApiRequest.isDone
+                // we need this as we are polling using SendWebRequest
                 if (targetObject != null)
                 {
                     EditorUtility.SetDirty(targetObject);
@@ -102,46 +110,47 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
             EditorGUILayout.LabelField(status);
 
-            // Parse the result of place api response.
-            if (_placeApiRequest != null && _placeApiRequest.isDone)
+            // There are three possible "completed" states: Failed, Succeeded, or Aborted:
+            if (_placesApi?.Status == PlacesApi.RequestStatus.Failed)
             {
-                if (!string.IsNullOrWhiteSpace(_placeApiRequest.error))
+                Debug.LogError("Places search failed. Check that the API key property for your " +
+                    "ARGeospatialCreatorOrigin is configured for the Places API (New), and that " +
+                    "the Places API (new) is enabled in your Google Cloud project. See the " +
+                    "following message for more information:\n" +
+                    _placesApi.ErrorText);
+                _placesApi = null;
+            }
+            else if (_placesApi?.Status == PlacesApi.RequestStatus.Succeeded)
+            {
+                _places = _placesApi.SearchResults.ToArray();
+                _placeNames = _places.Select(p => p.Name + "; " + p.Address).ToArray();
+                _selectedPlaceIndex = 0;
+                if (_places.Length > 0)
                 {
-                    Debug.LogError(_placeApiRequest.error);
-                }
-                else
-                {
-                    _response = PlaceSearchResponse.ParseJson(
-                        _placeApiRequest.downloadHandler.text);
-
-                    // copy NextPageToken from the _response to the _request
-                    // this will make the next page button work
-                    _request.NextPageToken = _response.NextPageToken;
-                    PlaceSearchResponse.Location loc = _response.GetLocation(_selectedPlaceIndex);
-                    if (loc != null)
-                    {
-                        SetSceneViewPreview(loc.lat, loc.lng, animate: true, setPreviewPinFunc);
-                    }
+                    SetSceneViewPreview(_places[0].Latitude, _places[0].Longitude,
+                        animate: true, setPreviewPinFunc);
                 }
 
-                // Clean up the request
-                _placeApiRequest.Dispose();
-                _placeApiRequest = null;
+                _placesApi = null;
+            }
+            else if (_placesApi?.Status == PlacesApi.RequestStatus.Aborted)
+            {
+                // Nothing to log, the user must have initiated a new search.
+                _placesApi = null;
             }
 
             // If the result is not empty then show those places.
             // Anchors' list is also only available when places' list isn't empty.
-            EditorGUI.BeginDisabledGroup(!_response.HasPages());
+            EditorGUI.BeginDisabledGroup(_places.Length == 0);
             int oldSelectedPlaceIndex = _selectedPlaceIndex;
             _selectedPlaceIndex =
-                EditorGUILayout.Popup("Results", _selectedPlaceIndex, _response.ResultsAddress);
+                EditorGUILayout.Popup("Results", _selectedPlaceIndex, _placeNames);
+
             if (oldSelectedPlaceIndex != _selectedPlaceIndex)
             {
-                PlaceSearchResponse.Location loc = _response.GetLocation(_selectedPlaceIndex);
-                if (loc != null)
-                {
-                    SetSceneViewPreview(loc.lat, loc.lng, animate: true, setPreviewPinFunc);
-                }
+                PlacesApi.Place place = _places[_selectedPlaceIndex];
+                SetSceneViewPreview(
+                    place.Latitude, place.Longitude, animate: true, setPreviewPinFunc);
             }
 
             // Attach the selected place latitude and longitude to the anchor or origin
@@ -149,15 +158,13 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             GUIContent attachPlaceToAnchor = new GUIContent("Apply to objects", s);
             if (GUILayout.Button(attachPlaceToAnchor))
             {
-                PlaceSearchResponse.Location loc = _response.GetLocation(_selectedPlaceIndex);
-                if (loc != null)
-                {
-                    setLatLongAltFunc(loc.lat, loc.lng, 0.0);
-                    SetSceneViewPreview(loc.lat, loc.lng, animate: false, setPreviewPinFunc);
+                PlacesApi.Place place = _places[_selectedPlaceIndex];
+                setLatLongAltFunc(place.Latitude, place.Longitude, 0.0);
+                SetSceneViewPreview(
+                    place.Latitude, place.Longitude, animate: false, setPreviewPinFunc);
 
-                    // remove the preview pin since the object is there now
-                    setPreviewPinFunc(null);
-                }
+                // remove the preview pin since the object is there now
+                setPreviewPinFunc(null);
             }
 
             EditorGUI.EndDisabledGroup();
@@ -218,28 +225,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             sceneView.Repaint();
         }
 
-        private void StartNewRequest(string searchString, GeoCoordinate originPoint, string apiKey)
-        {
-            // cancel any in-progress request
-            if (_placeApiRequest != null)
-            {
-                _placeApiRequest.Abort(); // Abort is a no-op if the request already finished
-                _placeApiRequest.Dispose();
-            }
-
-            _request = new PlaceSearchRequest();
-            _request.SearchText = searchString;
-            _request.ApiKey = apiKey;
-            _request.NextPageToken = string.Empty;
-            _request.Latitude = originPoint.Latitude;
-            _request.Longitude = originPoint.Longitude;
-
-            _placeApiRequest = UnityWebRequest.Get(_request.GetUrl());
-            _placeApiRequest.SendWebRequest();
-
-            _selectedPlaceIndex = 0;
-        }
-
         private void SetSceneViewPreview(
             double lat, double lng, bool animate, SetPreviewPinLocationDelegate setPreviewPinFunc)
         {
@@ -282,160 +267,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             }
 
             MoveSceneViewCamera(lat, lng, cameraAltitude, animate);
-        }
-    }
-
-    internal class PlaceSearchRequest
-    {
-        public string ApiKey;
-        public bool LocationBias = false;
-        public double Latitude;
-        public double Longitude;
-        public int Radius = 50000;
-        public string NextPageToken = string.Empty;
-        public string SearchText = string.Empty;
-
-        public string GetUrl()
-        {
-            string location = LocationBias ? Latitude + "," + Longitude : string.Empty;
-
-            string url = CreatePlaceApiUrl(ApiKey, SearchText, NextPageToken,
-                                  location, Radius);
-
-            Debug.Log("GeospatialCreator Places Api: " + url);
-            return url;
-        }
-
-        public bool HasNextPage()
-        {
-            return !string.IsNullOrEmpty(NextPageToken);
-        }
-
-        internal static string CreatePlaceApiUrl(string apiKey, string query, string pageToken,
-            string location, int radius)
-        {
-            StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.Append("https://maps.googleapis.com/maps/api/place/textsearch/json?");
-            urlBuilder.Append("key=" + apiKey);
-            urlBuilder.Append("&query=" + query);
-
-            if (!string.IsNullOrEmpty(pageToken))
-            {
-                urlBuilder.Append("&pagetoken=" + pageToken);
-            }
-
-            // Radius is defined by meters and 50,000 is the maximum. And it comes together
-            // with location parameter
-            // (http://shortn/_W8iiioFbXV)
-            // And location is specified as latitude,longitude
-            // (http://shortn/_EaVtW19qdg)
-            if (!string.IsNullOrEmpty(location))
-            {
-                urlBuilder.Append("&location=" + location);
-                urlBuilder.Append("&radius=" + radius);
-            }
-
-            string url = urlBuilder.ToString();
-            return url;
-        }
-    }
-
-    internal class PlaceSearchResponse
-    {
-        public string[] ResultsAddress = new string[0];
-        public string NextPageToken = string.Empty;
-        internal PlaceApiResponse _placeApiResponse = null;
-
-        public static PlaceSearchResponse ParseJson(string responseText)
-        {
-            PlaceSearchResponse r = new PlaceSearchResponse();
-
-            // Parse the JSON string into a custom class using JsonUtility
-            r._placeApiResponse = JsonUtility.FromJson<PlaceApiResponse>(responseText);
-
-            // can't parse json or no results
-            if (r._placeApiResponse == null || r._placeApiResponse.results == null
-                || r._placeApiResponse.results.Length == 0)
-            {
-                r.ResultsAddress = new string[0];
-                return r;
-            }
-
-            r.NextPageToken = r._placeApiResponse.next_page_token;
-            r.ResultsAddress = new string[r._placeApiResponse.results.Length];
-            for (int i = 0; i < r._placeApiResponse.results.Length; i++)
-            {
-                r.ResultsAddress[i] = r._placeApiResponse.results[i].formatted_address;
-            }
-
-            return r;
-        }
-
-        public Location GetLocation(int selectedPlaceIndex)
-        {
-            if (_placeApiResponse != null &&
-               selectedPlaceIndex >= 0 &&
-               selectedPlaceIndex < _placeApiResponse.results.Length)
-            {
-                return _placeApiResponse.results[selectedPlaceIndex].geometry.location;
-            }
-
-            return null;
-        }
-
-        public bool HasPages()
-        {
-            return _placeApiResponse != null && ResultsAddress.Length != 0;
-        }
-
-        // The following structures are used to parse the json in the Places API responses.
-        // Feel free to add more fields in PlacesTextSearchResponse if needed.
-        // (http://shortn/_HWb8TmynQi)
-        // But do NOT modify their names or types.
-        [System.Serializable]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1107:PublicFieldsMustBeUpperCamelCase",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1103:PublicFieldsMustHaveNoPrefix",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        internal class PlaceApiResponse
-        {
-            public Result[] results = null;
-            public string next_page_token = null;
-            public string status = null;
-        }
-
-        [System.Serializable]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1107:PublicFieldsMustBeUpperCamelCase",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1103:PublicFieldsMustHaveNoPrefix",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        internal class Result
-        {
-            public string formatted_address = null;
-            public Geometry geometry = null;
-        }
-
-        [System.Serializable]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1107:PublicFieldsMustBeUpperCamelCase",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        internal class Geometry
-        {
-            public Location location = null;
-        }
-
-        [System.Serializable]
-        [SuppressMessage("UnityRules.UnityStyleRules", "US1107:PublicFieldsMustBeUpperCamelCase",
-          Justification = "Properties must match naming convention of the backend web response.")]
-        internal class Location
-        {
-            public double lat = 0.0;
-            public double lng = 0.0;
-
-            public Location(double latitude, double longitude)
-            {
-                lat = latitude;
-                lng = longitude;
-            }
         }
     }
 }

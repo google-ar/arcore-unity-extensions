@@ -21,7 +21,11 @@
 namespace Google.XR.ARCoreExtensions.Internal
 {
     using System;
+    using System.Collections.Generic;
     using UnityEngine;
+#if UNITY_2023_1_OR_NEWER && UNITY_EDITOR
+    using Unity.Android.Gradle.Manifest;
+#endif
 
     /// <summary>
     /// The implemented class of location module.
@@ -156,6 +160,80 @@ namespace Google.XR.ARCoreExtensions.Internal
                 featureName);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        /// <summary>
+        /// Add the customized configurations to the Android Manifest based on ARCore Extensions
+        /// settings.
+        /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
+        /// <param name="manifest">Android Manifest.</param>
+        public override void ModifyAndroidManifest(
+            ARCoreExtensionsProjectSettings settings, Manifest manifest)
+        {
+            // Need to check the existence of those configurations to avoid duplicate.
+            bool isFineLocationSet = false;
+            bool isCoarseLocationSet = false;
+            foreach(UsesPermission usesPermission in manifest.UsesPermissionList)
+            {
+                if (usesPermission.Attributes.Name.Get() ==
+                    "android.permission.ACCESS_FINE_LOCATION")
+                {
+                    isFineLocationSet = true;
+                }
+                else if (usesPermission.Attributes.Name.Get() ==
+                    "android.permission.ACCESS_COARSE_LOCATION")
+                {
+                    usesPermission.SetCustomAttribute("android:minSdkVersion", "31");
+                    isCoarseLocationSet = true;
+                }
+            }
+
+            if (!isFineLocationSet)
+            {
+                manifest.AddUsesPermission("android.permission.ACCESS_FINE_LOCATION");
+            }
+
+            // Function 'AddUsesPermission' doesn't allow to input the attribute 'minSdkVersion'.
+            // Thus, we have to add the element as CustomElement.
+            if (!isCoarseLocationSet)
+            {
+                manifest.AddCustomElement(
+                    "uses-permission",
+                    new Dictionary<string, string>
+                    {
+                        { "android:name", "android.permission.ACCESS_COARSE_LOCATION" },
+                        { "android:minSdkVersion", "31" }
+                    });
+            }
+
+            bool isLocationSet = false;
+            bool isLocationGpsSet = false;
+
+            foreach(UsesFeature usesFeature in manifest.UsesFeatureList)
+            {
+                if (usesFeature.Attributes.Name.Get() == "android.hardware.location")
+                {
+                    usesFeature.Attributes.Required.Set(true);
+                    isLocationSet = true;
+                }
+                else if (usesFeature.Attributes.Name.Get() == "android.hardware.location.gps")
+                {
+                    usesFeature.Attributes.Required.Set(true);
+                    isLocationGpsSet = true;
+                }
+            }
+
+            if (!isLocationSet)
+            {
+                manifest.AddUsesFeature("android.hardware.location", true);
+            }
+
+            if (!isLocationGpsSet)
+            {
+                manifest.AddUsesFeature("android.hardware.location.gps", true);
+            }
+        }
+#else
         /// <summary>
         /// Return the XML snippet needs to be included if location module is enabled.
         /// The string output would be added as a child node of in the ‘manifest’ node
@@ -175,6 +253,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 <uses-feature
                     android:name=""android.hardware.location"" android:required=""true""/>";
         }
+#endif // UNITY_2023_1_OR_NEWER
 
         /// <summary>
         /// Return the Proguard to include if this module is enabled. The string output will be

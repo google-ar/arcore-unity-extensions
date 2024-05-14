@@ -24,6 +24,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     using System.IO;
     using Google.XR.ARCoreExtensions.Internal;
     using UnityEditor;
+    using UnityEditor.Build;
     using UnityEngine;
 
     /// <summary>
@@ -111,7 +112,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private static void UpdateIOSScriptingDefineSymbols(string symbol, bool enabled)
         {
             HashSet<string> symbolSet = new HashSet<string>(
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.iOS)
+#else
                 PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS)
+#endif
                 .Split(new char[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
             bool iOSSupportDefined = symbolSet.Contains(symbol);
 
@@ -119,15 +124,25 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 Debug.LogFormat("Adding {0} define symbol.", symbol);
                 symbolSet.Add(symbol);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, string.Join(";", symbolSet));
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.iOS,
+                                                         string.Join(";", symbolSet));
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS,
+                                                                 string.Join(";", symbolSet));
+#endif
             }
             else if (!enabled && iOSSupportDefined)
             {
                 Debug.LogFormat("Removing {0} define symbol.", symbol);
                 symbolSet.Remove(symbol);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, string.Join(";", symbolSet));
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.iOS,
+                                                         string.Join(";", symbolSet));
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS,
+                                                                 string.Join(";", symbolSet));
+#endif
             }
         }
     }

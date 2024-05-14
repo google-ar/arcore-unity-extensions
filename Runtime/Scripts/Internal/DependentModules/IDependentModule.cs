@@ -113,6 +113,17 @@ namespace Google.XR.ARCoreExtensions.Internal
         string GetEnabledNotRequiredWarning(
             ARCoreExtensionsProjectSettings settings, UnityEditor.BuildTarget buildTarget);
 
+#if UNITY_2023_1_OR_NEWER
+        /// <summary>
+        /// Add the customized configurations to the Android Manifest based on ARCore Extensions
+        /// settings.
+        /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
+        /// <param name="manifest">Android Manifest.</param>
+        void ModifyAndroidManifest(
+            ARCoreExtensionsProjectSettings settings,
+            Unity.Android.Gradle.Manifest.Manifest manifest);
+#else
         /// <summary>
         /// Return the XML snippet to include if this module is enabled. The string output will be
         /// added as a child node of the ‘manifest’ node of the customized AndroidManifest.xml.
@@ -121,6 +132,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <param name="settings">ARCore Extensions Project Settings.</param>
         /// <returns>The XML string snippet to add as a child of node 'manifest'.</returns>
         string GetAndroidManifestSnippet(ARCoreExtensionsProjectSettings settings);
+#endif // UNITY_2023_1_OR_NEWER
 
         /// <summary>
         /// Return the Proguard snippet to include if this module is enabled. The string output

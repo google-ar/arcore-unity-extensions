@@ -20,7 +20,11 @@
 
 namespace Google.XR.ARCoreExtensions.Internal
 {
+    using System.Collections.Generic;
     using UnityEngine;
+#if UNITY_2023_1_OR_NEWER && UNITY_EDITOR
+    using Unity.Android.Gradle.Manifest;
+#endif
 
     /// <summary>
     /// The implemented class of Authentication Module.
@@ -213,6 +217,25 @@ namespace Google.XR.ARCoreExtensions.Internal
                     platformName);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        /// <summary>
+        /// Add the customized configurations to the Android Manifest based on ARCore Extensions
+        /// settings.
+        /// </summary>
+        /// <param name="settings">ARCore Extensions Project Settings.</param>
+        /// <param name="manifest">Android Manifest.</param>
+        public override void ModifyAndroidManifest(
+            ARCoreExtensionsProjectSettings settings, Manifest manifest)
+        {
+            manifest.Application.AddCustomElement(
+                "meta-data",
+                new Dictionary<string, string>
+                {
+                    { "android:name", "com.google.android.ar.API_KEY" },
+                    { "android:value", settings.AndroidCloudServicesApiKey }
+                });
+        }
+#else
         /// <summary>
         /// Return the XML snippet needs to be included if location module is enabled.
         /// The string output would be added as a child node of in the ‘manifest’ node
@@ -236,6 +259,7 @@ namespace Google.XR.ARCoreExtensions.Internal
 
             return string.Empty;
         }
+#endif // UNITY_2023_1_OR_NEWER
 
         /// <summary>
         /// Return the Proguard to include if this module is enabled. The string output will be

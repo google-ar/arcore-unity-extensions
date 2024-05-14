@@ -26,6 +26,9 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
     using Google.XR.ARCoreExtensions;
     using Google.XR.ARCoreExtensions.GeospatialCreator.Internal;
     using Google.XR.ARCoreExtensions.Internal;
+#if ARCORE_INTERNAL_USE_UNITY_MATH
+    using Unity.Mathematics;
+#endif
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
@@ -92,7 +95,17 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         [SerializeField]
         private double _editorAltitudeOverride;
 
-        internal bool _unityPositionUpdateRequired = false;
+        // Track the previously-known positions in Unity world space and geodetic coordinates to
+        // check if they have gone out of sync. The defaults are positiveInfinity so they won't
+        // match the default transform.position value for a new object. This forces the geospatial
+        // coordinate to update on the next frame.
+        private Vector3 _previousPosition = Vector3.positiveInfinity;
+        private Quaternion _previousRotation = Quaternion.identity;
+        private Vector3 _previousScale = Vector3.one;
+        private GeoCoordinate _previousCoor = new GeoCoordinate(Mathf.Infinity, Mathf.Infinity, 0);
+        private double _previousEditorAltitudeOverride = Mathf.Infinity;
+        private bool? _previousUseEditorAltitudeOverride = null;
+        private AnchorAltitudeType? _previousAltitudeType = null;
 #endif // UNITY_EDITOR
 
 #if !UNITY_EDITOR
@@ -195,7 +208,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 if (_useEditorAltitudeOverride != value)
                 {
                     _useEditorAltitudeOverride = value;
-                    _unityPositionUpdateRequired = true;
+                    UpdateUnityPosition();
                 }
             }
         }
@@ -203,12 +216,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         /// <summary>
         /// Gets and sets the altitude (in WGS84 meters) at which the Anchor should be rendered in
         /// the Editor's scene view. This value is ignored when
-        /// <c><see cref="UseEditorAltitudeOverride"/></c> is <c>true</c>.
+        /// <c><see cref="UseEditorAltitudeOverride"/></c> is <c>false</c>.
         ///
         /// <c><see cref="EditorAltitudeOverride"/></c> is useful if the default altitude rooftop or
         /// terrain anchor is inaccurate, or if using WGS84 altitude and the scene geometry does not
         /// line up exactly with the real world. <c><see cref="EditorAltitudeOverride"/></c> is not
-        /// used at runtime.
+        /// used at runtime. Note that for rooftop and terrain anchors, the relative altitude
+        /// <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> will still offset the anchor
+        /// height in the Editor scene view when this field is in use.
         /// </summary>
         public double EditorAltitudeOverride
         {
@@ -221,7 +236,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 
                     if (_useEditorAltitudeOverride)
                     {
-                        _unityPositionUpdateRequired = true;
+                        UpdateUnityPosition();
                     }
                 }
             }
@@ -238,7 +253,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 if (_latitude != value)
                 {
                     _latitude = value;
-                    _unityPositionUpdateRequired = true;
+                    UpdateUnityPosition();
                 }
             }
 #endif
@@ -254,7 +269,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 if (_longitude != value)
                 {
                     _longitude = value;
-                    _unityPositionUpdateRequired = true;
+                    UpdateUnityPosition();
                 }
             }
 #endif
@@ -279,7 +294,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
                 if (_altitude != value)
                 {
                     _altitude = value;
-                    _unityPositionUpdateRequired = true;
+                    UpdateUnityPosition();
                 }
             }
 #endif
@@ -458,8 +473,181 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
 
         }
 #pragma warning restore CS0618
+
+        // Internal convenience method. This is more efficient than updating the properties
+        // individually because it will invoke UpdateUnityPosition only one time per call.
+        internal void SetGeospatialCoordinates(double latitude, double longitude, double altitude)
+        {
+            _latitude = latitude;
+            _longitude = longitude;
+            _altitude = altitude;
+
+            UpdateUnityPosition();
+        }
 #endif // UNITY_EDITOR
 
+#region Editor-only anchor location update methods
+#if UNITY_EDITOR
+        internal void Update()
+        {
+            // If the Unity world coordinates were modified, then the geospatial coordinates must
+            // be updated to stay in sync.
+            if (
+                _previousPosition != transform.position ||
+                _previousRotation != transform.rotation ||
+                _previousScale != transform.localScale)
+            {
+                UpdateGeospatialCoordinates();
+            }
+            else if (HasGeodeticPositionChanged())
+            {
+                // This is a special lower-priority check for the explicit geodetic values, in case
+                // the Anchor's lat/lon/alt fields were updated directly (not via the property
+                // setters) which will avoid UpdateUnityPosition() from being invoked by the
+                // setters. This will happen when serialization-based state modifications occur,
+                // such as SerializedObject.ApplyModifiedProperties or the Undo/Redo system. We
+                // check this last because any change to the transform has a higher priority. See
+                // b/302310301 for additional context.
+                UpdateUnityPosition();
+            } else
+            {
+                // No change since either position was last updated.
+                return;
+            }
+
+            FinishUpdate();
+        }
+
+        private bool HasGeodeticPositionChanged()
+        {
+            if (!GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Latitude, Latitude) ||
+                !GeoMath.ApproximatelyEqualsDegrees(_previousCoor.Longitude, Longitude) ||
+                !GeoMath.ApproximatelyEqualsMeters(_previousCoor.Altitude, Altitude))
+            {
+                return true;
+            }
+
+            if (!_previousUseEditorAltitudeOverride.HasValue ||
+                _previousUseEditorAltitudeOverride.Value != UseEditorAltitudeOverride)
+            {
+                return true;
+            }
+
+            // Only check the override values if the flag is enabled. When the flag is disabled,
+            // we only care about the Altitude value instead, which was already checked.
+            if (UseEditorAltitudeOverride &&
+                !GeoMath.ApproximatelyEqualsMeters(
+                    _previousEditorAltitudeOverride, EditorAltitudeOverride))
+            {
+                return true;
+            }
+
+            if (!_previousAltitudeType.HasValue ||
+                _previousAltitudeType.Value != AltitudeType)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void FinishUpdate()
+        {
+            _previousPosition = transform.position;
+            _previousRotation = transform.rotation;
+            _previousScale = transform.localScale;
+            _previousCoor = new GeoCoordinate(Latitude, Longitude, Altitude);
+            _previousEditorAltitudeOverride = EditorAltitudeOverride;
+            _previousUseEditorAltitudeOverride = UseEditorAltitudeOverride;
+            _previousAltitudeType = AltitudeType;
+        }
+
+        // :TODO: b/295547447 Automated testing for these two methods
+        private void UpdateGeospatialCoordinates()
+        {
+            GeoCoordinate originPoint = FindOriginPoint();
+            if (originPoint == null)
+            {
+                // An error message was already printed (if needed) in FindOriginPoint()
+                return;
+            }
+
+            double4x4 enuToEcef = GeoMath.CalculateEnuToEcefTransform(originPoint);
+            double3 eun =
+                new double3(transform.position.x, transform.position.y, transform.position.z);
+            double3 enu = new double3(eun.x, eun.z, eun.y);
+            double3 ecef = MatrixStack.MultPoint(enuToEcef, enu);
+            double3 llh = GeoMath.ECEFToLongitudeLatitudeHeight(ecef);
+
+            _longitude = llh.x;
+            _latitude = llh.y;
+
+            if (UseEditorAltitudeOverride)
+            {
+                // Take into account relative altitude from terrain/rooftop for non-WGS84 anchors
+                _editorAltitudeOverride = _altitudeType == AnchorAltitudeType.WGS84 ?
+                                            llh.z : llh.z - _altitude;
+            } else
+            {
+                _altitude = llh.z;
+            }
+
+            FinishUpdate();
+        }
+
+        internal void UpdateUnityPosition()
+        {
+            GeoCoordinate originPoint = FindOriginPoint();
+            if (originPoint == null)
+            {
+                // An error message was already printed (if needed) in FindOriginPoint()
+                return;
+            }
+
+            // At runtime, an anchor's position is resolved exclusively using the geodetic
+            // coordinates; the unity world position doesn't matter. In Editor mode, the unity
+            // world position determies where it actually appears in the SceneView, so we honor the
+            // EditorAltitudeOverride value, if it is used.
+            double alt = Altitude;
+            if (UseEditorAltitudeOverride)
+            {
+                // Offset the override by the relative altitude if using rooftop or terrain anchors
+                alt = _altitudeType == AnchorAltitudeType.WGS84 ?
+                        EditorAltitudeOverride : EditorAltitudeOverride + Altitude;
+            }
+
+            double4x4 ecefToEnu = GeoMath.CalculateEcefToEnuTransform(originPoint);
+            GeoCoordinate coor = new GeoCoordinate(Latitude, Longitude, alt);
+            double3 localInEcef= GeoMath.GeoCoordinateToECEF(coor);
+            double3 enu = MatrixStack.MultPoint(ecefToEnu, localInEcef);
+            // Unity is EUN not ENU so swap z and y
+            transform.position = new Vector3((float)enu.x, (float)enu.z, (float)enu.y);
+
+            FinishUpdate();
+        }
+
+        // returns the GeoCoordinate of the Origin assigned to this Anchor. If the Anchor does not
+        // have an Origin assigned, the method logs a message and returns a suitable default, or
+        // null if no Origins exist in the scene.
+        private GeoCoordinate FindOriginPoint()
+        {
+            if (Origin == null)
+            {
+                Debug.LogError("Cannot update the location for " + gameObject.name + ": The " +
+                    "Origin field is unassigned.");
+            }
+            else if(Origin._originPoint == null)
+            {
+                Debug.LogError("Cannot update the location for " + gameObject.name + ": The " +
+                    "Origin " + Origin.gameObject.name + " has no Georeference.");
+            }
+
+            return Origin?._originPoint;
+        }
+#endif // UNITY_EDITOR
+#endregion Editor-only anchor location update methods
+
+#region Runtime-only anchor resolution methods
 #if !UNITY_EDITOR
         private void Update()
         {
@@ -612,5 +800,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             yield break;
         }
 #endif // !UNITY_EDITOR
+#endregion Runtime-only anchor resolution methods
     }
 }

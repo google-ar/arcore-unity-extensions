@@ -79,8 +79,15 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
                 Texture2D foreground = AssetDatabase.LoadAssetAtPath<Texture2D>(
                     AssetDatabase.GUIDToAssetPath(_iconForegroundGuid));
                 PlatformIcon[] platformIcons =
-                    PlayerSettings.GetPlatformIcons(BuildTargetGroup.Android,
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.GetPlatformIcons(
+                        NamedBuildTarget.Android,
                         UnityEditor.Android.AndroidPlatformIconKind.Adaptive);
+#else
+                    PlayerSettings.GetPlatformIcons(
+                        BuildTargetGroup.Android,
+                        UnityEditor.Android.AndroidPlatformIconKind.Adaptive);
+#endif
                 foreach (var platformIcon in platformIcons)
                 {
                     if (platformIcon.GetTexture() != null &&
@@ -96,9 +103,15 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
                         platformIcon.SetTexture(foreground, 1);
                     }
                 }
-
-                PlayerSettings.SetPlatformIcons(BuildTargetGroup.Android,
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetPlatformIcons(
+                    NamedBuildTarget.Android,
                     UnityEditor.Android.AndroidPlatformIconKind.Adaptive, platformIcons);
+#else
+                PlayerSettings.SetPlatformIcons(
+                    BuildTargetGroup.Android,
+                    UnityEditor.Android.AndroidPlatformIconKind.Adaptive, platformIcons);
+#endif
 #endif // UNITY_ANDROID
             }
             else if (report.summary.platform == BuildTarget.iOS)
@@ -107,8 +120,15 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
                 Texture2D icon = AssetDatabase.LoadAssetAtPath<Texture2D>(
                     AssetDatabase.GUIDToAssetPath(_iconGuid));
                 PlatformIcon[] platformIcons =
-                    PlayerSettings.GetPlatformIcons(BuildTargetGroup.iOS,
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.GetPlatformIcons(
+                        NamedBuildTarget.iOS,
                         UnityEditor.iOS.iOSPlatformIconKind.Application);
+#else
+                    PlayerSettings.GetPlatformIcons(
+                        BuildTargetGroup.iOS,
+                        UnityEditor.iOS.iOSPlatformIconKind.Application);
+#endif
                 foreach (var platformIcon in platformIcons)
                 {
                     if (platformIcon.GetTexture() != null &&
@@ -123,8 +143,15 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial.Editor
                     }
                 }
 
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetPlatformIcons(NamedBuildTarget.iOS,
+                                                UnityEditor.iOS.iOSPlatformIconKind.Application,
+                                                platformIcons);
+#else
                 PlayerSettings.SetPlatformIcons(BuildTargetGroup.iOS,
-                    UnityEditor.iOS.iOSPlatformIconKind.Application, platformIcons);
+                                                UnityEditor.iOS.iOSPlatformIconKind.Application,
+                                                platformIcons);
+#endif
 #endif // UNITY_IOS
             }
         }

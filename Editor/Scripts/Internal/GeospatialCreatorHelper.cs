@@ -164,6 +164,38 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
 
             return geospatialCreatorAnchorCount;
         }
+#if UNITY_2023_1_OR_NEWER
+
+        public static NamedBuildTarget ConvertToBuildTarget(BuildTargetGroup target) {
+            switch (target)
+            {
+                case BuildTargetGroup.Standalone:
+                    return NamedBuildTarget.Standalone;
+                case BuildTargetGroup.iOS:
+                    return NamedBuildTarget.iOS;
+                case BuildTargetGroup.Android:
+                    return NamedBuildTarget.Android;
+                case BuildTargetGroup.WebGL:
+                    return NamedBuildTarget.WebGL;
+                case BuildTargetGroup.WSA:
+                    return NamedBuildTarget.WindowsStoreApps;
+                case BuildTargetGroup.PS4:
+                    return NamedBuildTarget.PS4;
+                case BuildTargetGroup.XboxOne:
+                    return NamedBuildTarget.XboxOne;
+                case BuildTargetGroup.tvOS:
+                    return NamedBuildTarget.tvOS;
+                case BuildTargetGroup.Switch:
+                    return NamedBuildTarget.NintendoSwitch;
+                case BuildTargetGroup.LinuxHeadlessSimulation:
+                    return NamedBuildTarget.LinuxHeadlessSimulation;
+                case BuildTargetGroup.PS5:
+                    return NamedBuildTarget.PS5;
+                default:
+                    return NamedBuildTarget.Unknown;
+            }
+        }
+#endif  // UNITY_2023_1_OR_NEWER
 
         private static void AddSymbol(string symbol, BuildTargetGroup target)
         {
@@ -174,9 +206,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 Debug.LogFormat("Adding {0} symbol for {1}.", symbol, target.ToString());
                 symbolSet.Add(symbol);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    target,
-                    string.Join(";", symbolSet));
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(ConvertToBuildTarget(target),
+                                                         string.Join(";", symbolSet));
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(target,
+                                                                 string.Join(";", symbolSet));
+#endif
             }
             else
             {
@@ -193,9 +229,13 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
             {
                 Debug.LogFormat("Removing {0} symbol for {1}.", symbol, target.ToString());
                 symbolSet.Remove(symbol);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    target,
-                    string.Join(";", symbolSet));
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(
+                    ConvertToBuildTarget(target), string.Join(";", symbolSet));
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(target,
+                                                                 string.Join(";", symbolSet));
+#endif
             }
             else
             {
@@ -223,7 +263,11 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         {
             return new HashSet<string>(
                 PlayerSettings
+#if UNITY_2023_1_OR_NEWER
+                    .GetScriptingDefineSymbols(ConvertToBuildTarget(target))
+#else
                     .GetScriptingDefineSymbolsForGroup(target)
+#endif
                     .Split(new char[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
         }
     }

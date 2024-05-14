@@ -34,7 +34,14 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         /// The anchor's <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c> specifies the
         /// altitude of the anchor in meters for WGS84.
         ///
-        /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c> is not used.
+        /// WGS84 anchors should usually appear to render at the correct height in the Editor.
+        /// If it does not, then set the anchor's
+        /// <c><see cref="ARGeospatialCreatorAnchor.UseEditorAltitudeOverride"/></c> property to
+        /// <c>true</c> and use
+        /// <c><see cref="ARGeospatialCreatorAnchor.EditorAltitudeOverride"/></c>
+        /// to overwrite the anchor's visual altitude in the Editor. At runtime, the anchor will
+        /// ignore these values and use its <c><see cref="ARGeospatialCreatorAnchor.Altitude"/></c>
+        /// at that anchor's horizontal location.
         /// </summary>
         WGS84,
 

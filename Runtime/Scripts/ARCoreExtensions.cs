@@ -101,6 +101,14 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         [HideInInspector]
         public OnChooseXRCameraConfigurationEvent OnChooseXRCameraConfiguration;
+
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+        // The max number of frames we will wait for a valid session handle to report analytics.
+        internal const int _frameTimeoutForSessionHandle = 60;
+
+        private bool _geospatialCreatorPlatformLoggedOnce = false;
+#endif  // !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+
 #if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
         private bool _engineTypeLogged = false;
 
@@ -124,11 +132,6 @@ namespace Google.XR.ARCoreExtensions
             List<XRCameraConfiguration> supportedConfigurations);
 
 #if UNITY_ANDROID
-        // The max number of frames we will wait for a valid session handle to report analytics.
-        internal const int _frameTimeoutForSessionHandle = 60;
-
-        private bool _geospatialCreatorPlatformLoggedOnce = false;
-
         internal const int _androidSSDKVersion = 31;
         private static AndroidJavaClass _versionInfo;
 
@@ -233,13 +236,14 @@ namespace Google.XR.ARCoreExtensions
             {
                 _arCoreCameraSubsystem.beforeGetCameraConfiguration += BeforeGetCameraConfiguration;
             }
-            // TODO: (b/308463770) - Support Geospatial Creator Platform analytics on iOS.
-            if (_geospatialCreatorPlatformLoggedOnce == false)
-            {
-              StartCoroutine(ReportGeospatialCreatorPlatformWithDelay());
-              _geospatialCreatorPlatformLoggedOnce = true;
-            }
 #endif  // UNITY_ANDROID
+#if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
+            if (Session != null && _geospatialCreatorPlatformLoggedOnce == false)
+            {
+                StartCoroutine(ReportGeospatialCreatorPlatformWithDelay());
+                _geospatialCreatorPlatformLoggedOnce = true;
+            }
+#endif  // !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
 #if !UNITY_IOS || ARCORE_EXTENSIONS_IOS_SUPPORT
 
             // TODO: (b/308163258) - EngineType isn't set bc session handle is usually invalid here
@@ -553,10 +557,10 @@ namespace Google.XR.ARCoreExtensions
                 CameraManager.currentConfiguration = configurations[configIndex];
             }
         }
+#endif // UNITY_ANDROID
 
         private IEnumerator ReportGeospatialCreatorPlatformWithDelay()
         {
-            // TODO: (b/308463770) - Support Geospatial Creator Platform analytics on iOS.
 #if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             // Wait a few frames until the session handle is valid
             int frameCount = 0;
@@ -579,6 +583,5 @@ namespace Google.XR.ARCoreExtensions
 #endif  // !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             yield return null;
         }
-#endif // UNITY_ANDROID
     }
 }

@@ -140,16 +140,20 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             using (new EditorGUI.IndentLevelScope())
             {
                 string altitudeLabel = string.Empty;
+                string overrideAltitudeLabel = string.Empty;
                 switch (altitudeType)
                 {
                     case AnchorAltitudeType.WGS84:
                         altitudeLabel = "WGS84 altitude";
+                        overrideAltitudeLabel = "Override altitude in Editor Scene View";
                         break;
                     case AnchorAltitudeType.Terrain:
                         altitudeLabel = "Altitude relative to terrain";
+                        overrideAltitudeLabel = "Override terrain altitude in Editor Scene View";
                         break;
                     case AnchorAltitudeType.Rooftop:
                         altitudeLabel = "Altitude relative to rooftop";
+                        overrideAltitudeLabel = "Override rooftop altitude in Editor Scene View";
                         break;
                 }
 
@@ -158,7 +162,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
 
                 GUILayout.BeginHorizontal();
 
-                string overrideAltitudeLabel = "Override altitude in Editor Scene View";
                 _useEditorAltitudeOverride.boolValue = EditorGUILayout.Toggle(
                         overrideAltitudeLabel,
                         _useEditorAltitudeOverride.boolValue);
@@ -175,12 +178,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
                 if (_useEditorAltitudeOverride.boolValue)
                 {
                     EditorGUILayout.HelpBox(
-                        "\"" + overrideAltitudeLabel + "\" sets the altitude used in the Scene " +
-                        "View to position the anchor, in meters according to WGS84. This is " +
-                        "useful to vizualize the anchor relative to the scene geometry in cases " +
-                        "where the scene geometry altitude is not fully aligned with the real " +
-                        "world. This is an Editor-only property; the " + altitudeLabel + " is " +
-                        "always used at runtime.",
+                        "\"" + overrideAltitudeLabel + "\" sets the base altitude used in the " +
+                        "Scene View to position the anchor, in meters according to WGS84. This " +
+                        "is useful to vizualize the anchor relative to the scene geometry in " +
+                        "cases where the scene geometry altitude is not fully aligned with the " +
+                        "real world. This is an Editor-only property; the " + altitudeLabel +
+                        " is always used at runtime.",
                         MessageType.Info,
                         wide: true);
                 }

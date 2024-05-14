@@ -113,7 +113,11 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
         private static ARGeospatialCreatorOrigin GetOrigin()
         {
             ARGeospatialCreatorOrigin[] origins =
+#if UNITY_2023_1_OR_NEWER
+                GameObject.FindObjectsByType<ARGeospatialCreatorOrigin>(FindObjectsSortMode.None);
+#else
                 GameObject.FindObjectsOfType<ARGeospatialCreatorOrigin>();
+#endif
             if (origins.Length == 0)
             {
                 return null;
@@ -195,7 +199,6 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             so.FindProperty("_latitude").doubleValue = lat;
             so.FindProperty("_longitude").doubleValue = lng;
             so.ApplyModifiedProperties();
-            anchor._unityPositionUpdateRequired = true;
         }
 
         private void SetLatLongAltOrigin(ARGeospatialCreatorOrigin origin, double lat, double lng,
@@ -260,12 +263,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             if (anchorCount != 0 && originCount == 0)
             {
                 _searchHelper.GUIForSearch(targetObject: null, "Anchor",
-                    apiKey, origin._originPoint, SetPreviewPinLocation, SetLatLongAlt);
+                    apiKey, origin, SetPreviewPinLocation, SetLatLongAlt);
             }
             else if (anchorCount == 0 && originCount != 0)
             {
                 _searchHelper.GUIForSearch(targetObject: null, "Origin",
-                    apiKey, origin._originPoint, SetPreviewPinLocation, SetLatLongAlt);
+                    apiKey, origin, SetPreviewPinLocation, SetLatLongAlt);
             }
             else
             {

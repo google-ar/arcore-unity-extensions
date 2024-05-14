@@ -105,8 +105,6 @@ namespace Google.XR.ARCoreExtensions.Internal
         public static void ReportCreateGeospatialCreatorAnchor(
             IntPtr session, ApiGeospatialAnchorType anchorType)
         {
-            // TODO: (b/308463770) - Support anchor creation analytics on iOS.
-#if UNITY_ANDROID
 #if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             ApiArStatus status =
                 ExternApi.ArEarth_reportCreateGeospatialCreatorAnchor(session, anchorType);
@@ -116,14 +114,11 @@ namespace Google.XR.ARCoreExtensions.Internal
                     "Failed to log Geospatial Creator Anchor Creation, status '{0}'", status);
             }
 #endif
-#endif
         }
 
         public static void ReportGeospatialCreatorPlatform(
             IntPtr session, ApiGeospatialCreatorPlatform platform)
         {
-            // TODO: (b/308463770) - Support Geospatial Creator Platform analytics on iOS.
-#if UNITY_ANDROID
 #if !UNITY_IOS || GEOSPATIAL_IOS_SUPPORT
             ApiArStatus status =
                 ExternApi.ArEarth_reportGeospatialCreatorPlatform(session, platform);
@@ -132,7 +127,6 @@ namespace Google.XR.ARCoreExtensions.Internal
                 Debug.LogErrorFormat(
                     "Failed to log Geospatial Creator Platform, status '{0}'", status);
             }
-#endif
 #endif
         }
 
@@ -269,8 +263,6 @@ namespace Google.XR.ARCoreExtensions.Internal
                 IntPtr session, IntPtr earth, double latitude, double longitude,
                 double altitude, ref ApiQuaternion eus_quaternion_4, ref IntPtr out_anchor);
 
-            // TODO: (b/308463770) - Support anchor creation analytics on iOS.
-#if UNITY_ANDROID
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArEarth_reportCreateGeospatialCreatorAnchor(
                 IntPtr session, ApiGeospatialAnchorType anchorType);
@@ -278,7 +270,6 @@ namespace Google.XR.ARCoreExtensions.Internal
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArEarth_reportGeospatialCreatorPlatform(
                 IntPtr session, ApiGeospatialCreatorPlatform platform);
-#endif  //  UNITY_ANDROID
 
             [EarthImport(ApiConstants.ARCoreNativeApi)]
             public static extern ApiArStatus ArEarth_resolveAndAcquireNewAnchorOnTerrain(
