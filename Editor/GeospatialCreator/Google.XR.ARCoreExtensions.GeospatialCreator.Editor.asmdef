@@ -44,6 +44,11 @@
             "name": "org.khronos.unitygltf",
             "expression": "2.9.0-rc",
             "define": "ARCORE_INTERNAL_USE_KHRONOS_GLTF"
+        },
+        {
+            "name": "com.unity.nuget.newtonsoft-json",
+            "expression": "1.0.0",
+            "define": "ARCORE_INTERNAL_USE_NEWTONSOFT"
         }
     ],
     "noEngineReferences": false

@@ -23,7 +23,7 @@ namespace Google.XR.ARCoreExtensions.Internal
     using System;
     using System.Collections.Generic;
     using UnityEngine;
-#if UNITY_2023_1_OR_NEWER && UNITY_EDITOR
+#if UNITY_2023_1 && UNITY_EDITOR
     using Unity.Android.Gradle.Manifest;
 #endif
 
@@ -160,7 +160,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 featureName);
         }
 
-#if UNITY_2023_1_OR_NEWER
+#if UNITY_2023_1
         /// <summary>
         /// Add the customized configurations to the Android Manifest based on ARCore Extensions
         /// settings.
@@ -253,7 +253,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                 <uses-feature
                     android:name=""android.hardware.location"" android:required=""true""/>";
         }
-#endif // UNITY_2023_1_OR_NEWER
+#endif // UNITY_2023_1
 
         /// <summary>
         /// Return the Proguard to include if this module is enabled. The string output will be

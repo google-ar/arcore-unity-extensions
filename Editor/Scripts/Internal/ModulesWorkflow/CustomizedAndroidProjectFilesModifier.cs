@@ -18,7 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if UNITY_2023_1_OR_NEWER
+#if UNITY_2023_1
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
 #if UNITY_ANDROID
@@ -64,4 +64,4 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
     }
 #endif // UNITY_ANDROID
 }
-#endif // UNITY_2023_1_OR_NEWER
+#endif // UNITY_2023_1

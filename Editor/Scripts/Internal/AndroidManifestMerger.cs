@@ -18,7 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-#if !UNITY_2023_1_OR_NEWER
+#if !UNITY_2023_1
 namespace Google.XR.ARCoreExtensions.Editor.Internal
 {
     using System;
@@ -249,4 +249,4 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         }
     }
 }
-#endif // !UNITY_2023_1_OR_NEWER
+#endif // !UNITY_2023_1
