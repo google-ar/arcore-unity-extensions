@@ -19,28 +19,18 @@
 //-----------------------------------------------------------------------
 
 
-#if UNITY_2022_3_OR_NEWER && !ARCORE_USE_ARF_5
-// For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5
-// symbol, see https://docs.unity3d.com/Manual/CustomScriptingSymbols.html
-// You can define ARCORE_USE_ARF_5 for Unity 2021.x or higher but you have
-// to define it after 2022.x
-#warning For AR Foundation 5.X compatibility, define the ARCORE_USE_ARF_5 symbol
-#endif
-
-#if !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER) && ARCORE_USE_ARF_5
+#if !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER)
 // The camera's pose driver in ARF5 needs Input System (New) but sample has not been ported to
 // support new input so make sure Settings > Player > Other Settings > Active Input Handling
 // is set to Both
 #error The cloud anchores sample needs Active Input Handling set to Both
-#endif
+#endif // !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER)
 
 namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
     using System;
     using System.Collections.Generic;
-#if ARCORE_USE_ARF_5 // use ARF 5
     using Unity.XR.CoreUtils;
-#endif
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
 
@@ -51,17 +41,10 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
     {
         [Header("AR Foundation")]
 
-#if ARCORE_USE_ARF_5 // use ARF 5
         /// <summary>
         /// The active XROrigin used in the example.
         /// </summary>
         public XROrigin Origin;
-#else // use ARF 4
-        /// <summary>
-        /// The active ARSessionOrigin used in the example.
-        /// </summary>
-        public ARSessionOrigin SessionOrigin;
-#endif
 
         /// <summary>
         /// The ARSession used in the example.
@@ -167,11 +150,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         {
             get
             {
-#if ARCORE_USE_ARF_5 // use ARF 5
                 return Origin.Camera;
-#else // use ARF 4
-                return SessionOrigin.camera;
-#endif
             }
         }
 
@@ -346,11 +325,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
         private void SetPlatformActive(bool active)
         {
-#if ARCORE_USE_ARF_5 // use ARF 5
             Origin.gameObject.SetActive(active);
-#else // use ARF 4
-            SessionOrigin.gameObject.SetActive(active);
-#endif
             SessionCore.gameObject.SetActive(active);
             Extensions.gameObject.SetActive(active);
         }

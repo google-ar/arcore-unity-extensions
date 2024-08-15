@@ -22,9 +22,7 @@ namespace Google.XR.ARCoreExtensions
 {
     using System;
     using Google.XR.ARCoreExtensions.Internal;
-#if ARCORE_USE_ARF_5 // use ARF 5
     using Unity.XR.CoreUtils;
-#endif
     using UnityEngine;
 
     using UnityEngine.XR.ARFoundation;
@@ -164,15 +162,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
-#if ARCORE_USE_ARF_5 // use ARF 5
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.Origin.TrackablesParent, false);
-#elif ARCORE_USE_ARF_4 // use ARF 4
-            cloudAnchor.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
 
             return cloudAnchor;
         }
@@ -231,15 +222,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
-#if ARCORE_USE_ARF_5 // use ARF 5
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.Origin.TrackablesParent, false);
-#elif ARCORE_USE_ARF_4 // use ARF 4
-            cloudAnchor.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
 
             return cloudAnchor;
         }
@@ -393,15 +377,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Cloud Anchor to the session origin.
-#if ARCORE_USE_ARF_5 // use ARF 5
             cloudAnchor.transform.SetParent(
                 ARCoreExtensions._instance.Origin.TrackablesParent, false);
-#elif ARCORE_USE_ARF_4 // use ARF 4
-            cloudAnchor.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
 
             return cloudAnchor;
         }
@@ -554,15 +531,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Geospatial Anchor to the session origin.
-#if ARCORE_USE_ARF_5 // use ARF 5
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.Origin.TrackablesParent, false);
-#elif ARCORE_USE_ARF_4 // use ARF 4
-            anchor.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
             return anchor;
         }
 
@@ -677,15 +647,8 @@ namespace Google.XR.ARCoreExtensions
             }
 
             // Parent the new Geospatial Terrain anchor to the session origin.
-#if ARCORE_USE_ARF_5 // use ARF 5
             anchor.transform.SetParent(
                 ARCoreExtensions._instance.Origin.TrackablesParent, false);
-#elif ARCORE_USE_ARF_4 // use ARF 4
-            anchor.transform.SetParent(
-                ARCoreExtensions._instance.SessionOrigin.trackablesParent, false);
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
             return anchor;
         }
 

@@ -19,16 +19,6 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [
-        {
-            "name": "com.unity.xr.arfoundation",
-            "expression": "[5.0,6.0)",
-            "define": "ARCORE_USE_ARF_4"
-        },
-        {
-            "name": "com.unity.xr.arfoundation",
-            "expression": "[4.0,5.0)",
-            "define": "ARCORE_USE_ARF_4"
-        }
     ],
     "noEngineReferences": false
 }
