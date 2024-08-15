@@ -18,6 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+
 // InternalsVisibleTo is required because Geospatial Creator needs to access the internal
 // _instance field, but we don't want it to be part of the public API.
 
@@ -32,9 +33,6 @@ namespace Google.XR.ARCoreExtensions
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
     using Unity.Collections;
-#if ARCORE_USE_ARF_5 // use ARF 5
-    using Unity.XR.CoreUtils;
-#endif
     using UnityEngine;
 
 #if UNITY_ANDROID
@@ -55,17 +53,6 @@ namespace Google.XR.ARCoreExtensions
         /// </summary>
         public ARSession Session;
 
-#if ARCORE_USE_ARF_5 // use ARF 5
-        /// <summary>
-        /// AR Foundation <c><see cref="XROrigin"/></c> used by the scene.
-        /// </summary>
-        public XROrigin Origin;
-
-        /// <summary>
-        /// AR Foundation <c><see cref="ARCameraManager"/></c> used in the XROrigin.
-        /// </summary>
-        public ARCameraManager CameraManager;
-#elif ARCORE_USE_ARF_4 // use ARF 4
         /// <summary>
         /// AR Foundation <c><see cref="ARSessionOrigin"/></c> used by the scene.
         /// </summary>
@@ -75,9 +62,6 @@ namespace Google.XR.ARCoreExtensions
         /// AR Foundation <c><see cref="ARCameraManager"/></c> used in the ARSessionOrigin.
         /// </summary>
         public ARCameraManager CameraManager;
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
 
         /// <summary>
         /// Supplementary configuration to define features and options for the

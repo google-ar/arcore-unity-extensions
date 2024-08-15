@@ -1,7 +1,7 @@
 {
     "name": "com.google.ar.core.arfoundation.extensions",
     "displayName": "ARCore Extensions",
-    "version": "1.44.0",
+    "version": "1.45.0",
     "unity": "2019.4",
     "description": "Google ARCore Extensions for AR Foundation. This package provides access to ARCore features not covered by AR Foundation's cross platform API.",
     "author":

@@ -134,13 +134,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         /// <c>Awake()</c> message execution, as follows:
         /// <list type="bullet">
         /// <item>
-#if ARCORE_USE_ARF_5 // use ARF 5
-        /// If the <c><see cref="XROrigin"/></c> has an <c><see cref="AnchorManager"/></c>
-#elif ARCORE_USE_ARF_4 // use ARF 4
         /// If the <c><see cref="ARSessionOrigin"/></c> has an <c><see cref="AnchorManager"/></c>
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
         /// subcomponent, that <c><see cref="ARAnchorManager"/></c> will be used;
         /// </item>
         /// <item>
@@ -317,15 +311,8 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         private static ARAnchorManager FindDefaultAnchorManager()
         {
             // Use the AnchorManager assigned to the AR Session Origin, if it exists.
-#if ARCORE_USE_ARF_5 // use ARF 5
-            ARAnchorManager sessionAnchorManager =
-                ARCoreExtensions._instance?.Origin?.GetComponent<ARAnchorManager>();
-#elif ARCORE_USE_ARF_4 // use ARF 4
             ARAnchorManager sessionAnchorManager =
                 ARCoreExtensions._instance?.SessionOrigin?.GetComponent<ARAnchorManager>();
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
             if (sessionAnchorManager != null)
             {
                 return sessionAnchorManager;
@@ -772,13 +759,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             yield break;
         }
 
-#if ARCORE_USE_ARF_5 // use ARF 5
-        // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
-#elif ARCORE_USE_ARF_4 // use ARF 4
        // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
-#else // ARF error
-#error error must define ARCORE_USE_ARF_5 or ARCORE_USE_ARF_4
-#endif
         // of the local skyline. Assumes _anchorManager is not null and configured properly for
         // creating geospatial anchors.
         private IEnumerator ResolveRooftopAnchor()
