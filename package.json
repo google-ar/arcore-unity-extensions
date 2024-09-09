@@ -10,6 +10,7 @@
     },
     "dependencies":
     {
+        "com.google.external-dependency-manager": "1.2.177",
         "com.unity.xr.arfoundation": "4.1.5",
         "com.unity.xr.arcore": "4.1.5",
         "com.unity.xr.arkit": "4.1.5"
