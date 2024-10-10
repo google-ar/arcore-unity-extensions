@@ -7,11 +7,6 @@ Augmented Reality API. It also provides native APIs for features provided by
 Google ARCore. With these extensions you can build new AR experiences or
 enhance existing apps with AR features.
 
-This package does not yet provide access to all ARCore APIs and capabilities.
-If one or more of those features are required by your project, consider using
-the [ARCore SDK for Unity](//developers.google.com/ar/develop/downloads)
-until those features have been added to this package.
-
 
 ## Quick Start
 
