@@ -1983,10 +1983,10 @@ MonoBehaviour:
   m_TrackingStateInput:
     m_UseReference: 0
     m_Action:
-      m_Name: 
+      m_Name: Tracking State Input
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 
+      m_Id: fb6e1356-d6ac-424f-8144-26d6e58ae54b
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -2083,7 +2083,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 20
+  far clip plane: 500
   field of view: 60
   orthographic: 0
   orthographic size: 5
