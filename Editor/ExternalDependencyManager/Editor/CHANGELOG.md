@@ -1,3 +1,29 @@
+# Version 1.2.183 - Sep 18, 2024
+* Android Resolver - Handle package paths that don't include a version hash,
+  which is no longer present with Unity 6. Fixes #697
+* Android Resolver - Handle packages referenced using local file paths.
+  Fixes #701
+
+# Version 1.2.182 - Aug 2, 2024
+* General - Check for gradle version instead of Unity version when determining
+  the template files to modify.
+
+# Version 1.2.181 - Jun 26, 2024
+* General - Disable `EditorMeasurement` reporting that relied on the
+  Measurement Protocol for Universal Analytics.
+
+# Version 1.2.180 - Jun 4, 2024
+* General - Fix project settings resetting on domain reload.
+  Fixes #524
+
+# Version 1.2.179 - Feb 12, 2024
+* Android Resolver - Added logic to automatically turn on `mainTemplate.gradle`
+  for new projects, and prompt users to enable it on projects that have previously
+  had the resolver run.
+
+# Version 1.2.178 - Dec 20, 2023
+* Added [OpenUPM support](https://openupm.com/packages/com.google.external-dependency-manager/).
+
 # Version 1.2.177 - Aug 14, 2023
 * iOS Resolver - Added `/opt/homebrew/bin` to Cocoapod executable search path.
   Fixes #627

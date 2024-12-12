@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2b4957d4e158489ca7b410312d84e001
+guid: d288fc5d6f024b9981c15982d8fd85ab
 labels:
 - gvh_version-1.2.183
-- gvhp_exportpath-ExternalDependencyManager/Editor/CHANGELOG.md
+- gvhp_exportpath-ExternalDependencyManager/Editor/Google.VersionHandler.pdb
 - gvh
-TextScriptImporter:
+DefaultImporter:
   externalObjects: {}
   userData: 
   assetBundleName: 
