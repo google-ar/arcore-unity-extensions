@@ -30,9 +30,9 @@ PluginImporter:
   userData:
   validateReferences: 1
 fileFormatVersion: 2
-guid: 1f4f113972f04c3695341dfb3ba48d3b
+guid: 9cab53159f0a43b68c16552c892bd579
 labels:
+- gvh_version-1.2.183
+- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.183/Google.JarResolver.dll
 - gvh
-- gvh_version-1.2.177
-- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.177/Google.JarResolver.dll
 - gvhp_targets-editor

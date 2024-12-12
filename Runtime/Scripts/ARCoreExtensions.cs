@@ -19,6 +19,7 @@
 //-----------------------------------------------------------------------
 
 
+
 // InternalsVisibleTo is required because Geospatial Creator needs to access the internal
 // _instance field, but we don't want it to be part of the public API.
 
