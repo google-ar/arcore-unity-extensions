@@ -34,7 +34,6 @@ namespace Google.XR.ARCoreExtensions
     using System.Linq;
     using Google.XR.ARCoreExtensions.Internal;
     using Unity.Collections;
-    using Unity.XR.CoreUtils;
     using UnityEngine;
 
 #if UNITY_ANDROID
@@ -56,12 +55,12 @@ namespace Google.XR.ARCoreExtensions
         public ARSession Session;
 
         /// <summary>
-        /// AR Foundation <c><see cref="XROrigin"/></c> used by the scene.
+        /// AR Foundation <c><see cref="ARSessionOrigin"/></c> used by the scene.
         /// </summary>
-        public XROrigin Origin;
+        public ARSessionOrigin SessionOrigin;
 
         /// <summary>
-        /// AR Foundation <c><see cref="ARCameraManager"/></c> used in the XROrigin.
+        /// AR Foundation <c><see cref="ARCameraManager"/></c> used in the ARSessionOrigin.
         /// </summary>
         public ARCameraManager CameraManager;
 
@@ -415,7 +414,8 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (frame.timestampNs == 0 || frame.FrameHandle() == IntPtr.Zero)
+            if (!frame.TryGetFrameTimestamp(out long frameTimestamp) ||
+                frame.FrameHandle() == IntPtr.Zero)
             {
                 Debug.LogWarning(
                     "The current XRCameraFrame is not ready, try again later.");

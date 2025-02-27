@@ -174,10 +174,11 @@ namespace Google.XR.ARCoreExtensions
                 return new List<TrackData>();
             }
 
-            if (frame.timestampNs == 0 || frame.nativePtr == IntPtr.Zero)
+            if (!frame.TryGetFrameTimestamp(out long frameTimestamp) ||
+                frame.nativePtr == IntPtr.Zero)
             {
                 Debug.LogWarning("Failed to fetch track data. The current XRCameraFrame is not " +
-                                 "ready. Try again later.");
+                                "ready. Try again later.");
                 return new List<TrackData>();
             }
 

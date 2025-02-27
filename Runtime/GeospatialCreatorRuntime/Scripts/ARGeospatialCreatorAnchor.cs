@@ -134,7 +134,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         /// <c>Awake()</c> message execution, as follows:
         /// <list type="bullet">
         /// <item>
-        /// If the <c><see cref="XROrigin"/></c> has an <c><see cref="AnchorManager"/></c>
+        /// If the <c><see cref="ARSessionOrigin"/></c> has an <c><see cref="AnchorManager"/></c>
         /// subcomponent, that <c><see cref="ARAnchorManager"/></c> will be used;
         /// </item>
         /// <item>
@@ -312,7 +312,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
         {
             // Use the AnchorManager assigned to the AR Session Origin, if it exists.
             ARAnchorManager sessionAnchorManager =
-                ARCoreExtensions._instance?.Origin?.GetComponent<ARAnchorManager>();
+                ARCoreExtensions._instance?.SessionOrigin?.GetComponent<ARAnchorManager>();
             if (sessionAnchorManager != null)
             {
                 return sessionAnchorManager;
@@ -759,7 +759,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             yield break;
         }
 
-        // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
+       // Initiates asynchronous resolution of this anchor at (Latitude, Longitude) on the surface
         // of the local skyline. Assumes _anchorManager is not null and configured properly for
         // creating geospatial anchors.
         private IEnumerator ResolveRooftopAnchor()

@@ -26,11 +26,6 @@
 #endif
 
 #if !ENABLE_INPUT_SYSTEM
-// The camera's pose driver in ARF5 needs Input System (New) but given we need Input Manager
-// (Old) for Input.location (see above) ARF5 needs both.
-// Check that Project Settings > Player > Other Settings > Active Input Handling
-// is set to Both
-#error The camera's pose driver needs Input System (New) so set Active Input Handling to Both
 #endif // !ENABLE_INPUT_SYSTEM
 
 namespace Google.XR.ARCoreExtensions.Samples.Geospatial
@@ -40,7 +35,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using Unity.XR.CoreUtils;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
@@ -62,9 +56,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         [Header("AR Components")]
 
         /// <summary>
-        /// The XROrigin used in the sample.
+        /// The ARSessionOrigin used in the sample.
         /// </summary>
-        public XROrigin Origin;
+        public ARSessionOrigin SessionOrigin;
 
         /// <summary>
         /// The ARSession used in the sample.
@@ -447,9 +441,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
 
-            if (Origin == null)
+            if (SessionOrigin == null)
             {
-                Debug.LogError("Cannot find XROrigin.");
+                Debug.LogError("Cannot find ARSessionOrigin.");
             }
 
             if (Session == null)
@@ -1240,7 +1234,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private void SwitchToARView(bool enable)
         {
             _isInARView = enable;
-            Origin.gameObject.SetActive(enable);
+            SessionOrigin.gameObject.SetActive(enable);
             Session.gameObject.SetActive(enable);
             ARCoreExtensions.gameObject.SetActive(enable);
             ARViewCanvas.SetActive(enable);
@@ -1392,7 +1386,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     "Geospatial sample failed to start location service.\n" +
                     "Please restart the app and grant the fine location permission.";
             }
-            else if (Origin == null || Session == null || ARCoreExtensions == null)
+            else if (SessionOrigin == null || Session == null || ARCoreExtensions == null)
             {
                 returningReason = string.Format(
                     "Geospatial sample failed due to missing AR Components.");

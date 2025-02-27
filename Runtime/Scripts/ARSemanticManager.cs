@@ -107,11 +107,11 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (CachedData.TryGetCachedData(
-                    CachedData.SemanticsTexture, out texture) &&
-                CachedData.TryGetCachedData(
-                    CachedData.SemanticsTimestamp, out long timestamp) &&
-                texture != null && timestamp == frame.timestampNs)
+            long frameTimestamp;
+            bool frameHasTimestamp = frame.TryGetFrameTimestamp(out frameTimestamp);
+            if (CachedData.TryGetCachedData(CachedData.SemanticsTexture, out texture) &&
+                CachedData.TryGetCachedData(CachedData.SemanticsTimestamp, out long timestamp) &&
+                texture != null && frameHasTimestamp && timestamp == frameTimestamp)
             {
                 return true;
             }
@@ -130,7 +130,7 @@ namespace Google.XR.ARCoreExtensions
                 TextureFormat.R8, ref texture);
             ImageApi.Release(imageHandle);
             CachedData.SetCachedData(CachedData.SemanticsTexture, texture);
-            CachedData.SetCachedData(CachedData.SemanticsTimestamp, frame.timestampNs);
+            CachedData.SetCachedData(CachedData.SemanticsTimestamp, frameTimestamp);
 
             return true;
 #else // UNITY_IOS
@@ -153,11 +153,11 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (CachedData.TryGetCachedData(
-                    CachedData.SemanticsTexture, out texture) &&
-                CachedData.TryGetCachedData(
-                    CachedData.SemanticsTimestamp, out long timestamp) &&
-                texture != null && timestamp == frame.timestampNs)
+            long frameTimestamp;
+            bool frameHasTimestamp = frame.TryGetFrameTimestamp(out frameTimestamp);
+            if (CachedData.TryGetCachedData(CachedData.SemanticsTexture, out texture) &&
+                CachedData.TryGetCachedData(CachedData.SemanticsTimestamp, out long timestamp) &&
+                texture != null && frameHasTimestamp && timestamp == frameTimestamp)
             {
                 return true;
             }
@@ -176,7 +176,7 @@ namespace Google.XR.ARCoreExtensions
                 TextureFormat.R8, ref texture);
             ImageApi.Release(imageHandle);
             CachedData.SetCachedData(CachedData.SemanticsTexture, texture);
-            CachedData.SetCachedData(CachedData.SemanticsTimestamp, frame.timestampNs);
+            CachedData.SetCachedData(CachedData.SemanticsTimestamp, frameTimestamp);
 
             return true;
 #endif // UNITY_IOS
@@ -230,11 +230,12 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (CachedData.TryGetCachedData(
-                    CachedData.SemanticsConfidenceTexture, out texture) &&
-                CachedData.TryGetCachedData(
-                    CachedData.SemanticsConfidenceTimestamp, out long timestamp) &&
-                texture != null && timestamp == frame.timestampNs)
+            long frameTimestamp;
+            bool frameHasTimestamp = frame.TryGetFrameTimestamp(out frameTimestamp);
+            if (CachedData.TryGetCachedData(CachedData.SemanticsConfidenceTexture, out texture) &&
+                CachedData.TryGetCachedData(CachedData.SemanticsConfidenceTimestamp,
+                                            out long timestamp) &&
+                texture != null && frameHasTimestamp && timestamp == frameTimestamp)
             {
                 return true;
             }
@@ -253,7 +254,8 @@ namespace Google.XR.ARCoreExtensions
                 TextureFormat.Alpha8, ref texture);
             ImageApi.Release(imageHandle);
             CachedData.SetCachedData(CachedData.SemanticsConfidenceTexture, texture);
-            CachedData.SetCachedData(CachedData.SemanticsConfidenceTimestamp, frame.timestampNs);
+            CachedData.SetCachedData(
+                CachedData.SemanticsConfidenceTimestamp, frameTimestamp);
 
             return true;
 #else // UNITY_IOS
@@ -277,11 +279,12 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (CachedData.TryGetCachedData(
-                    CachedData.SemanticsConfidenceTexture, out texture) &&
-                CachedData.TryGetCachedData(
-                    CachedData.SemanticsConfidenceTimestamp, out long timestamp) &&
-                texture != null && timestamp == frame.timestampNs)
+            long frameTimestamp;
+            bool frameHasTimestamp = frame.TryGetFrameTimestamp(out frameTimestamp);
+            if (CachedData.TryGetCachedData(CachedData.SemanticsConfidenceTexture, out texture) &&
+                CachedData.TryGetCachedData(CachedData.SemanticsConfidenceTimestamp,
+                                            out long timestamp) &&
+                texture != null && frameHasTimestamp && timestamp == frameTimestamp)
             {
                 return true;
             }
@@ -300,7 +303,8 @@ namespace Google.XR.ARCoreExtensions
                 TextureFormat.Alpha8, ref texture);
             ImageApi.Release(imageHandle);
             CachedData.SetCachedData(CachedData.SemanticsConfidenceTexture, texture);
-            CachedData.SetCachedData(CachedData.SemanticsConfidenceTimestamp, frame.timestampNs);
+            CachedData.SetCachedData(
+                CachedData.SemanticsConfidenceTimestamp, frameTimestamp);
 
             return true;
 #endif // UNITY_IOS

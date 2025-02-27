@@ -20,17 +20,12 @@
 
 
 #if !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER)
-// The camera's pose driver in ARF5 needs Input System (New) but sample has not been ported to
-// support new input so make sure Settings > Player > Other Settings > Active Input Handling
-// is set to Both
-#error The cloud anchores sample needs Active Input Handling set to Both
 #endif // !(ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER)
 
 namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 {
     using System;
     using System.Collections.Generic;
-    using Unity.XR.CoreUtils;
     using UnityEngine;
     using UnityEngine.XR.ARFoundation;
 
@@ -42,9 +37,9 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         [Header("AR Foundation")]
 
         /// <summary>
-        /// The active XROrigin used in the example.
+        /// The active ARSessionOrigin used in the example.
         /// </summary>
-        public XROrigin Origin;
+        public ARSessionOrigin SessionOrigin;
 
         /// <summary>
         /// The ARSession used in the example.
@@ -150,7 +145,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         {
             get
             {
-                return Origin.Camera;
+                return SessionOrigin.camera;
             }
         }
 
@@ -325,7 +320,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
         private void SetPlatformActive(bool active)
         {
-            Origin.gameObject.SetActive(active);
+            SessionOrigin.gameObject.SetActive(active);
             SessionCore.gameObject.SetActive(active);
             Extensions.gameObject.SetActive(active);
         }
