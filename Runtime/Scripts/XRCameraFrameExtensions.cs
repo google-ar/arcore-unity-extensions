@@ -86,5 +86,17 @@ namespace Google.XR.ARCoreExtensions
 
             return imageMatrix;
         }
+
+        /// <summary>
+        /// Get the timestamp of the camera frame.
+        /// </summary>
+        /// <param name="frame">The XRCameraFrame instance.</param>
+        /// <param name="frameTimestamp">The timestamp of the camera frame.</param>
+        /// <returns>True if the timestamp is available, false otherwise.</returns>
+        public static bool TryGetFrameTimestamp(this XRCameraFrame frame, out long frameTimestamp)
+        {
+            frameTimestamp = frame.timestampNs;
+            return frameTimestamp != 0;
+        }
     }
 }

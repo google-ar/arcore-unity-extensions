@@ -208,7 +208,8 @@ namespace Google.XR.ARCoreExtensions.Internal
                     return;
                 }
 
-                if (frame.timestampNs == 0 || frame.FrameHandle() == IntPtr.Zero)
+                if (!frame.TryGetFrameTimestamp(out long frameTimestamp) ||
+                    frame.FrameHandle() == IntPtr.Zero)
                 {
                     Debug.LogWarning("ARKit Plugin Frame is not ready.");
                     return;
