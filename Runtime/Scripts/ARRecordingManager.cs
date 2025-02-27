@@ -153,10 +153,11 @@ namespace Google.XR.ARCoreExtensions
                 return RecordingResult.ErrorIllegalState;
             }
 
-            if (frame.timestampNs == 0 || frame.nativePtr == IntPtr.Zero)
+            if (!frame.TryGetFrameTimestamp(out long frameTimestamp) ||
+                frame.nativePtr == IntPtr.Zero)
             {
                 Debug.LogWarning("Failed to record track data. The current XRCameraFrame is not " +
-                                 "ready. Try again later.");
+                                "ready. Try again later.");
                 return RecordingResult.ErrorRecordingFailed;
             }
 

@@ -415,7 +415,8 @@ namespace Google.XR.ARCoreExtensions
                 return false;
             }
 
-            if (frame.timestampNs == 0 || frame.FrameHandle() == IntPtr.Zero)
+            if (!frame.TryGetFrameTimestamp(out long frameTimestamp) ||
+                frame.FrameHandle() == IntPtr.Zero)
             {
                 Debug.LogWarning(
                     "The current XRCameraFrame is not ready, try again later.");

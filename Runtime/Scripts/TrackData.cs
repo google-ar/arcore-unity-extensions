@@ -32,8 +32,8 @@ namespace Google.XR.ARCoreExtensions
         /// <summary>
         /// The timestamp in nanoseconds of the frame the given <c><see cref="TrackData"/></c> was
         /// recorded on. If frames are skipped during playback, the played back external track data
-        /// may be attached to a later frame. This timestamp is equal to the result of
-        /// <c><see cref="UnityEngine.XR.ARSubsystems.XRCameraFrame.timestampNs"/></c>
+        /// may be attached to a later frame. This timestamp is equal to the result from
+        /// <c><see cref="UnityEngine.XR.ARSubsystems.XRCameraFrame.TryGetTimestamp"/></c>
         /// on the frame during which track data was written.
         /// </summary>
         public long FrameTimestamp;
