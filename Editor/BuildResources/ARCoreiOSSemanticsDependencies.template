@@ -1,6 +1,6 @@
 <dependencies>
     <iosPods>
-        <iosPod name="ARCore/Semantics" version="~> 1.49.0" minTargetSdk="13.0">
+        <iosPod name="ARCore/Semantics" version="~> 1.50.0" minTargetSdk="13.0">
         </iosPod>
     </iosPods>
 </dependencies>
