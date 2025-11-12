@@ -189,6 +189,24 @@ namespace Google.XR.ARCoreExtensions.Internal
             return trackDataList;
         }
 
+        public static bool AcquireImageMetadata(IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr imageMetadataHandle)
+        {
+#if UNITY_ANDROID
+            var status = ExternApi.ArFrame_acquireImageMetadata(sessionHandle,
+                frameHandle, ref imageMetadataHandle);
+            if (status != ApiArStatus.Success)
+            {
+                Debug.LogErrorFormat(
+                    "Failed to aquire camera image metadata with status {0}", status);
+                return false;
+            }
+
+            return true;
+#else
+            return false;
+#endif // UNITY_ANDROID
+        }
+
         private struct ExternApi
         {
             [SemanticsImport(ApiConstants.ARCoreNativeApi)]
@@ -218,6 +236,10 @@ namespace Google.XR.ARCoreExtensions.Internal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArFrame_getUpdatedTrackData(
                 IntPtr sessionHandle, IntPtr frameHandle, IntPtr trackId, IntPtr trackDataList);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArFrame_acquireImageMetadata(
+                IntPtr sessionHandle, IntPtr frameHandle, ref IntPtr outMetadata);
 #elif UNITY_IOS
 
 #if ARCORE_EXTENSIONS_IOS_SUPPORT

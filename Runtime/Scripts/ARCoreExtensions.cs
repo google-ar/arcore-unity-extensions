@@ -117,6 +117,33 @@ namespace Google.XR.ARCoreExtensions
         public delegate int OnChooseXRCameraConfigurationEvent(
             List<XRCameraConfiguration> supportedConfigurations);
 
+
+        public bool TryGetLatestFrameMetadata(CameraMetadataTag tag, List<CameraMetadataValue> resultList)
+        {
+            if (!TryGetLatestFrame(out XRCameraFrame frame))
+            {
+                return false;
+            }
+
+            if (currentARCoreSessionHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            IntPtr imageMetadataHandle = IntPtr.Zero;
+            if (!frame.AcquireImageMetadata(ref imageMetadataHandle))
+            {
+                return false;
+            }
+
+            bool hasMetadata = CameraMetadataApi.TryGetValues(currentARCoreSessionHandle, imageMetadataHandle, tag, resultList);
+
+            CameraMetadataApi.Release(imageMetadataHandle);
+            frame.ReleaseFrame();
+
+            return hasMetadata;
+        }
+
 #if UNITY_ANDROID
         internal const int _androidSSDKVersion = 31;
         private static AndroidJavaClass _versionInfo;

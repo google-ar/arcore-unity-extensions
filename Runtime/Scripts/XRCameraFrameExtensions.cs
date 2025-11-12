@@ -97,5 +97,21 @@ namespace Google.XR.ARCoreExtensions
         {
             return frame.TryGetTimestamp(out frameTimestamp);
         }
+
+        public static void ReleaseFrame(this XRCameraFrame frame)
+        {
+            FrameApi.ReleaseFrame(frame.FrameHandle());
+        }
+
+        public static bool AcquireImageMetadata(this XRCameraFrame frame, ref IntPtr imageMetadataHandle)
+        {
+            IntPtr sessionHandle = ARCoreExtensions._instance.currentARCoreSessionHandle;
+            if (sessionHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            return FrameApi.AcquireImageMetadata(sessionHandle, frame.FrameHandle(), ref imageMetadataHandle);
+        }
     }
 }
