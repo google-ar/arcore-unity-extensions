@@ -43,7 +43,7 @@ RenderSettings:
 LightmapSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 13
-  m_BakeOnSceneLoad: 0
+  m_BakeOnSceneLoad: 1
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -93,7 +93,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: e3cc310cc1d134c56a228dde5a7cd086,
+    type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: a54d6e7333ad042c689d96ace214067a,
     type: 2}
 --- !u!196 &4
@@ -4583,7 +4584,7 @@ MonoBehaviour:
       m_Name: 
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 7e55bb27-9e9f-4327-a2d5-bcd151cc5a45
+      m_Id: 93c0ea03-055a-4bdf-bec4-5eb8c30ecaa2
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
