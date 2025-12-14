@@ -818,8 +818,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                         StreetscapeGeometryMaterialTerrain;
                 }
 
+#if UNITY_2022_3_OR_NEWER
+                renderObject.transform.SetPositionAndRotation(streetscapegeometry.pose.position, streetscapegeometry.pose.rotation);
+#else
                 renderObject.transform.position = streetscapegeometry.pose.position;
                 renderObject.transform.rotation = streetscapegeometry.pose.rotation;
+#endif
 
                 _streetscapegeometryGOs.Add(streetscapegeometry.trackableId, renderObject);
             }
@@ -836,8 +840,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             if (_streetscapegeometryGOs.ContainsKey(streetscapegeometry.trackableId))
             {
                 GameObject renderObject = _streetscapegeometryGOs[streetscapegeometry.trackableId];
+#if UNITY_2022_3_OR_NEWER
+                renderObject.transform.SetPositionAndRotation(streetscapegeometry.pose.position, streetscapegeometry.pose.rotation);
+#else
                 renderObject.transform.position = streetscapegeometry.pose.position;
                 renderObject.transform.rotation = streetscapegeometry.pose.rotation;
+#endif
             }
         }
 

@@ -718,8 +718,12 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator
             // ARGeospatialAnchor by making the creator anchor a child of the runtime anchor.
             // We zero out the pose & rotation on the creator anchor, since the runtime
             // anchor will handle that from now on.
+#if UNITY_2022_3_OR_NEWER
+            transform.SetPositionAndRotation(new Vector3(0, 0, 0), Quaternion.identity);
+#else
             transform.position = new Vector3(0, 0, 0);
             transform.rotation = Quaternion.identity;
+#endif
             transform.SetParent(resolvedAnchor.transform, false);
 
             _anchorResolution = AnchorResolutionState.Complete;
