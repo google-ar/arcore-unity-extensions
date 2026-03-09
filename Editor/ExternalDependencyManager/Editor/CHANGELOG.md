@@ -1,3 +1,23 @@
+<!-- disableFinding(LIST_NO_LINE) -->
+<!-- disableFinding(HEADING_REPEAT_H1) -->
+# Version 1.2.187 - Jan 20, 2026
+* General - Enable Editor DLLs by default, to fix initialization errors.
+* Android Resolver - Fix issue with nested m2repository directories. Fixes #716
+* iOS Resolver - Add support for using Swift Package Manager.
+
+# Version 1.2.186 - May 19, 2025
+* iOS Resolver - Set `validateReferences` to off by default,
+  to prevent errors when running without iOS Support installed.
+  Fixes #412 and #622
+
+# Version 1.2.185 - Feb 3, 2025
+* Android Resolver - Reverse conditional checker for `packaging` keyword in maintemplate based on android gradle plugin version. Fixes #715
+
+# Version 1.2.184 - Jan 28, 2025
+* Android Resolver - Update and resolve `packaging` keyword in maintemplate
+  based on android gradle plugin version.
+  Fixes #715
+
 # Version 1.2.183 - Sep 18, 2024
 * Android Resolver - Handle package paths that don't include a version hash,
   which is no longer present with Unity 6. Fixes #697

@@ -22,11 +22,11 @@ PluginImporter:
         CPU: AnyCPU
   serializedVersion: 3
   userData:
-  validateReferences: 1
+  validateReferences: 0
 fileFormatVersion: 2
-guid: a366c71c93ae411ea1ece423e8b1538f
+guid: 81a757c73e784317b917c61d213fb409
 labels:
-- gvh_version-1.2.183
-- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.183/Google.IOSResolver.dll
+- gvh_version-1.2.187
+- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.187/Google.IOSResolver.dll
 - gvh
 - gvhp_targets-editor
