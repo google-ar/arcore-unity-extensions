@@ -1,6 +1,9 @@
 <dependencies>
+    <remoteSwiftPackage url="https://github.com/google-ar/arcore-ios-sdk.git" version="1.52.0" upToNextMinor="true">
+        <swiftPackage name="ARCoreSemantics" replacesPod="ARCore/Semantics"/>
+    </remoteSwiftPackage>
     <iosPods>
-        <iosPod name="ARCore/Semantics" version="~> 1.52.0" minTargetSdk="13.0">
+        <iosPod name="ARCore/Semantics" version="~> 1.53.0" minTargetSdk="13.0">
         </iosPod>
     </iosPods>
 </dependencies>

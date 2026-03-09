@@ -1268,13 +1268,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
             {
-                Debug.Log("Requesting camera permission.");
-                Permission.RequestUserPermission(Permission.Camera);
-                yield return new WaitForSeconds(3.0f);
-            }
-
-            if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
-            {
                 // User has denied the request.
                 Debug.LogWarning(
                     "Failed to get the camera permission. VPS availability check isn't available.");

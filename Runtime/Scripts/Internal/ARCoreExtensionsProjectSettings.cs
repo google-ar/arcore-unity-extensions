@@ -187,9 +187,9 @@ namespace Google.XR.ARCoreExtensions.Internal
         }
 
         /// <summary>
-        /// Get the filenames of all available CocoaPod templates and their status.
+        /// Get the filenames of all available Library templates and their status.
         /// </summary>
-        /// <returns>An array of all available CocoaPod templates and whether it's enabled.
+        /// <returns>An array of all available Library templates and whether it's enabled.
         /// </returns>
         public Dictionary<string, bool> GetIOSDependenciesStatus()
         {
@@ -423,7 +423,7 @@ namespace Google.XR.ARCoreExtensions.Internal
                         AndroidAuthenticationStrategy.Keyless ?
                         "add authentication dependencies" : "inject API Key to the manifest",
                     IsIOSSupportEnabled ?
-                        ", and import CloudAnchors CocoaPod on iOS" : string.Empty),
+                        ", and import CloudAnchors Library on iOS" : string.Empty),
                 HelpAttribute.HelpMessageType.None);
         }
 
@@ -449,18 +449,18 @@ namespace Google.XR.ARCoreExtensions.Internal
             }
             else
             {
-                return new HelpAttribute(
-                    string.Format(
-                        "When using the Geospatial API, add {0}location dependencies on Android{1}. " +
-                        "Note: precise location permission is required at runtime, " +
-                        "otherwise, enabling the Geospatial API may fail with a permission not "+
-                        "granted error.",
-                        AndroidAuthenticationStrategySetting ==
-                            AndroidAuthenticationStrategy.Keyless ?
-                            "authentication and " : string.Empty,
-                        IsIOSSupportEnabled ?
-                            ", and import Geospatial CocoaPod on iOS" : string.Empty),
-                    HelpAttribute.HelpMessageType.None);
+              return new HelpAttribute(
+                  string.Format(
+                      "When using the Geospatial API, add {0}location dependencies on Android{1}. " +
+                          "Note: precise location permission is required at runtime, " +
+                          "otherwise, enabling the Geospatial API may fail with a permission not " +
+                          "granted error.",
+                      AndroidAuthenticationStrategySetting == AndroidAuthenticationStrategy.Keyless
+                          ? "authentication and "
+                          : string.Empty,
+                      IsIOSSupportEnabled ? ", and import Geospatial Library on iOS"
+                                          : string.Empty),
+                  HelpAttribute.HelpMessageType.None);
             }
         }
 

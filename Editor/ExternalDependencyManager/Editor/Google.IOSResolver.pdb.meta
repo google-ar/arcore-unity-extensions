@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: 586d58d05379419a8006364797db5fc8
+guid: 41c90e40b1f446e3a7a78511ec9dc29a
 labels:
-- gvh_version-1.2.183
-- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.183/Google.IOSResolver.pdb
+- gvh_version-1.2.187
+- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.187/Google.IOSResolver.pdb
 - gvh
 DefaultImporter:
   externalObjects: {}
