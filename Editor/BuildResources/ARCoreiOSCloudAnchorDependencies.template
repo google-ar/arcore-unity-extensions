@@ -1,9 +1,9 @@
 <dependencies>
-    <remoteSwiftPackage url="https://github.com/google-ar/arcore-ios-sdk.git" version="1.52.0">
+    <remoteSwiftPackage url="https://github.com/google-ar/arcore-ios-sdk.git" version="1.54.0">
         <swiftPackage name="ARCoreCloudAnchors" replacesPod="ARCore/CloudAnchors"/>
     </remoteSwiftPackage>
     <iosPods>
-        <iosPod name="ARCore/CloudAnchors" version="~> 1.53.0" minTargetSdk="13.0">
+        <iosPod name="ARCore/CloudAnchors" version="~> 1.54.0" minTargetSdk="13.0">
         </iosPod>
     </iosPods>
 </dependencies>
