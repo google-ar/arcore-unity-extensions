@@ -65,14 +65,9 @@ namespace Google.XR.ARCoreExtensions.Internal
         public override bool IsEnabled(ARCoreExtensionsProjectSettings settings,
             UnityEditor.BuildTarget buildTarget)
         {
-            if (settings.GeospatialEnabled &&
+            return settings.GeospatialEnabled &&
                 (buildTarget == UnityEditor.BuildTarget.Android ||
-                (settings.IsIOSSupportEnabled && buildTarget == UnityEditor.BuildTarget.iOS)))
-            {
-                return true;
-            }
-
-            return false;
+                (settings.IsIOSSupportEnabled && buildTarget == UnityEditor.BuildTarget.iOS));
 
         }
 
@@ -291,12 +286,7 @@ namespace Google.XR.ARCoreExtensions.Internal
         /// <returns>True if location should be used; otherwise, return false.</returns>
         private static bool UseLocation(ARCoreExtensionsConfig sessionConfig)
         {
-            if (sessionConfig.GeospatialMode != GeospatialMode.Disabled)
-            {
-                return true;
-            }
-
-            return false;
+            return sessionConfig.GeospatialMode != GeospatialMode.Disabled;
         }
     }
 }

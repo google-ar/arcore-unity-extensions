@@ -134,8 +134,12 @@ namespace Google.XR.ARCoreExtensions
             _pose = apiPose.ToUnityPose();
 
             // Update the Geospatial Anchor transform to match.
+#if UNITY_2022_3_OR_NEWER
+            transform.SetLocalPositionAndRotation(_pose.position, _pose.rotation);
+#else
             transform.localPosition = _pose.position;
             transform.localRotation = _pose.rotation;
+#endif
         }
 
         /// <summary>

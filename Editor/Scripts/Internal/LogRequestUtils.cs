@@ -141,7 +141,7 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
         private static string SessionId()
         {
             // Generate on first request.
-            if (_sessionId == string.Empty)
+            if (string.IsNullOrEmpty(_sessionId))
             {
                 _sessionId = Guid.NewGuid().ToString();
             }
