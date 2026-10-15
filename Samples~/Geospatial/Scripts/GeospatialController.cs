@@ -398,6 +398,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// <param name="enabled">Whether to enable Geospatial anchors.</param>
         public void OnGeospatialAnchorToggled(bool enabled)
         {
+            if (!enabled)
+            {
+                return;
+            }
+
             // GeospatialAnchorToggle.GetComponent<Toggle>().isOn = true;;
             _anchorType = AnchorType.Geospatial;
             SetAnchorPanelState(false);
@@ -409,6 +414,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// <param name="enabled">Whether to enable Terrain anchors.</param>
         public void OnTerrainAnchorToggled(bool enabled)
         {
+            if (!enabled)
+            {
+                return;
+            }
+
             // TerrainAnchorToggle.GetComponent<Toggle>().isOn = true;
             _anchorType = AnchorType.Terrain;
             SetAnchorPanelState(false);
@@ -420,6 +430,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         /// <param name="enabled">Whether to enable Rooftop anchors.</param>
         public void OnRooftopAnchorToggled(bool enabled)
         {
+            if (!enabled)
+            {
+                return;
+            }
+
             // RooftopAnchorToggle.GetComponent<Toggle>().isOn = true;
             _anchorType = AnchorType.Rooftop;
             SetAnchorPanelState(false);
