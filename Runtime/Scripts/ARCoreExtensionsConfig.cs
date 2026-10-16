@@ -131,16 +131,11 @@ namespace Google.XR.ARCoreExtensions
         public override bool Equals(object other)
         {
             ARCoreExtensionsConfig otherConfig = other as ARCoreExtensionsConfig;
-            if (otherConfig == null ||
-                SemanticMode != otherConfig.SemanticMode ||
-                GeospatialMode != otherConfig.GeospatialMode ||
-                StreetscapeGeometryMode != otherConfig.StreetscapeGeometryMode ||
-                CloudAnchorMode != otherConfig.CloudAnchorMode)
-            {
-                return false;
-            }
-
-            return true;
+            return otherConfig != null &&
+                SemanticMode == otherConfig.SemanticMode &&
+                GeospatialMode == otherConfig.GeospatialMode &&
+                StreetscapeGeometryMode == otherConfig.StreetscapeGeometryMode &&
+                CloudAnchorMode == otherConfig.CloudAnchorMode;
         }
 
         /// <summary>

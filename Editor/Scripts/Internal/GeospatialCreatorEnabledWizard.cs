@@ -171,17 +171,15 @@ namespace Google.XR.ARCoreExtensions.Editor.Internal
                 new StringBuilder("The project is missing the following required dependencies:\n");
             if (_isMissingCesium)
             {
-                dependenciesText.Append(
-                    String.Format("\n   • {0} {1}+", _cesiumId, _cesiumMinVersion.ToString()));
+                dependenciesText.AppendFormat("\n   • {0} {1}+", _cesiumId, _cesiumMinVersion.ToString());
             }
 
             if (_isMissingUnityMath)
             {
-                dependenciesText.Append(
-                    String.Format(
+                dependenciesText.AppendFormat(
                         "\n   • {0} {1}+",
                         _unityMathId,
-                        _unityMathMinVersion.ToString()));
+                        _unityMathMinVersion.ToString());
             }
 
             dependenciesText.Append("\n\nSee the Quickstart Guide for more information.");

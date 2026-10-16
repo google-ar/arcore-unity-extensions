@@ -227,8 +227,7 @@ namespace Google.XR.ARCoreExtensions.GeospatialCreator.Editor.Internal
             int count = 0;
             foreach (var obj in Selection.gameObjects)
             {
-                var targetType = obj.GetComponent<T>();
-                if (targetType != null)
+                if (obj.TryGetComponent<T>(out var targetType))
                 {
                     count++;
                 }
